@@ -1,13 +1,13 @@
-import { BoundingBox } from './boundingbox.js';
-import { Glyphs } from './glyphs.js';
-import { Metrics } from './metrics.js';
-import { Modifier } from './modifier.js';
-import { Note } from './note.js';
-import { NoteHead } from './notehead.js';
-import { Stem } from './stem.js';
-import { StemmableNote } from './stemmablenote.js';
-import { Tables } from './tables.js';
-import { defined, log, midLine, RuntimeError } from './util.js';
+import { BoundingBox } from './boundingbox';
+import { Glyphs } from './glyphs';
+import { Metrics } from './metrics';
+import { Modifier } from './modifier';
+import { Note } from './note';
+import { NoteHead } from './notehead';
+import { Stem } from './stem';
+import { StemmableNote } from './stemmablenote';
+import { Tables } from './tables';
+import { defined, log, midLine, RuntimeError } from './util';
 function L(...args) {
     if (StaveNote.DEBUG)
         log('VexFlow.StaveNote', args);
@@ -818,7 +818,6 @@ export class StaveNote extends StemmableNote {
         const ctx = this.checkContext();
         const xBegin = this.getNoteHeadBeginX();
         const shouldRenderStem = this.hasStem() && !this.beam;
-        this._noteHeads.forEach((notehead) => notehead.setX(xBegin));
         if (this.stem) {
             const stemX = this.getStemX();
             this.stem.setNoteHeadXBounds(stemX, stemX);
@@ -831,6 +830,11 @@ export class StaveNote extends StemmableNote {
             const style = noteHeadStyles[index];
             if (style)
                 noteHead.setStyle(style);
+        });
+        this._noteHeads.forEach((noteHead) => {
+            noteHead.setX(xBegin);
+            if (this.stave)
+                noteHead.setStave(this.stave);
         });
         const { highestLine, lowestLine } = this.getNoteHeadBounds();
         const ledgerLinesDrawn = highestLine >= 6 || lowestLine <= 0;

@@ -1199,9 +1199,6 @@ export class StaveNote extends StemmableNote {
     const xBegin = this.getNoteHeadBeginX();
     const shouldRenderStem = this.hasStem() && !this.beam;
 
-    // Format note head x positions
-    this._noteHeads.forEach((notehead) => notehead.setX(xBegin));
-
     if (this.stem) {
       // Format stem x positions
       const stemX = this.getStemX();
@@ -1219,6 +1216,12 @@ export class StaveNote extends StemmableNote {
     this._noteHeads.forEach((noteHead, index) => {
       const style = noteHeadStyles[index];
       if (style) noteHead.setStyle(style);
+    });
+
+    // Apply x position and stave reference to newly built noteheads
+    this._noteHeads.forEach((noteHead) => {
+      noteHead.setX(xBegin);
+      if (this.stave) noteHead.setStave(this.stave);
     });
 
     const { highestLine, lowestLine } = this.getNoteHeadBounds();
