@@ -9,6 +9,7 @@ export var BarlineType;
     BarlineType[BarlineType["REPEAT_END"] = 5] = "REPEAT_END";
     BarlineType[BarlineType["REPEAT_BOTH"] = 6] = "REPEAT_BOTH";
     BarlineType[BarlineType["NONE"] = 7] = "NONE";
+    BarlineType[BarlineType["DOUBLE_HEAVY"] = 8] = "DOUBLE_HEAVY";
 })(BarlineType || (BarlineType = {}));
 export class Barline extends StaveModifier {
     static get CATEGORY() {
@@ -26,6 +27,7 @@ export class Barline extends StaveModifier {
             repeatEnd: BarlineType.REPEAT_END,
             repeatBoth: BarlineType.REPEAT_BOTH,
             none: BarlineType.NONE,
+            doubleHeavy: BarlineType.DOUBLE_HEAVY,
         };
     }
     constructor(type) {
@@ -40,6 +42,7 @@ export class Barline extends StaveModifier {
         this.widths[TYPE.REPEAT_END] = 5;
         this.widths[TYPE.REPEAT_BOTH] = 5;
         this.widths[TYPE.NONE] = 5;
+        this.widths[TYPE.DOUBLE_HEAVY] = 5;
         this.paddings = {};
         this.paddings[TYPE.SINGLE] = 0;
         this.paddings[TYPE.DOUBLE] = 0;
@@ -48,6 +51,7 @@ export class Barline extends StaveModifier {
         this.paddings[TYPE.REPEAT_END] = 15;
         this.paddings[TYPE.REPEAT_BOTH] = 15;
         this.paddings[TYPE.NONE] = 0;
+        this.paddings[TYPE.DOUBLE_HEAVY] = 0;
         this.layoutMetricsMap = {};
         this.layoutMetricsMap[TYPE.SINGLE] = {
             xMin: 0,
@@ -88,6 +92,12 @@ export class Barline extends StaveModifier {
         this.layoutMetricsMap[TYPE.NONE] = {
             xMin: 0,
             xMax: 0,
+            paddingLeft: 5,
+            paddingRight: 5,
+        };
+        this.layoutMetricsMap[TYPE.DOUBLE_HEAVY] = {
+            xMin: -5,
+            xMax: 3,
             paddingLeft: 5,
             paddingRight: 5,
         };
@@ -132,16 +142,23 @@ export class Barline extends StaveModifier {
                 this.drawRepeatBar(stave, this.x, false);
                 this.drawRepeatBar(stave, this.x, true);
                 break;
+            case BarlineType.DOUBLE_HEAVY:
+                this.drawVerticalBar(stave, this.x, false, true);
+                break;
             default:
                 break;
         }
         ctx.closeGroup();
     }
-    drawVerticalBar(stave, x, doubleBar) {
+    drawVerticalBar(stave, x, doubleBar, doubleHeavy) {
         const staveCtx = stave.checkContext();
         const topY = stave.getTopLineTopY();
         const botY = stave.getBottomLineBottomY();
-        if (doubleBar) {
+        if (doubleHeavy) {
+            staveCtx.fillRect(x - 5, topY, 3, botY - topY);
+            staveCtx.fillRect(x, topY, 3, botY - topY);
+        }
+        else if (doubleBar) {
             staveCtx.fillRect(x - 3, topY, 1, botY - topY);
         }
         staveCtx.fillRect(x, topY, 1, botY - topY);

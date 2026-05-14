@@ -6,6 +6,20 @@ import { Bravura } from '../src/fonts/bravura.js';
 import { Gonville } from '../src/fonts/gonville.js';
 import { Petaluma } from '../src/fonts/petaluma.js';
 import { PetalumaScript } from '../src/fonts/petalumascript.js';
+
+// Inject CSS @font-face rules for reliable font loading (avoids FontFace API timing issues)
+if (typeof document !== 'undefined' && document.head) {
+  const style = document.createElement('style');
+  style.textContent = [
+    `@font-face { font-family: 'Bravura'; src: url(${Bravura}); font-display: block; }`,
+    `@font-face { font-family: 'Gonville'; src: url(${Gonville}); font-display: block; }`,
+    `@font-face { font-family: 'Petaluma'; src: url(${Petaluma}); font-display: block; }`,
+    `@font-face { font-family: 'Petaluma Script'; src: url(${PetalumaScript}); font-display: swap; }`,
+    `@font-face { font-family: 'Academico'; src: url(${Academico}); font-display: swap; }`,
+  ].join('\n');
+  document.head.appendChild(style);
+}
+
 const block = { display: 'block' };
 const swap = { display: 'swap' };
 const swapBold = { display: 'swap', weight: 'bold' };

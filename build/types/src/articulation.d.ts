@@ -39,6 +39,7 @@ export declare class Articulation extends Modifier {
     readonly type: string;
     protected articulation: ArticulationStruct;
     protected heightShift: number;
+    protected breathMarkDistance: number;
     /**
      * FIXME:
      * Most of the complex formatting logic (ie: snapping to space) is

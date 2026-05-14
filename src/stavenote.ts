@@ -902,7 +902,8 @@ export class StaveNote extends StemmableNote {
       }
     }
 
-    let width = this.getGlyphWidth() + this.leftDisplacedHeadPx + this.rightDisplacedHeadPx + noteHeadPadding + this.paddingRight;
+    let width =
+      this.getGlyphWidth() + this.leftDisplacedHeadPx + this.rightDisplacedHeadPx + noteHeadPadding + this.paddingRight;
 
     // For upward flagged notes, the width of the flag needs to be added
     if (this.shouldDrawFlag() && this.stemDirection === Stem.UP) {

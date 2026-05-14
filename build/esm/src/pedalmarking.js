@@ -39,6 +39,11 @@ export class PedalMarking extends Element {
             bracketLineWidth: 1,
             color: 'black',
         };
+        this.EndsStave = false;
+        this.endStave = null;
+        this.endStaveAddedWidth = 0;
+        this.startMargin = 0;
+        this.endMargin = 0;
     }
     setType(type) {
         type = typeof type === 'string' ? PedalMarking.typeString[type] : type;
@@ -55,6 +60,14 @@ export class PedalMarking extends Element {
     }
     setLine(line) {
         this.line = line;
+        return this;
+    }
+    setEndStave(stave) {
+        this.endStave = stave;
+        this.endStaveAddedWidth = 0;
+        this.startMargin = 0;
+        this.endMargin = 0;
+        this.EndsStave = true;
         return this;
     }
     drawBracketed() {
@@ -160,9 +173,17 @@ PedalMarking.type = {
     TEXT: 1,
     BRACKET: 2,
     MIXED: 3,
+    MIXED_OPEN_END: 4,
+    BRACKET_OPEN_BEGIN: 5,
+    BRACKET_OPEN_END: 6,
+    BRACKET_OPEN_BOTH: 7,
 };
 PedalMarking.typeString = {
     text: PedalMarking.type.TEXT,
     bracket: PedalMarking.type.BRACKET,
     mixed: PedalMarking.type.MIXED,
+    mixed_open_end: PedalMarking.type.MIXED_OPEN_END,
+    bracket_open_begin: PedalMarking.type.BRACKET_OPEN_BEGIN,
+    bracket_open_end: PedalMarking.type.BRACKET_OPEN_END,
+    bracket_open_both: PedalMarking.type.BRACKET_OPEN_BOTH,
 };

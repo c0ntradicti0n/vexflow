@@ -16,6 +16,7 @@ export class VibratoBracket extends Element {
             this.start = bracketData.start;
         if (bracketData.stop)
             this.stop = bracketData.stop;
+        this.toEndOfStopStave = bracketData.toEndOfStopStave;
         this.line = 1;
     }
     setLine(line) {
@@ -29,14 +30,27 @@ export class VibratoBracket extends Element {
     draw() {
         const ctx = this.checkContext();
         this.setRendered();
+        let trillOffset = 0;
+        if (this.stop) {
+            const modifiers = this.stop.getModifiers();
+            for (let i = 0; i < modifiers.length; i++) {
+                const modifier = modifiers[i];
+                if (modifier.getCategory() === "Ornament" && modifier.type === 'tr') {
+                    trillOffset = modifier.getWidth();
+                }
+            }
+        }
         const y = (this.start && this.start.checkStave().getYForTopText(this.line)) ||
             (this.stop && this.stop.checkStave().getYForTopText(this.line)) ||
             0;
         const startX = (this.start && this.start.getAbsoluteX()) || (this.stop && this.stop.checkStave().getTieStartX()) || 0;
-        const stopX = (this.stop && this.stop.getAbsoluteX() - this.stop.getWidth() - 5) ||
+        const stopX = (this.stop &&
+            (this.toEndOfStopStave
+                ? this.stop.getAbsoluteX() + this.stop.getWidth()
+                : this.stop.getAbsoluteX() - this.stop.getWidth() - 5)) ||
             (this.start && this.start.checkStave().getTieEndX() - 10) ||
             0;
-        this.vibrato.setVibratoWidth(stopX - startX);
+        this.vibrato.setVibratoWidth(stopX - startX + trillOffset);
         L('Rendering VibratoBracket: startX:', startX, 'stopX:', stopX, 'y:', y);
         this.vibrato.renderText(ctx, startX, y);
     }

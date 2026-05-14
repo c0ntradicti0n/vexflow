@@ -264,6 +264,7 @@ export class StaveNote extends StemmableNote {
         this._noteHeads = [];
         this.modifiers = [];
         this.renderOptions = Object.assign(Object.assign({}, this.renderOptions), { strokePx: noteStruct.strokePx || StaveNote.LEDGER_LINE_OFFSET });
+        this.paddingRight = 0;
         this.calculateKeyProps();
         this.buildStem();
         if (noteStruct.autoStem) {
@@ -405,7 +406,7 @@ export class StaveNote extends StemmableNote {
         this.sortedKeyProps.sort((a, b) => a.keyProps.line - b.keyProps.line);
     }
     getBoundingBox() {
-        const boundingBox = new BoundingBox(this.getAbsoluteX(), this.ys[0], 0, 0);
+        const boundingBox = new BoundingBox(this.getAbsoluteX() - this.paddingRight, this.ys[0], 0, 0);
         this._noteHeads.forEach((notehead) => {
             boundingBox.mergeWith(notehead.getBoundingBox());
         });
@@ -620,7 +621,7 @@ export class StaveNote extends StemmableNote {
                 noteHeadPadding = StaveNote.minNoteheadPadding;
             }
         }
-        let width = this.getGlyphWidth() + this.leftDisplacedHeadPx + this.rightDisplacedHeadPx + noteHeadPadding;
+        let width = this.getGlyphWidth() + this.leftDisplacedHeadPx + this.rightDisplacedHeadPx + noteHeadPadding + this.paddingRight;
         if (this.shouldDrawFlag() && this.stemDirection === Stem.UP) {
             width += this.getGlyphWidth();
         }
@@ -824,7 +825,27 @@ export class StaveNote extends StemmableNote {
         }
         L('Rendering ', this.isChord() ? 'chord :' : 'note :', this.keys);
         ctx.openGroup('stavenote', this.getAttribute('id'));
+        const noteHeadStyles = this._noteHeads.map((head) => head.getStyle());
+        this.buildNoteHeads();
+        const stave = this.getStave();
+        this._noteHeads.forEach((noteHead) => {
+            noteHead.setX(xBegin);
+            if (stave) noteHead.setStave(stave);
+        });
+        this._noteHeads.forEach((noteHead, index) => {
+            const style = noteHeadStyles[index];
+            if (style)
+                noteHead.setStyle(style);
+        });
+        const { highestLine, lowestLine } = this.getNoteHeadBounds();
+        const ledgerLinesDrawn = highestLine >= 6 || lowestLine <= 0;
+        if (ledgerLinesDrawn) {
+            ctx.openGroup('ledgers', this.getAttribute('id') + 'ledgers');
+        }
         this.drawLedgerLines();
+        if (ledgerLinesDrawn) {
+            ctx.closeGroup();
+        }
         if (shouldRenderStem)
             this.drawStem();
         this.drawNoteHeads();

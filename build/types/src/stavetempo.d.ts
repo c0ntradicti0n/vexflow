@@ -1,4 +1,11 @@
+import { RenderContext } from './rendercontext';
 import { StaveModifier } from './stavemodifier';
+export interface NoteEquationItem {
+    duration: string;
+    dots?: number;
+    tupletNum?: number;
+    notesOccupied?: number;
+}
 export interface StaveTempoOptions {
     /** free text i.e.: 'Adagio', 'Andate grazioso', ... */
     name?: string;
@@ -32,6 +39,11 @@ export interface StaveTempoOptions {
      * at the right of the equation.
      */
     dots2?: number;
+    /**
+     * Array of note groups for complex metronome / swing notation.
+     * Each group is rendered with an equals sign between.
+     */
+    noteEquation?: NoteEquationItem[];
 }
 export declare class StaveTempo extends StaveModifier {
     static get CATEGORY(): string;
@@ -40,4 +52,6 @@ export declare class StaveTempo extends StaveModifier {
     protected durationToCode: Record<string, string>;
     setTempo(tempo: StaveTempoOptions): this;
     draw(): void;
+    drawNoteEquation(ctx: RenderContext, x: number, y: number, scale: number, noteEquation: NoteEquationItem[]): number;
+    drawNoteGroup(ctx: RenderContext, x: number, y: number, scale: number, noteGroup: NoteEquationItem): number;
 }

@@ -13,6 +13,8 @@ export class NoteHead extends Note {
         var _a;
         super(noteStruct);
         this.customGlyph = false;
+        this.stem_up_y_shift = 0;
+        this.stem_down_y_shift = 0;
         this.ledger = {
             '\ue4e3': '\ue4f4',
             '\ue4e4': '\ue4f5',
@@ -37,6 +39,8 @@ export class NoteHead extends Note {
         }
         this.setStyle((_a = noteStruct.style) !== null && _a !== void 0 ? _a : {});
         this.slashed = noteStruct.slashed || false;
+        this.stem_up_y_shift = noteStruct.stem_up_y_shift || 0;
+        this.stem_down_y_shift = noteStruct.stem_down_y_shift || 0;
         this.renderOptions = Object.assign({}, this.renderOptions);
     }
     getWidth() {
@@ -79,7 +83,15 @@ export class NoteHead extends Note {
         ctx.openGroup('notehead', this.getAttribute('id'));
         L("Drawing note head '", this.noteType, this.duration, "' at", this.x, this.y);
         this.x = this.getAbsoluteX();
+        const savedYShift = this.yShift;
+        if (this.stemDirection === Stem.UP) {
+            this.yShift += this.stem_up_y_shift;
+        }
+        else if (this.stemDirection === Stem.DOWN) {
+            this.yShift += this.stem_down_y_shift;
+        }
         this.renderText(ctx, 0, 0);
+        this.yShift = savedYShift;
         (_a = this.parent) === null || _a === void 0 ? void 0 : _a.drawModifiers(this);
         ctx.closeGroup();
     }

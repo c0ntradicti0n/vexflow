@@ -11,6 +11,7 @@ export interface TabNoteStruct extends StaveNoteStruct {
 }
 export declare class TabNote extends StemmableNote {
     static get CATEGORY(): string;
+    BackgroundColor?: string;
     protected ghost: boolean;
     protected fretElement: Element[];
     protected positions: TabNotePosition[];

@@ -7,7 +7,8 @@ export declare enum BarlineType {
     REPEAT_BEGIN = 4,
     REPEAT_END = 5,
     REPEAT_BOTH = 6,
-    NONE = 7
+    NONE = 7,
+    DOUBLE_HEAVY = 8
 }
 export declare class Barline extends StaveModifier {
     static get CATEGORY(): string;
@@ -22,7 +23,7 @@ export declare class Barline extends StaveModifier {
     getType(): number;
     setType(type: string | number): this;
     draw(): void;
-    drawVerticalBar(stave: Stave, x: number, doubleBar?: boolean): void;
+    drawVerticalBar(stave: Stave, x: number, doubleBar?: boolean, doubleHeavy?: boolean): void;
     drawVerticalEndBar(stave: Stave, x: number): void;
     drawRepeatBar(stave: Stave, x: number, begin: boolean): void;
 }

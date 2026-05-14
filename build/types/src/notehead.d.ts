@@ -12,6 +12,8 @@ export interface NoteHeadStruct extends NoteStruct {
     x?: number;
     y?: number;
     index?: number;
+    stem_up_y_shift?: number;
+    stem_down_y_shift?: number;
 }
 /**
  * `NoteHeads` are typically not manipulated
@@ -29,6 +31,8 @@ export declare class NoteHead extends Note {
     protected line: number;
     protected index?: number;
     protected slashed: boolean;
+    protected stem_up_y_shift: number;
+    protected stem_down_y_shift: number;
     protected ledger: Record<string, string>;
     constructor(noteStruct: NoteHeadStruct);
     /** Get the width of the notehead. */

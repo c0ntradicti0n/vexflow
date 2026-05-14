@@ -10,6 +10,7 @@ export declare class VibratoBracket extends Element {
     protected vibrato: Vibrato;
     protected start?: Note;
     protected stop?: Note;
+    protected toEndOfStopStave?: boolean;
     /**
      * Either the stop or start note must be set, or both of them.
      * An undefined value for the start or stop note indicates that the vibrato
@@ -18,6 +19,7 @@ export declare class VibratoBracket extends Element {
     constructor(bracketData: {
         stop?: Note | null;
         start?: Note | null;
+        toEndOfStopStave?: boolean;
     });
     /** Set line position of the vibrato bracket. */
     setLine(line: number): this;

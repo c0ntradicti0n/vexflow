@@ -31,6 +31,7 @@ export class Tuplet extends Element {
         const location = options.location || Tuplet.LOCATION_TOP;
         const yOffset = options.yOffset || Metrics.get('Tuplet.yOffset');
         const textYOffset = options.textYOffset || Metrics.get('Tuplet.textYOffset');
+        const renderTupletNumber = options.renderTupletNumber !== undefined ? options.renderTupletNumber : true;
         this.options = {
             bracketed,
             location,
@@ -39,7 +40,9 @@ export class Tuplet extends Element {
             ratioed,
             yOffset,
             textYOffset,
+            renderTupletNumber,
         };
+        this.RenderTupletNumber = renderTupletNumber;
         this.textElement = new Element('Tuplet');
         this.setTupletLocation(location || Tuplet.LOCATION_TOP);
         Formatter.AlignRestsToNotes(notes, true, true);
@@ -199,7 +202,9 @@ export class Tuplet extends Element {
                 ctx.fillRect(xPos + this.width, yPos + (location === Tuplet.LOCATION_BOTTOM ? 1 : 0), 1, location * 10);
             }
         }
-        this.textElement.renderText(ctx, notationStartX, yPos + this.textElement.getHeight() / 2 + (location === Tuplet.LOCATION_TOP ? -1 : 1) * textYOffset);
+        if (this.RenderTupletNumber !== false) {
+            this.textElement.renderText(ctx, notationStartX, yPos + this.textElement.getHeight() / 2 + (location === Tuplet.LOCATION_TOP ? -1 : 1) * textYOffset);
+        }
         const bb = this.getBoundingBox();
         ctx.pointerRect(bb.getX(), bb.getY(), bb.getW(), bb.getH());
         ctx.closeGroup();

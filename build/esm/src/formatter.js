@@ -251,9 +251,6 @@ export class Formatter {
         }
         const totalTicks = voices[0].getTotalTicks();
         const resolutionMultiplier = voices.reduce((accumulator, voice) => {
-            if (!voice.getTotalTicks().equals(totalTicks)) {
-                throw new RuntimeError('TickMismatch', 'Voices should have same total note duration in ticks.');
-            }
             if (voice.getMode() === Voice.Mode.STRICT && !voice.isComplete()) {
                 throw new RuntimeError('IncompleteVoice', 'Voice does not have enough notes.');
             }

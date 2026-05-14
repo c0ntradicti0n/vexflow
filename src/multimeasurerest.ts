@@ -209,7 +209,8 @@ export class MultiMeasureRest extends Element {
     const endModifiers = stave.getModifiers(StaveModifierPosition.END);
     if (endModifiers.length >= 1 && isBarline(endModifiers[0])) {
       const barline = endModifiers[0];
-      right -= barline.getPadding();
+      const lm = barline.getLayoutMetrics();
+      right -= lm?.paddingRight ?? 0;
     }
 
     const options = this.renderOptions;

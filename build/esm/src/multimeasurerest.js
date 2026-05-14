@@ -96,6 +96,7 @@ export class MultiMeasureRest extends Element {
         x += elTop.getWidth();
     }
     draw() {
+        var _a;
         const ctx = this.checkContext();
         this.setRendered();
         const stave = this.checkStave();
@@ -104,6 +105,12 @@ export class MultiMeasureRest extends Element {
         const begModifiers = stave.getModifiers(StaveModifierPosition.BEGIN);
         if (begModifiers.length === 1 && isBarline(begModifiers[0])) {
             left -= begModifiers[0].getWidth();
+        }
+        const endModifiers = stave.getModifiers(StaveModifierPosition.END);
+        if (endModifiers.length >= 1 && isBarline(endModifiers[0])) {
+            const barline = endModifiers[0];
+            const lm = barline.getLayoutMetrics();
+            right -= (_a = lm === null || lm === void 0 ? void 0 : lm.paddingRight) !== null && _a !== void 0 ? _a : 0;
         }
         const options = this.renderOptions;
         if (this.hasPaddingLeft) {

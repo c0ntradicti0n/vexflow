@@ -95,7 +95,7 @@ export class TextBracket extends Element {
         const superHeight = this.superscriptElement.getHeight();
         let startX = start.x;
         let lineY = superY;
-        const endX = stop.x + this.stop.getGlyphWidth();
+        let endX = stop.x + this.stop.getGlyphWidth();
         if (this.position === TextBracketPosition.TOP) {
             startX += mainWidth + superWidth + 5;
             lineY -= superHeight / 2.7;
@@ -106,6 +106,12 @@ export class TextBracket extends Element {
             if (!this.renderOptions.underlineSuperscript) {
                 startX += superWidth;
             }
+        }
+        if (endX < startX + 5 && this.position === TextBracketPosition.TOP) {
+            endX = startX + 5;
+        }
+        else if (endX < startX + superWidth && this.position === TextBracketPosition.BOTTOM) {
+            endX = startX + superWidth;
         }
         if (this.renderOptions.dashed) {
             Renderer.drawDashedLine(ctx, startX, lineY, endX, lineY, this.renderOptions.dash);

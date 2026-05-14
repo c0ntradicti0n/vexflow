@@ -65,6 +65,12 @@ export declare class Tables {
     /** Convert the `duration` to a number. */
     static durationToNumber(duration: string): number;
     static durationToTicks(duration: string): number;
+    static tabToGlyph(fret: string | number, scale?: number, useAlternativeXGlyph?: boolean): {
+        text: string | number;
+        code: string | null;
+        getWidth: () => number;
+        shift_y: number;
+    };
     static codeNoteHead(type: string, duration: string): string;
     static validTypes: Record<string, {
         name: string;

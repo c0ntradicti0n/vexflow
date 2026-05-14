@@ -1,4 +1,5 @@
 import { Element } from './element';
+import { Stave } from './stave';
 import { StaveNote } from './stavenote';
 /**
  * PedalMarking implements different types of pedal markings. These notation
@@ -22,6 +23,11 @@ export declare class PedalMarking extends Element {
         bracketLineWidth: number;
     };
     protected notes: StaveNote[];
+    protected endStave: Stave | null;
+    protected endStaveAddedWidth: number;
+    protected startMargin: number;
+    protected endMargin: number;
+    EndsStave: boolean;
     /** Glyph data */
     static readonly GLYPHS: Record<string, string>;
     /** Pedal type as number. */
@@ -29,6 +35,10 @@ export declare class PedalMarking extends Element {
         TEXT: number;
         BRACKET: number;
         MIXED: number;
+        MIXED_OPEN_END: number;
+        BRACKET_OPEN_BEGIN: number;
+        BRACKET_OPEN_END: number;
+        BRACKET_OPEN_BOTH: number;
     };
     /** Pedal type as string. */
     static readonly typeString: Record<string, number>;
@@ -51,6 +61,8 @@ export declare class PedalMarking extends Element {
     setCustomText(depress: string, release?: string): this;
     /** Set the staff line to render the markings on. */
     setLine(line: number): this;
+    /** Set the end stave for pedal markings that extend to the end of a stave. */
+    setEndStave(stave: Stave): this;
     /** Draw the bracket based pedal markings. */
     drawBracketed(): void;
     /**

@@ -391,6 +391,28 @@ export class Tables {
         }
         return ticks;
     }
+    static tabToGlyph(fret, scale = 1.0, useAlternativeXGlyph = false) {
+        let glyph = null;
+        let width = 0;
+        let shift_y = 0;
+        if (fret.toString().toUpperCase() === 'X') {
+            glyph = Glyphs.accidentalDoubleSharp;
+            if (useAlternativeXGlyph) {
+                glyph = Glyphs.noteheadXBlack;
+            }
+            width = Tables.textWidth('X');
+            shift_y = 0;
+        }
+        else {
+            width = Tables.textWidth(fret.toString());
+        }
+        return {
+            text: fret,
+            code: glyph,
+            getWidth: () => width * scale,
+            shift_y,
+        };
+    }
     static codeNoteHead(type, duration) {
         switch (type) {
             case 'D0':

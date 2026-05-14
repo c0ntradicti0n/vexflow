@@ -140,7 +140,14 @@ export class Repetition extends StaveModifier {
       case Repetition.type.DC_AL_CODA:
       case Repetition.type.DS_AL_CODA:
         textX =
-          x - (stave.getNoteStartX() - this.x) + stave.getWidth() - this.width - Metrics.get('Repetition.text.offsetX') - 12 - stave.options.verticalBarWidth - 12;
+          x -
+          (stave.getNoteStartX() - this.x) +
+          stave.getWidth() -
+          this.width -
+          Metrics.get('Repetition.text.offsetX') -
+          12 -
+          stave.options.verticalBarWidth -
+          12;
         break;
       default:
         // Fallback for other types at the right side.

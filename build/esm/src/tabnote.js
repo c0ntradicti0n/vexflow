@@ -250,7 +250,16 @@ export class TabNote extends StemmableNote {
             const y = ys[i] + this.renderOptions.yShift;
             const el = this.fretElement[i];
             const tabX = x - el.getWidth() / 2;
-            ctx.clearRect(tabX - 2, y - 3, el.getWidth() + 4, 6);
+            if (this.BackgroundColor) {
+                ctx.save();
+                ctx.setFillStyle(this.BackgroundColor);
+                ctx.setLineWidth(0);
+                ctx.fillRect(tabX - 2, y - 3, el.getWidth() + 4, 6);
+                ctx.restore();
+            }
+            else {
+                ctx.clearRect(tabX - 2, y - 3, el.getWidth() + 4, 6);
+            }
             el.renderText(ctx, tabX, y);
         }
     }

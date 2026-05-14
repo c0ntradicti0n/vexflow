@@ -2,6 +2,7 @@ import { Glyphs } from './glyphs.js';
 import { Modifier } from './modifier.js';
 import { Stem } from './stem.js';
 import { Tables } from './tables.js';
+import { TickContext } from './tickcontext.js';
 import { isGraceNote, isStaveNote, isStemmableNote, isTabNote } from './typeguard.js';
 import { log, RuntimeError } from './util.js';
 function L(...args) {
@@ -213,6 +214,7 @@ export class Articulation extends Modifier {
         var _a;
         super();
         this.heightShift = 0;
+        this.breathMarkDistance = 0.8;
         this.type = type;
         this.position = ABOVE;
         if (!Tables.articulationCodes(this.type)) {
@@ -222,7 +224,12 @@ export class Articulation extends Modifier {
                 this.position = BELOW;
         }
         this.articulation = { betweenLines: false };
+        this.breathMarkDistance = 0.8;
         this.reset();
+        if (this.type === 'abr') {
+            this.articulation = { code: 'v6c', betweenLines: false };
+            this.text = 'v6c';
+        }
     }
     reset() {
         this.articulation = Tables.articulationCodes(this.type);
@@ -248,7 +255,26 @@ export class Articulation extends Modifier {
         const stave = note.checkStave();
         const staffSpace = stave.getSpacingBetweenLines();
         const isTab = isTabNote(note);
-        const { x } = note.getModifierStartXY(position, index);
+        let { x } = note.getModifierStartXY(position, index);
+        if (this.type === 'abr') {
+            const noteTickContext = note.getTickContext();
+            if (noteTickContext) {
+                const nextContext = TickContext.getNextContext(noteTickContext);
+                if (nextContext && nextContext.getX() > noteTickContext.getX()) {
+                    x += (nextContext.getX() - noteTickContext.getX()) * this.breathMarkDistance;
+                }
+                else {
+                    const breathStave = note.getStave();
+                    if (breathStave) {
+                        x += (breathStave.getX() + breathStave.getWidth() - x) * this.breathMarkDistance;
+                    }
+                }
+            }
+        }
+        const xShift = this.getXShift();
+        if (xShift) {
+            x += xShift;
+        }
         const shouldSitOutsideStaff = !canSitBetweenLines || isTab;
         const initialOffset = getInitialOffset(note, position);
         let y = {
@@ -270,6 +296,9 @@ export class Articulation extends Modifier {
             if (isWithinLines(snappedLine, position))
                 this.setOrigin(0.5, 0.5);
             y += Math.abs(snappedLine - articLine) * staffSpace * offsetDirection;
+        }
+        if (this.yShift) {
+            y += this.yShift;
         }
         L(`Rendering articulation at (x: ${x}, y: ${y})`);
         this.x = x;

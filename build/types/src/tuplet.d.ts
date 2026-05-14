@@ -51,6 +51,7 @@ export interface TupletOptions {
     ratioed?: boolean;
     yOffset?: number;
     textYOffset?: number;
+    renderTupletNumber?: boolean;
 }
 export declare const enum TupletLocation {
     BOTTOM = -1,
@@ -61,6 +62,7 @@ export declare class Tuplet extends Element {
     notes: Note[];
     protected options: Required<TupletOptions>;
     protected textElement: Element;
+    RenderTupletNumber: boolean;
     static get LOCATION_TOP(): number;
     static get LOCATION_BOTTOM(): number;
     static get NESTING_OFFSET(): number;

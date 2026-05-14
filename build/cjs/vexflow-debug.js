@@ -1,5 +1,5 @@
 /*!
- * VexFlow 5.0.0   2025-03-05T17:05:43.991Z   0ca6f889545c33cce851b420c24945f6eb685aeb
+ * VexFlow 5.0.0   2026-05-14T12:50:38.348Z   f1560ffae040060511d61b4a47a9829ec1efe8ff
  * Copyright (c) 2023-present VexFlow contributors (see https://github.com/vexflow/vexflow/blob/main/AUTHORS.md).
  */
 (function webpackUniversalModuleDefinition(root, factory) {
@@ -30,8 +30,8 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export */ });
 // Gruntfile.js uses string-replace-loader to replace these values during build time.
 const VERSION = '5.0.0';
-const ID = '0ca6f889545c33cce851b420c24945f6eb685aeb';
-const DATE = '2025-03-05T17:05:43.991Z';
+const ID = 'f1560ffae040060511d61b4a47a9829ec1efe8ff';
+const DATE = '2026-05-14T12:50:38.348Z';
 
 
 /***/ }),
@@ -823,8 +823,9 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var _modifier__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./modifier */ "./src/modifier.ts");
 /* harmony import */ var _stem__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ./stem */ "./src/stem.ts");
 /* harmony import */ var _tables__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ./tables */ "./src/tables.ts");
-/* harmony import */ var _typeguard__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! ./typeguard */ "./src/typeguard.ts");
-/* harmony import */ var _util__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! ./util */ "./src/util.ts");
+/* harmony import */ var _tickcontext__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! ./tickcontext */ "./src/tickcontext.ts");
+/* harmony import */ var _typeguard__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! ./typeguard */ "./src/typeguard.ts");
+/* harmony import */ var _util__WEBPACK_IMPORTED_MODULE_6__ = __webpack_require__(/*! ./util */ "./src/util.ts");
 // Copyright (c) 2023-present VexFlow contributors: https://github.com/vexflow/vexflow/graphs/contributors
 // @author Larry Kuhns.
 // MIT License
@@ -834,10 +835,11 @@ __webpack_require__.r(__webpack_exports__);
 
 
 
+
 // eslint-disable-next-line
 function L(...args) {
     if (Articulation.DEBUG)
-        (0,_util__WEBPACK_IMPORTED_MODULE_5__.log)('VexFlow.Articulation', args);
+        (0,_util__WEBPACK_IMPORTED_MODULE_6__.log)('VexFlow.Articulation', args);
 }
 const { ABOVE, BELOW } = _modifier__WEBPACK_IMPORTED_MODULE_1__.Modifier.Position;
 function roundToNearestHalf(mathFn, value) {
@@ -874,7 +876,7 @@ function snapLineToStaff(canSitBetweenLines, line, position, offsetDirection) {
     }
 }
 // Helper function for checking if a Note object is either a StaveNote or a GraceNote.
-const isStaveOrGraceNote = (note) => (0,_typeguard__WEBPACK_IMPORTED_MODULE_4__.isStaveNote)(note) || (0,_typeguard__WEBPACK_IMPORTED_MODULE_4__.isGraceNote)(note);
+const isStaveOrGraceNote = (note) => (0,_typeguard__WEBPACK_IMPORTED_MODULE_5__.isStaveNote)(note) || (0,_typeguard__WEBPACK_IMPORTED_MODULE_5__.isGraceNote)(note);
 function getTopY(note, textLine) {
     const stemDirection = note.getStemDirection();
     const { topY: stemTipY, baseY: stemBaseY } = note.getStemExtents();
@@ -891,7 +893,7 @@ function getTopY(note, textLine) {
             return Math.min(...note.getYs());
         }
     }
-    else if ((0,_typeguard__WEBPACK_IMPORTED_MODULE_4__.isTabNote)(note)) {
+    else if ((0,_typeguard__WEBPACK_IMPORTED_MODULE_5__.isTabNote)(note)) {
         if (note.hasStem()) {
             if (stemDirection === _stem__WEBPACK_IMPORTED_MODULE_2__.Stem.UP) {
                 return stemTipY;
@@ -905,7 +907,7 @@ function getTopY(note, textLine) {
         }
     }
     else {
-        throw new _util__WEBPACK_IMPORTED_MODULE_5__.RuntimeError('UnknownCategory', 'Only can get the top and bottom ys of stavenotes and tabnotes');
+        throw new _util__WEBPACK_IMPORTED_MODULE_6__.RuntimeError('UnknownCategory', 'Only can get the top and bottom ys of stavenotes and tabnotes');
     }
 }
 function getBottomY(note, textLine) {
@@ -924,7 +926,7 @@ function getBottomY(note, textLine) {
             return Math.max(...note.getYs());
         }
     }
-    else if ((0,_typeguard__WEBPACK_IMPORTED_MODULE_4__.isTabNote)(note)) {
+    else if ((0,_typeguard__WEBPACK_IMPORTED_MODULE_5__.isTabNote)(note)) {
         if (note.hasStem()) {
             if (stemDirection === _stem__WEBPACK_IMPORTED_MODULE_2__.Stem.UP) {
                 return note.checkStave().getYForBottomText(textLine);
@@ -938,7 +940,7 @@ function getBottomY(note, textLine) {
         }
     }
     else {
-        throw new _util__WEBPACK_IMPORTED_MODULE_5__.RuntimeError('UnknownCategory', 'Only can get the top and bottom ys of stavenotes and tabnotes');
+        throw new _util__WEBPACK_IMPORTED_MODULE_6__.RuntimeError('UnknownCategory', 'Only can get the top and bottom ys of stavenotes and tabnotes');
     }
 }
 /**
@@ -983,7 +985,7 @@ function getInitialOffset(note, position) {
 class Articulation extends _modifier__WEBPACK_IMPORTED_MODULE_1__.Modifier {
     /** Articulations category string. */
     static get CATEGORY() {
-        return _typeguard__WEBPACK_IMPORTED_MODULE_4__.Category.Articulation;
+        return _typeguard__WEBPACK_IMPORTED_MODULE_5__.Category.Articulation;
     }
     /**
      * FIXME:
@@ -1016,7 +1018,7 @@ class Articulation extends _modifier__WEBPACK_IMPORTED_MODULE_1__.Modifier {
             const stemDirection = note.hasStem() ? note.getStemDirection() : _stem__WEBPACK_IMPORTED_MODULE_2__.Stem.UP;
             let stemHeight = 0;
             // Decide if we need to consider beam direction in placement.
-            if ((0,_typeguard__WEBPACK_IMPORTED_MODULE_4__.isStemmableNote)(note)) {
+            if ((0,_typeguard__WEBPACK_IMPORTED_MODULE_5__.isStemmableNote)(note)) {
                 const stem = note.getStem();
                 if (stem) {
                     stemHeight = Math.abs(stem.getHeight()) / _tables__WEBPACK_IMPORTED_MODULE_3__.Tables.STAVE_LINE_DISTANCE;
@@ -1096,6 +1098,7 @@ class Articulation extends _modifier__WEBPACK_IMPORTED_MODULE_1__.Modifier {
         var _a;
         super();
         this.heightShift = 0;
+        this.breathMarkDistance = 0.8;
         this.type = type;
         this.position = ABOVE;
         if (!_tables__WEBPACK_IMPORTED_MODULE_3__.Tables.articulationCodes(this.type)) {
@@ -1105,7 +1108,12 @@ class Articulation extends _modifier__WEBPACK_IMPORTED_MODULE_1__.Modifier {
                 this.position = BELOW;
         }
         this.articulation = { betweenLines: false };
+        this.breathMarkDistance = 0.8;
         this.reset();
+        if (this.type === 'abr') {
+            this.articulation = { code: 'v6c', betweenLines: false };
+            this.text = 'v6c';
+        }
     }
     reset() {
         this.articulation = _tables__WEBPACK_IMPORTED_MODULE_3__.Tables.articulationCodes(this.type);
@@ -1133,9 +1141,29 @@ class Articulation extends _modifier__WEBPACK_IMPORTED_MODULE_1__.Modifier {
         const canSitBetweenLines = this.articulation.betweenLines;
         const stave = note.checkStave();
         const staffSpace = stave.getSpacingBetweenLines();
-        const isTab = (0,_typeguard__WEBPACK_IMPORTED_MODULE_4__.isTabNote)(note);
+        const isTab = (0,_typeguard__WEBPACK_IMPORTED_MODULE_5__.isTabNote)(note);
         // Articulations are centered over/under the note head.
-        const { x } = note.getModifierStartXY(position, index);
+        let { x } = note.getModifierStartXY(position, index);
+        // Breath mark support: shift x toward the next note
+        if (this.type === 'abr') {
+            const noteTickContext = note.getTickContext();
+            if (noteTickContext) {
+                const nextContext = _tickcontext__WEBPACK_IMPORTED_MODULE_4__.TickContext.getNextContext(noteTickContext);
+                if (nextContext && nextContext.getX() > noteTickContext.getX()) {
+                    x += (nextContext.getX() - noteTickContext.getX()) * this.breathMarkDistance;
+                }
+                else {
+                    const breathStave = note.getStave();
+                    if (breathStave) {
+                        x += (breathStave.getX() + breathStave.getWidth() - x) * this.breathMarkDistance;
+                    }
+                }
+            }
+        }
+        const xShift = this.getXShift();
+        if (xShift) {
+            x += xShift;
+        }
         const shouldSitOutsideStaff = !canSitBetweenLines || isTab;
         const initialOffset = getInitialOffset(note, position);
         let y = {
@@ -1157,6 +1185,10 @@ class Articulation extends _modifier__WEBPACK_IMPORTED_MODULE_1__.Modifier {
             if (isWithinLines(snappedLine, position))
                 this.setOrigin(0.5, 0.5);
             y += Math.abs(snappedLine - articLine) * staffSpace * offsetDirection;
+        }
+        // Respect modifier.y_shift
+        if (this.yShift) {
+            y += this.yShift;
         }
         L(`Rendering articulation at (x: ${x}, y: ${y})`);
         this.x = x;
@@ -2067,8 +2099,8 @@ class Beam extends _element__WEBPACK_IMPORTED_MODULE_0__.Element {
                     ctx.beginPath();
                     ctx.moveTo(startBeamX, startBeamY);
                     ctx.lineTo(startBeamX, startBeamY + beamThickness);
-                    ctx.lineTo(lastBeamX + 1, lastBeamY + beamThickness);
-                    ctx.lineTo(lastBeamX + 1, lastBeamY);
+                    ctx.lineTo(lastBeamX + _stem__WEBPACK_IMPORTED_MODULE_2__.Stem.WIDTH, lastBeamY + beamThickness);
+                    ctx.lineTo(lastBeamX + _stem__WEBPACK_IMPORTED_MODULE_2__.Stem.WIDTH, lastBeamY);
                     ctx.closePath();
                     ctx.fill();
                 }
@@ -2091,6 +2123,15 @@ class Beam extends _element__WEBPACK_IMPORTED_MODULE_0__.Element {
     postFormat() {
         if (this.postFormatted)
             return;
+        // Reset stem extensions to base values before recalculating beams,
+        // ensuring idempotent beam rendering when beams are recreated
+        // but notes/stems are reused (extensions won't accumulate).
+        for (const note of this.notes) {
+            const stem = note.getStem();
+            if (stem) {
+                stem.setExtension(note.getStemExtension());
+            }
+        }
         // Calculate a smart slope if we're not forcing the beams to be flat.
         if ((0,_typeguard__WEBPACK_IMPORTED_MODULE_5__.isTabNote)(this.notes[0]) || this.renderOptions.flatBeams) {
             this.calculateFlatSlope();
@@ -6270,9 +6311,9 @@ class Formatter {
         }
         const totalTicks = voices[0].getTotalTicks();
         const resolutionMultiplier = voices.reduce((accumulator, voice) => {
-            if (!voice.getTotalTicks().equals(totalTicks)) {
-                throw new _util__WEBPACK_IMPORTED_MODULE_9__.RuntimeError('TickMismatch', 'Voices should have same total note duration in ticks.');
-            }
+            // if (!voice.getTotalTicks().equals(totalTicks)) {
+            //   throw new RuntimeError('TickMismatch', 'Voices should have same total note duration in ticks.');
+            // }
             if (voice.getMode() === _voice__WEBPACK_IMPORTED_MODULE_10__.Voice.Mode.STRICT && !voice.isComplete()) {
                 throw new _util__WEBPACK_IMPORTED_MODULE_9__.RuntimeError('IncompleteVoice', 'Voice does not have enough notes.');
             }
@@ -15057,6 +15098,7 @@ class MultiMeasureRest extends _element__WEBPACK_IMPORTED_MODULE_0__.Element {
         x += elTop.getWidth();
     }
     draw() {
+        var _a;
         const ctx = this.checkContext();
         this.setRendered();
         const stave = this.checkStave();
@@ -15069,6 +15111,13 @@ class MultiMeasureRest extends _element__WEBPACK_IMPORTED_MODULE_0__.Element {
         const begModifiers = stave.getModifiers(_stavemodifier__WEBPACK_IMPORTED_MODULE_3__.StaveModifierPosition.BEGIN);
         if (begModifiers.length === 1 && (0,_typeguard__WEBPACK_IMPORTED_MODULE_5__.isBarline)(begModifiers[0])) {
             left -= begModifiers[0].getWidth();
+        }
+        // getNoteEndX() does not include end barline width. Subtract it.
+        const endModifiers = stave.getModifiers(_stavemodifier__WEBPACK_IMPORTED_MODULE_3__.StaveModifierPosition.END);
+        if (endModifiers.length >= 1 && (0,_typeguard__WEBPACK_IMPORTED_MODULE_5__.isBarline)(endModifiers[0])) {
+            const barline = endModifiers[0];
+            const lm = barline.getLayoutMetrics();
+            right -= (_a = lm === null || lm === void 0 ? void 0 : lm.paddingRight) !== null && _a !== void 0 ? _a : 0;
         }
         const options = this.renderOptions;
         if (this.hasPaddingLeft) {
@@ -16051,6 +16100,8 @@ class NoteHead extends _note__WEBPACK_IMPORTED_MODULE_0__.Note {
         var _a;
         super(noteStruct);
         this.customGlyph = false;
+        this.stem_up_y_shift = 0;
+        this.stem_down_y_shift = 0;
         // map notehead SMuFL codes to the corresponding SMuFL code with ledger line
         this.ledger = {
             '\ue4e3' /*restWhole*/: '\ue4f4' /*restWholeLegerLine*/,
@@ -16079,6 +16130,8 @@ class NoteHead extends _note__WEBPACK_IMPORTED_MODULE_0__.Note {
         }
         this.setStyle((_a = noteStruct.style) !== null && _a !== void 0 ? _a : {});
         this.slashed = noteStruct.slashed || false;
+        this.stem_up_y_shift = noteStruct.stem_up_y_shift || 0;
+        this.stem_down_y_shift = noteStruct.stem_down_y_shift || 0;
         this.renderOptions = Object.assign({}, this.renderOptions);
     }
     /** Get the width of the notehead. */
@@ -16134,7 +16187,15 @@ class NoteHead extends _note__WEBPACK_IMPORTED_MODULE_0__.Note {
         ctx.openGroup('notehead', this.getAttribute('id'));
         L("Drawing note head '", this.noteType, this.duration, "' at", this.x, this.y);
         this.x = this.getAbsoluteX();
+        const savedYShift = this.yShift;
+        if (this.stemDirection === _stem__WEBPACK_IMPORTED_MODULE_1__.Stem.UP) {
+            this.yShift += this.stem_up_y_shift;
+        }
+        else if (this.stemDirection === _stem__WEBPACK_IMPORTED_MODULE_1__.Stem.DOWN) {
+            this.yShift += this.stem_down_y_shift;
+        }
         this.renderText(ctx, 0, 0);
+        this.yShift = savedYShift;
         (_a = this.parent) === null || _a === void 0 ? void 0 : _a.drawModifiers(this);
         ctx.closeGroup();
     }
@@ -16892,6 +16953,11 @@ class PedalMarking extends _element__WEBPACK_IMPORTED_MODULE_0__.Element {
             bracketLineWidth: 1,
             color: 'black',
         };
+        this.EndsStave = false;
+        this.endStave = null;
+        this.endStaveAddedWidth = 0;
+        this.startMargin = 0;
+        this.endMargin = 0;
     }
     /** Set pedal type. */
     setType(type) {
@@ -16914,6 +16980,15 @@ class PedalMarking extends _element__WEBPACK_IMPORTED_MODULE_0__.Element {
     /** Set the staff line to render the markings on. */
     setLine(line) {
         this.line = line;
+        return this;
+    }
+    /** Set the end stave for pedal markings that extend to the end of a stave. */
+    setEndStave(stave) {
+        this.endStave = stave;
+        this.endStaveAddedWidth = 0;
+        this.startMargin = 0;
+        this.endMargin = 0;
+        this.EndsStave = true;
         return this;
     }
     /** Draw the bracket based pedal markings. */
@@ -17046,12 +17121,20 @@ PedalMarking.type = {
     TEXT: 1,
     BRACKET: 2,
     MIXED: 3,
+    MIXED_OPEN_END: 4,
+    BRACKET_OPEN_BEGIN: 5,
+    BRACKET_OPEN_END: 6,
+    BRACKET_OPEN_BOTH: 7,
 };
 /** Pedal type as string. */
 PedalMarking.typeString = {
     text: PedalMarking.type.TEXT,
     bracket: PedalMarking.type.BRACKET,
     mixed: PedalMarking.type.MIXED,
+    mixed_open_end: PedalMarking.type.MIXED_OPEN_END,
+    bracket_open_begin: PedalMarking.type.BRACKET_OPEN_BEGIN,
+    bracket_open_end: PedalMarking.type.BRACKET_OPEN_END,
+    bracket_open_both: PedalMarking.type.BRACKET_OPEN_BOTH,
 };
 
 
@@ -17932,12 +18015,24 @@ class Stave extends _element__WEBPACK_IMPORTED_MODULE_2__.Element {
             padding = modifier.getPadding(i + offset);
             width = modifier.getWidth();
             x += padding;
-            modifier.setX(x);
+            if (isNaN(width)) {
+                modifier.setWidth(10);
+                width = 10;
+            }
+            const modifierX = modifier.getX();
+            if (modifierX > x) {
+                x = modifierX;
+            }
+            else {
+                modifier.setX(x);
+            }
             x += width;
             if (padding + width === 0)
                 offset--;
         }
-        this.startX = x;
+        if (x > this.startX) {
+            this.startX = x;
+        }
         x = this.x + this.width;
         const widths = {
             left: 0,
@@ -18184,6 +18279,7 @@ var BarlineType;
     BarlineType[BarlineType["REPEAT_END"] = 5] = "REPEAT_END";
     BarlineType[BarlineType["REPEAT_BOTH"] = 6] = "REPEAT_BOTH";
     BarlineType[BarlineType["NONE"] = 7] = "NONE";
+    BarlineType[BarlineType["DOUBLE_HEAVY"] = 8] = "DOUBLE_HEAVY";
 })(BarlineType || (BarlineType = {}));
 class Barline extends _stavemodifier__WEBPACK_IMPORTED_MODULE_0__.StaveModifier {
     static get CATEGORY() {
@@ -18201,6 +18297,7 @@ class Barline extends _stavemodifier__WEBPACK_IMPORTED_MODULE_0__.StaveModifier 
             repeatEnd: BarlineType.REPEAT_END,
             repeatBoth: BarlineType.REPEAT_BOTH,
             none: BarlineType.NONE,
+            doubleHeavy: BarlineType.DOUBLE_HEAVY,
         };
     }
     constructor(type) {
@@ -18215,6 +18312,7 @@ class Barline extends _stavemodifier__WEBPACK_IMPORTED_MODULE_0__.StaveModifier 
         this.widths[TYPE.REPEAT_END] = 5;
         this.widths[TYPE.REPEAT_BOTH] = 5;
         this.widths[TYPE.NONE] = 5;
+        this.widths[TYPE.DOUBLE_HEAVY] = 5;
         this.paddings = {};
         this.paddings[TYPE.SINGLE] = 0;
         this.paddings[TYPE.DOUBLE] = 0;
@@ -18223,6 +18321,7 @@ class Barline extends _stavemodifier__WEBPACK_IMPORTED_MODULE_0__.StaveModifier 
         this.paddings[TYPE.REPEAT_END] = 15;
         this.paddings[TYPE.REPEAT_BOTH] = 15;
         this.paddings[TYPE.NONE] = 0;
+        this.paddings[TYPE.DOUBLE_HEAVY] = 0;
         this.layoutMetricsMap = {};
         this.layoutMetricsMap[TYPE.SINGLE] = {
             xMin: 0,
@@ -18263,6 +18362,12 @@ class Barline extends _stavemodifier__WEBPACK_IMPORTED_MODULE_0__.StaveModifier 
         this.layoutMetricsMap[TYPE.NONE] = {
             xMin: 0,
             xMax: 0,
+            paddingLeft: 5,
+            paddingRight: 5,
+        };
+        this.layoutMetricsMap[TYPE.DOUBLE_HEAVY] = {
+            xMin: -5,
+            xMax: 3,
             paddingLeft: 5,
             paddingRight: 5,
         };
@@ -18310,17 +18415,24 @@ class Barline extends _stavemodifier__WEBPACK_IMPORTED_MODULE_0__.StaveModifier 
                 this.drawRepeatBar(stave, this.x, false);
                 this.drawRepeatBar(stave, this.x, true);
                 break;
+            case BarlineType.DOUBLE_HEAVY:
+                this.drawVerticalBar(stave, this.x, false, true);
+                break;
             default:
                 // Default is NONE, so nothing to draw
                 break;
         }
         ctx.closeGroup();
     }
-    drawVerticalBar(stave, x, doubleBar) {
+    drawVerticalBar(stave, x, doubleBar, doubleHeavy) {
         const staveCtx = stave.checkContext();
         const topY = stave.getTopLineTopY();
         const botY = stave.getBottomLineBottomY();
-        if (doubleBar) {
+        if (doubleHeavy) {
+            staveCtx.fillRect(x - 5, topY, 3, botY - topY);
+            staveCtx.fillRect(x, topY, 3, botY - topY);
+        }
+        else if (doubleBar) {
             staveCtx.fillRect(x - 3, topY, 1, botY - topY);
         }
         staveCtx.fillRect(x, topY, 1, botY - topY);
@@ -19492,6 +19604,7 @@ class StaveNote extends _stemmablenote__WEBPACK_IMPORTED_MODULE_7__.StemmableNot
         this.renderOptions = Object.assign(Object.assign({}, this.renderOptions), { 
             // number of stroke px to the left and right of head
             strokePx: noteStruct.strokePx || StaveNote.LEDGER_LINE_OFFSET });
+        this.paddingRight = 0;
         this.calculateKeyProps();
         this.buildStem();
         // Set the stem direction
@@ -19655,7 +19768,7 @@ class StaveNote extends _stemmablenote__WEBPACK_IMPORTED_MODULE_7__.StemmableNot
     }
     // Get the `BoundingBox` for the entire note
     getBoundingBox() {
-        const boundingBox = new _boundingbox__WEBPACK_IMPORTED_MODULE_0__.BoundingBox(this.getAbsoluteX(), this.ys[0], 0, 0);
+        const boundingBox = new _boundingbox__WEBPACK_IMPORTED_MODULE_0__.BoundingBox(this.getAbsoluteX() - this.paddingRight, this.ys[0], 0, 0);
         this._noteHeads.forEach((notehead) => {
             boundingBox.mergeWith(notehead.getBoundingBox());
         });
@@ -19911,7 +20024,7 @@ class StaveNote extends _stemmablenote__WEBPACK_IMPORTED_MODULE_7__.StemmableNot
                 noteHeadPadding = StaveNote.minNoteheadPadding;
             }
         }
-        let width = this.getGlyphWidth() + this.leftDisplacedHeadPx + this.rightDisplacedHeadPx + noteHeadPadding;
+        let width = this.getGlyphWidth() + this.leftDisplacedHeadPx + this.rightDisplacedHeadPx + noteHeadPadding + this.paddingRight;
         // For upward flagged notes, the width of the flag needs to be added
         if (this.shouldDrawFlag() && this.stemDirection === _stem__WEBPACK_IMPORTED_MODULE_6__.Stem.UP) {
             width += this.getGlyphWidth();
@@ -20167,7 +20280,23 @@ class StaveNote extends _stemmablenote__WEBPACK_IMPORTED_MODULE_7__.StemmableNot
         L('Rendering ', this.isChord() ? 'chord :' : 'note :', this.keys);
         // Apply the overall style -- may be contradicted by local settings:
         ctx.openGroup('stavenote', this.getAttribute('id'));
+        // Save notehead styles and rebuild heads (e.g., slash noteheads)
+        const noteHeadStyles = this._noteHeads.map((head) => head.getStyle());
+        this.buildNoteHeads();
+        this._noteHeads.forEach((noteHead, index) => {
+            const style = noteHeadStyles[index];
+            if (style)
+                noteHead.setStyle(style);
+        });
+        const { highestLine, lowestLine } = this.getNoteHeadBounds();
+        const ledgerLinesDrawn = highestLine >= 6 || lowestLine <= 0;
+        if (ledgerLinesDrawn) {
+            ctx.openGroup('ledgers', this.getAttribute('id') + 'ledgers');
+        }
         this.drawLedgerLines();
+        if (ledgerLinesDrawn) {
+            ctx.closeGroup();
+        }
         if (shouldRenderStem)
             this.drawStem();
         this.drawNoteHeads();
@@ -20299,9 +20428,26 @@ class Repetition extends _stavemodifier__WEBPACK_IMPORTED_MODULE_2__.StaveModifi
             case Repetition.type.DS:
             case Repetition.type.DS_AL_FINE:
             case Repetition.type.FINE:
-            default:
                 textX =
                     x - (stave.getNoteStartX() - this.x) + stave.getWidth() - this.width - _metrics__WEBPACK_IMPORTED_MODULE_1__.Metrics.get('Repetition.text.offsetX');
+                break;
+            case Repetition.type.DC_AL_CODA:
+            case Repetition.type.DS_AL_CODA:
+                textX =
+                    x -
+                        (stave.getNoteStartX() - this.x) +
+                        stave.getWidth() -
+                        this.width -
+                        _metrics__WEBPACK_IMPORTED_MODULE_1__.Metrics.get('Repetition.text.offsetX') -
+                        12 -
+                        stave.options.verticalBarWidth -
+                        12;
+                break;
+            default:
+                // Fallback for other types at the right side.
+                textX =
+                    x - (stave.getNoteStartX() - this.x) + stave.getWidth() - this.width - _metrics__WEBPACK_IMPORTED_MODULE_1__.Metrics.get('Repetition.text.offsetX');
+                break;
         }
         const y = stave.getYForTopText(stave.getNumLines()) + _metrics__WEBPACK_IMPORTED_MODULE_1__.Metrics.get('Repetition.text.offsetY');
         this.renderText(ctx, textX, y);
@@ -20368,7 +20514,14 @@ class StaveSection extends _stavemodifier__WEBPACK_IMPORTED_MODULE_1__.StaveModi
         this.x = stave.getX() + stave.getModifierXShift(this.getPosition());
         const headroom = -1 * this.textMetrics.actualBoundingBoxDescent;
         const width = this.width + 2 * this.padding; // add left & right padding
-        const height = this.height + 2 * this.padding; // add top & bottom padding
+        let textHeight = this.height;
+        if (!textHeight && this.textMetrics.emHeightAscent >= 0) {
+            textHeight = this.textMetrics.emHeightAscent + 2;
+        }
+        if (!textHeight) {
+            textHeight = this.textMetrics.fontBoundingBoxAscent + 3;
+        }
+        const height = textHeight + 2 * this.padding; // add top & bottom padding
         //  Seems to be a good default y
         const y = stave.getYForTopText(1.5) + this.yShift;
         const x = this.x + this.xShift;
@@ -20458,11 +20611,12 @@ class StaveTempo extends _stavemodifier__WEBPACK_IMPORTED_MODULE_3__.StaveModifi
         const shiftX = stave.getModifierXShift(this.getPosition());
         const ctx = stave.checkContext();
         this.setRendered();
-        const { name, duration, dots, bpm, duration2, dots2, parenthesis } = this.tempo;
+        const { name, duration, dots, bpm, duration2, dots2, parenthesis, noteEquation } = this.tempo;
         let x = this.x + shiftX;
         const y = stave.getYForTopText(1);
         const el = new _element__WEBPACK_IMPORTED_MODULE_0__.Element('StaveTempo.glyph');
         const elText = new _element__WEBPACK_IMPORTED_MODULE_0__.Element('StaveTempo');
+        ctx.openGroup('stavetempo');
         if (name) {
             this.text = name;
             this.fontInfo = _metrics__WEBPACK_IMPORTED_MODULE_2__.Metrics.getFontInfo('StaveTempo.name');
@@ -20503,15 +20657,54 @@ class StaveTempo extends _stavemodifier__WEBPACK_IMPORTED_MODULE_3__.StaveModifi
                 }
             }
             else if (bpm) {
+                ctx.openGroup('bpm');
                 elText.setText('' + bpm);
                 elText.renderText(ctx, x + this.xShift, y + this.yShift);
                 x += elText.getWidth() + 3;
+                ctx.closeGroup();
             }
             if (name || parenthesis) {
                 elText.setText(')');
                 elText.renderText(ctx, x + this.xShift, y + this.yShift);
             }
         }
+        if (noteEquation) {
+            x = this.drawNoteEquation(ctx, x, y, 1, noteEquation);
+        }
+        ctx.closeGroup();
+    }
+    drawNoteEquation(ctx, x, y, scale, noteEquation) {
+        const elText = new _element__WEBPACK_IMPORTED_MODULE_0__.Element('StaveTempo');
+        for (let i = 0; i < noteEquation.length; i++) {
+            if (i > 0) {
+                elText.setText('=');
+                elText.renderText(ctx, x + this.xShift, y + this.yShift);
+                x += elText.getWidth() + 3;
+            }
+            x = this.drawNoteGroup(ctx, x, y, scale, noteEquation[i]);
+        }
+        return x;
+    }
+    drawNoteGroup(ctx, x, y, scale, noteGroup) {
+        const el = new _element__WEBPACK_IMPORTED_MODULE_0__.Element('StaveTempo.glyph');
+        el.setText(this.durationToCode[noteGroup.duration]);
+        el.renderText(ctx, x + this.xShift, y + this.yShift);
+        x += el.getWidth() + 3;
+        if (noteGroup.dots) {
+            el.setText(_glyphs__WEBPACK_IMPORTED_MODULE_1__.Glyphs.metAugmentationDot);
+            for (let i = 0; i < noteGroup.dots; i++) {
+                el.renderText(ctx, x + this.xShift, y + 2 + this.yShift);
+                x += el.getWidth() + 3;
+            }
+        }
+        if (noteGroup.tupletNum) {
+            const tupletEl = new _element__WEBPACK_IMPORTED_MODULE_0__.Element('StaveTempo');
+            tupletEl.setText(`${noteGroup.tupletNum}`);
+            const tupletY = y - 30;
+            const tupletX = x - 3 - el.getWidth() / 2 - tupletEl.getWidth() / 2;
+            tupletEl.renderText(ctx, tupletX + this.xShift, tupletY + this.yShift);
+        }
+        return x;
     }
 }
 
@@ -22081,7 +22274,11 @@ class SVGContext extends _rendercontext__WEBPACK_IMPORTED_MODULE_3__.RenderConte
             height *= -1;
         }
         const rectangle = this.create('rect');
-        attributes = attributes !== null && attributes !== void 0 ? attributes : { fill: 'none', 'stroke-width': this.attributes['stroke-width'], stroke: 'black' };
+        attributes = attributes !== null && attributes !== void 0 ? attributes : {
+            fill: 'none',
+            'stroke-width': this.attributes['stroke-width'],
+            stroke: this.attributes.stroke,
+        };
         x = this.round(x);
         y = this.round(y);
         width = this.round(width);
@@ -22985,6 +23182,28 @@ class Tables {
         }
         return ticks;
     }
+    static tabToGlyph(fret, scale = 1.0, useAlternativeXGlyph = false) {
+        let glyph = null;
+        let width = 0;
+        let shift_y = 0;
+        if (fret.toString().toUpperCase() === 'X') {
+            glyph = _glyphs__WEBPACK_IMPORTED_MODULE_1__.Glyphs.accidentalDoubleSharp;
+            if (useAlternativeXGlyph) {
+                glyph = _glyphs__WEBPACK_IMPORTED_MODULE_1__.Glyphs.noteheadXBlack;
+            }
+            width = Tables.textWidth('X');
+            shift_y = 0;
+        }
+        else {
+            width = Tables.textWidth(fret.toString());
+        }
+        return {
+            text: fret,
+            code: glyph,
+            getWidth: () => width * scale,
+            shift_y,
+        };
+    }
     static codeNoteHead(type, duration) {
         switch (type) {
             /* Diamond */
@@ -23634,7 +23853,17 @@ class TabNote extends _stemmablenote__WEBPACK_IMPORTED_MODULE_5__.StemmableNote 
             // Center the fret text beneath the stem
             const tabX = x - el.getWidth() / 2;
             // FIXME: Magic numbers.
-            ctx.clearRect(tabX - 2, y - 3, el.getWidth() + 4, 6);
+            if (this.BackgroundColor) {
+                ctx.save();
+                ctx.setFillStyle(this.BackgroundColor);
+                ctx.setLineWidth(0);
+                // FIXME: Magic numbers.
+                ctx.fillRect(tabX - 2, y - 3, el.getWidth() + 4, 6);
+                ctx.restore();
+            }
+            else {
+                ctx.clearRect(tabX - 2, y - 3, el.getWidth() + 4, 6);
+            }
             el.renderText(ctx, tabX, y);
         }
     }
@@ -24008,7 +24237,7 @@ class TextBracket extends _element__WEBPACK_IMPORTED_MODULE_0__.Element {
         // Setup initial coordinates for the bracket line
         let startX = start.x;
         let lineY = superY;
-        const endX = stop.x + this.stop.getGlyphWidth();
+        let endX = stop.x + this.stop.getGlyphWidth();
         // Adjust x and y coordinates based on position
         if (this.position === TextBracketPosition.TOP) {
             startX += mainWidth + superWidth + 5;
@@ -24020,6 +24249,13 @@ class TextBracket extends _element__WEBPACK_IMPORTED_MODULE_0__.Element {
             if (!this.renderOptions.underlineSuperscript) {
                 startX += superWidth;
             }
+        }
+        // Guard against bracket going backward / overlapping text
+        if (endX < startX + 5 && this.position === TextBracketPosition.TOP) {
+            endX = startX + 5;
+        }
+        else if (endX < startX + superWidth && this.position === TextBracketPosition.BOTTOM) {
+            endX = startX + superWidth;
         }
         if (this.renderOptions.dashed) {
             // Main line
@@ -25160,6 +25396,8 @@ class Tremolo extends _modifier__WEBPACK_IMPORTED_MODULE_2__.Modifier {
         this.num = num;
         this.position = _modifier__WEBPACK_IMPORTED_MODULE_2__.Modifier.Position.CENTER;
         this.text = _glyphs__WEBPACK_IMPORTED_MODULE_0__.Glyphs.tremolo1;
+        this.y_spacing_scale = 1;
+        this.extra_stroke_scale = 1;
     }
     /** Draw the tremolo on the rendering context. */
     draw() {
@@ -25167,8 +25405,11 @@ class Tremolo extends _modifier__WEBPACK_IMPORTED_MODULE_2__.Modifier {
         const note = this.checkAttachedNote();
         this.setRendered();
         const stemDirection = note.getStemDirection();
-        const scale = note.getFontScale();
-        const ySpacing = _metrics__WEBPACK_IMPORTED_MODULE_1__.Metrics.get(`Tremolo.spacing`) * stemDirection * scale;
+        let scale = note.getFontScale();
+        if (this.extra_stroke_scale !== 1) {
+            scale *= this.extra_stroke_scale;
+        }
+        const ySpacing = _metrics__WEBPACK_IMPORTED_MODULE_1__.Metrics.get(`Tremolo.spacing`) * stemDirection * scale * this.y_spacing_scale;
         const x = note.getAbsoluteX() + (stemDirection === _stem__WEBPACK_IMPORTED_MODULE_3__.Stem.UP ? note.getGlyphWidth() - _stem__WEBPACK_IMPORTED_MODULE_3__.Stem.WIDTH / 2 : _stem__WEBPACK_IMPORTED_MODULE_3__.Stem.WIDTH / 2);
         let y = note.getStemExtents().topY + (this.num <= 3 ? ySpacing : 0);
         this.fontInfo.size = _metrics__WEBPACK_IMPORTED_MODULE_1__.Metrics.get(`Tremolo.fontSize`) * scale;
@@ -25371,6 +25612,7 @@ class Tuplet extends _element__WEBPACK_IMPORTED_MODULE_0__.Element {
         const location = options.location || Tuplet.LOCATION_TOP;
         const yOffset = options.yOffset || _metrics__WEBPACK_IMPORTED_MODULE_3__.Metrics.get('Tuplet.yOffset');
         const textYOffset = options.textYOffset || _metrics__WEBPACK_IMPORTED_MODULE_3__.Metrics.get('Tuplet.textYOffset');
+        const renderTupletNumber = options.renderTupletNumber !== undefined ? options.renderTupletNumber : true;
         this.options = {
             bracketed,
             location,
@@ -25379,7 +25621,9 @@ class Tuplet extends _element__WEBPACK_IMPORTED_MODULE_0__.Element {
             ratioed,
             yOffset,
             textYOffset,
+            renderTupletNumber,
         };
+        this.RenderTupletNumber = renderTupletNumber;
         this.textElement = new _element__WEBPACK_IMPORTED_MODULE_0__.Element('Tuplet');
         this.setTupletLocation(location || Tuplet.LOCATION_TOP);
         _formatter__WEBPACK_IMPORTED_MODULE_1__.Formatter.AlignRestsToNotes(notes, true, true);
@@ -25568,7 +25812,9 @@ class Tuplet extends _element__WEBPACK_IMPORTED_MODULE_0__.Element {
             }
         }
         // draw text
-        this.textElement.renderText(ctx, notationStartX, yPos + this.textElement.getHeight() / 2 + (location === Tuplet.LOCATION_TOP ? -1 : 1) * textYOffset);
+        if (this.RenderTupletNumber !== false) {
+            this.textElement.renderText(ctx, notationStartX, yPos + this.textElement.getHeight() / 2 + (location === Tuplet.LOCATION_TOP ? -1 : 1) * textYOffset);
+        }
         // Set up an interactive bounding box and finalize the tuplet rendering
         const bb = this.getBoundingBox();
         ctx.pointerRect(bb.getX(), bb.getY(), bb.getW(), bb.getH());
@@ -26490,6 +26736,7 @@ class VibratoBracket extends _element__WEBPACK_IMPORTED_MODULE_0__.Element {
             this.start = bracketData.start;
         if (bracketData.stop)
             this.stop = bracketData.stop;
+        this.toEndOfStopStave = bracketData.toEndOfStopStave;
         this.line = 1;
     }
     /** Set line position of the vibrato bracket. */
@@ -26506,6 +26753,17 @@ class VibratoBracket extends _element__WEBPACK_IMPORTED_MODULE_0__.Element {
     draw() {
         const ctx = this.checkContext();
         this.setRendered();
+        // Check for trill modifier on stop note to allow space
+        let trillOffset = 0;
+        if (this.stop) {
+            const modifiers = this.stop.getModifiers();
+            for (let i = 0; i < modifiers.length; i++) {
+                const modifier = modifiers[i];
+                if (modifier.getCategory() === _typeguard__WEBPACK_IMPORTED_MODULE_1__.Category.Ornament && modifier.type === 'tr') {
+                    trillOffset = modifier.getWidth();
+                }
+            }
+        }
         const y = (this.start && this.start.checkStave().getYForTopText(this.line)) ||
             (this.stop && this.stop.checkStave().getYForTopText(this.line)) ||
             0;
@@ -26514,10 +26772,13 @@ class VibratoBracket extends _element__WEBPACK_IMPORTED_MODULE_0__.Element {
         const startX = (this.start && this.start.getAbsoluteX()) || (this.stop && this.stop.checkStave().getTieStartX()) || 0;
         // If stop note is not set then vibrato will be drawn
         // until the end of the stave
-        const stopX = (this.stop && this.stop.getAbsoluteX() - this.stop.getWidth() - 5) ||
+        const stopX = (this.stop &&
+            (this.toEndOfStopStave
+                ? this.stop.getAbsoluteX() + this.stop.getWidth()
+                : this.stop.getAbsoluteX() - this.stop.getWidth() - 5)) ||
             (this.start && this.start.checkStave().getTieEndX() - 10) ||
             0;
-        this.vibrato.setVibratoWidth(stopX - startX);
+        this.vibrato.setVibratoWidth(stopX - startX + trillOffset);
         L('Rendering VibratoBracket: startX:', startX, 'stopX:', stopX, 'y:', y);
         this.vibrato.renderText(ctx, startX, y);
     }

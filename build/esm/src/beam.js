@@ -599,8 +599,8 @@ export class Beam extends Element {
                     ctx.beginPath();
                     ctx.moveTo(startBeamX, startBeamY);
                     ctx.lineTo(startBeamX, startBeamY + beamThickness);
-                    ctx.lineTo(lastBeamX + 1, lastBeamY + beamThickness);
-                    ctx.lineTo(lastBeamX + 1, lastBeamY);
+                    ctx.lineTo(lastBeamX + Stem.WIDTH, lastBeamY + beamThickness);
+                    ctx.lineTo(lastBeamX + Stem.WIDTH, lastBeamY);
                     ctx.closePath();
                     ctx.fill();
                 }
@@ -617,6 +617,12 @@ export class Beam extends Element {
     postFormat() {
         if (this.postFormatted)
             return;
+        for (const note of this.notes) {
+            const stem = note.getStem();
+            if (stem) {
+                stem.setExtension(note.getStemExtension());
+            }
+        }
         if (isTabNote(this.notes[0]) || this.renderOptions.flatBeams) {
             this.calculateFlatSlope();
         }

@@ -55,6 +55,7 @@ export declare class StaveNote extends StemmableNote {
     protected dotShiftY: number;
     protected useDefaultHeadX: boolean;
     protected ledgerLineStyle: ElementStyle;
+    protected paddingRight: number;
     private _noteHeads;
     private sortedKeyProps;
     constructor(noteStruct: StaveNoteStruct);
