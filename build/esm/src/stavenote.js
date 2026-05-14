@@ -827,10 +827,9 @@ export class StaveNote extends StemmableNote {
         ctx.openGroup('stavenote', this.getAttribute('id'));
         const noteHeadStyles = this._noteHeads.map((head) => head.getStyle());
         this.buildNoteHeads();
-        const stave = this.getStave();
         this._noteHeads.forEach((noteHead) => {
             noteHead.setX(xBegin);
-            if (stave) noteHead.setStave(stave);
+            if (this.stave) noteHead.setStave(this.stave);
         });
         this._noteHeads.forEach((noteHead, index) => {
             const style = noteHeadStyles[index];
