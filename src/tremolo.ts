@@ -15,6 +15,8 @@ export class Tremolo extends Modifier {
   }
 
   protected readonly num: number;
+  protected y_spacing_scale: number;
+  protected extra_stroke_scale: number;
 
   /**
    * @param num number of bars
@@ -25,6 +27,8 @@ export class Tremolo extends Modifier {
     this.num = num;
     this.position = Modifier.Position.CENTER;
     this.text = Glyphs.tremolo1;
+    this.y_spacing_scale = 1;
+    this.extra_stroke_scale = 1;
   }
 
   /** Draw the tremolo on the rendering context. */
@@ -34,8 +38,11 @@ export class Tremolo extends Modifier {
     this.setRendered();
 
     const stemDirection = note.getStemDirection();
-    const scale = note.getFontScale();
-    const ySpacing = Metrics.get(`Tremolo.spacing`) * stemDirection * scale;
+    let scale = note.getFontScale();
+    if (this.extra_stroke_scale !== 1) {
+      scale *= this.extra_stroke_scale;
+    }
+    const ySpacing = Metrics.get(`Tremolo.spacing`) * stemDirection * scale * this.y_spacing_scale;
 
     const x =
       note.getAbsoluteX() + (stemDirection === Stem.UP ? note.getGlyphWidth() - Stem.WIDTH / 2 : Stem.WIDTH / 2);

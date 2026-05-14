@@ -25,6 +25,8 @@ export interface NoteHeadStruct extends NoteStruct {
   x?: number;
   y?: number;
   index?: number;
+  stem_up_y_shift?: number;
+  stem_down_y_shift?: number;
 }
 
 /**
@@ -48,6 +50,8 @@ export class NoteHead extends Note {
   protected line: number;
   protected index?: number;
   protected slashed: boolean;
+  protected stem_up_y_shift: number = 0;
+  protected stem_down_y_shift: number = 0;
 
   // map notehead SMuFL codes to the corresponding SMuFL code with ledger line
   protected ledger: Record<string, string> = {
@@ -87,6 +91,8 @@ export class NoteHead extends Note {
 
     this.setStyle(noteStruct.style ?? {});
     this.slashed = noteStruct.slashed || false;
+    this.stem_up_y_shift = noteStruct.stem_up_y_shift || 0;
+    this.stem_down_y_shift = noteStruct.stem_down_y_shift || 0;
 
     this.renderOptions = {
       ...this.renderOptions,
@@ -155,7 +161,14 @@ export class NoteHead extends Note {
 
     L("Drawing note head '", this.noteType, this.duration, "' at", this.x, this.y);
     this.x = this.getAbsoluteX();
+    const savedYShift = this.yShift;
+    if (this.stemDirection === Stem.UP) {
+      this.yShift += this.stem_up_y_shift;
+    } else if (this.stemDirection === Stem.DOWN) {
+      this.yShift += this.stem_down_y_shift;
+    }
     this.renderText(ctx, 0, 0);
+    this.yShift = savedYShift;
     (this.parent as StaveNote)?.drawModifiers(this);
     ctx.closeGroup();
   }

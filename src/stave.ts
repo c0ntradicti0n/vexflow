@@ -612,13 +612,24 @@ export class Stave extends Element {
       width = modifier.getWidth();
 
       x += padding;
-      modifier.setX(x);
+      if (isNaN(width)) {
+        modifier.setWidth(10);
+        width = 10;
+      }
+      const modifierX = modifier.getX();
+      if (modifierX > x) {
+        x = modifierX;
+      } else {
+        modifier.setX(x);
+      }
       x += width;
 
       if (padding + width === 0) offset--;
     }
 
-    this.startX = x;
+    if (x > this.startX) {
+      this.startX = x;
+    }
     x = this.x + this.width;
 
     const widths = {

@@ -11,6 +11,7 @@ import { Stave } from './stave';
 import { Stem } from './stem';
 import { StemmableNote } from './stemmablenote';
 import { Tables } from './tables';
+import { TickContext } from './tickcontext';
 import { Category, isGraceNote, isStaveNote, isStemmableNote, isTabNote } from './typeguard';
 import { log, RuntimeError } from './util';
 
@@ -180,6 +181,7 @@ export class Articulation extends Modifier {
   protected articulation: ArticulationStruct;
 
   protected heightShift = 0;
+  protected breathMarkDistance: number = 0.8;
   /**
    * FIXME:
    * Most of the complex formatting logic (ie: snapping to space) is
@@ -308,7 +310,12 @@ export class Articulation extends Modifier {
     }
 
     this.articulation = { betweenLines: false };
+    this.breathMarkDistance = 0.8;
     this.reset();
+    if (this.type === 'abr') {
+      this.articulation = { code: 'v6c', betweenLines: false };
+      this.text = 'v6c';
+    }
   }
 
   protected reset(): void {
@@ -345,7 +352,26 @@ export class Articulation extends Modifier {
     const isTab = isTabNote(note);
 
     // Articulations are centered over/under the note head.
-    const { x } = note.getModifierStartXY(position, index);
+    let { x } = note.getModifierStartXY(position, index);
+    // Breath mark support: shift x toward the next note
+    if (this.type === 'abr') {
+      const noteTickContext = note.getTickContext();
+      if (noteTickContext) {
+        const nextContext = TickContext.getNextContext(noteTickContext);
+        if (nextContext && nextContext.getX() > noteTickContext.getX()) {
+          x += (nextContext.getX() - noteTickContext.getX()) * this.breathMarkDistance;
+        } else {
+          const breathStave = note.getStave();
+          if (breathStave) {
+            x += (breathStave.getX() + breathStave.getWidth() - x) * this.breathMarkDistance;
+          }
+        }
+      }
+    }
+    const xShift = this.getXShift();
+    if (xShift) {
+      x += xShift;
+    }
     const shouldSitOutsideStaff = !canSitBetweenLines || isTab;
 
     const initialOffset = getInitialOffset(note, position);
@@ -373,6 +399,11 @@ export class Articulation extends Modifier {
       if (isWithinLines(snappedLine, position)) this.setOrigin(0.5, 0.5);
 
       y += Math.abs(snappedLine - articLine) * staffSpace * offsetDirection;
+    }
+
+    // Respect modifier.y_shift
+    if (this.yShift) {
+      y += this.yShift;
     }
 
     L(`Rendering articulation at (x: ${x}, y: ${y})`);

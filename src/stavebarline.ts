@@ -15,6 +15,7 @@ export enum BarlineType {
   REPEAT_END = 5,
   REPEAT_BOTH = 6,
   NONE = 7,
+  DOUBLE_HEAVY = 8,
 }
 
 export class Barline extends StaveModifier {
@@ -42,6 +43,7 @@ export class Barline extends StaveModifier {
       repeatEnd: BarlineType.REPEAT_END,
       repeatBoth: BarlineType.REPEAT_BOTH,
       none: BarlineType.NONE,
+      doubleHeavy: BarlineType.DOUBLE_HEAVY,
     };
   }
 
@@ -58,6 +60,7 @@ export class Barline extends StaveModifier {
     this.widths[TYPE.REPEAT_END] = 5;
     this.widths[TYPE.REPEAT_BOTH] = 5;
     this.widths[TYPE.NONE] = 5;
+    this.widths[TYPE.DOUBLE_HEAVY] = 5;
 
     this.paddings = {};
     this.paddings[TYPE.SINGLE] = 0;
@@ -67,6 +70,7 @@ export class Barline extends StaveModifier {
     this.paddings[TYPE.REPEAT_END] = 15;
     this.paddings[TYPE.REPEAT_BOTH] = 15;
     this.paddings[TYPE.NONE] = 0;
+    this.paddings[TYPE.DOUBLE_HEAVY] = 0;
 
     this.layoutMetricsMap = {};
     this.layoutMetricsMap[TYPE.SINGLE] = {
@@ -108,6 +112,12 @@ export class Barline extends StaveModifier {
     this.layoutMetricsMap[TYPE.NONE] = {
       xMin: 0,
       xMax: 0,
+      paddingLeft: 5,
+      paddingRight: 5,
+    };
+    this.layoutMetricsMap[TYPE.DOUBLE_HEAVY] = {
+      xMin: -5,
+      xMax: 3,
       paddingLeft: 5,
       paddingRight: 5,
     };
@@ -161,6 +171,9 @@ export class Barline extends StaveModifier {
         this.drawRepeatBar(stave, this.x, false);
         this.drawRepeatBar(stave, this.x, true);
         break;
+      case BarlineType.DOUBLE_HEAVY:
+        this.drawVerticalBar(stave, this.x, false, true);
+        break;
       default:
         // Default is NONE, so nothing to draw
         break;
@@ -168,11 +181,14 @@ export class Barline extends StaveModifier {
     ctx.closeGroup();
   }
 
-  drawVerticalBar(stave: Stave, x: number, doubleBar?: boolean): void {
+  drawVerticalBar(stave: Stave, x: number, doubleBar?: boolean, doubleHeavy?: boolean): void {
     const staveCtx = stave.checkContext();
     const topY = stave.getTopLineTopY();
     const botY = stave.getBottomLineBottomY();
-    if (doubleBar) {
+    if (doubleHeavy) {
+      staveCtx.fillRect(x - 5, topY, 3, botY - topY);
+      staveCtx.fillRect(x, topY, 3, botY - topY);
+    } else if (doubleBar) {
       staveCtx.fillRect(x - 3, topY, 1, botY - topY);
     }
     staveCtx.fillRect(x, topY, 1, botY - topY);

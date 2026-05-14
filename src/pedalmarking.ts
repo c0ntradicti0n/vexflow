@@ -4,6 +4,7 @@
 import { Element } from './element';
 import { Glyphs } from './glyphs';
 import { Metrics } from './metrics';
+import { Stave } from './stave';
 import { StaveNote } from './stavenote';
 import { Category } from './typeguard';
 import { log, RuntimeError } from './util';
@@ -40,6 +41,11 @@ export class PedalMarking extends Element {
     bracketLineWidth: number;
   };
   protected notes: StaveNote[];
+  protected endStave: Stave | null;
+  protected endStaveAddedWidth: number;
+  protected startMargin: number;
+  protected endMargin: number;
+  public EndsStave: boolean;
 
   /** Glyph data */
   static readonly GLYPHS: Record<string, string> = {
@@ -52,6 +58,10 @@ export class PedalMarking extends Element {
     TEXT: 1,
     BRACKET: 2,
     MIXED: 3,
+    MIXED_OPEN_END: 4,
+    BRACKET_OPEN_BEGIN: 5,
+    BRACKET_OPEN_END: 6,
+    BRACKET_OPEN_BOTH: 7,
   };
 
   /** Pedal type as string. */
@@ -59,6 +69,10 @@ export class PedalMarking extends Element {
     text: PedalMarking.type.TEXT,
     bracket: PedalMarking.type.BRACKET,
     mixed: PedalMarking.type.MIXED,
+    mixed_open_end: PedalMarking.type.MIXED_OPEN_END,
+    bracket_open_begin: PedalMarking.type.BRACKET_OPEN_BEGIN,
+    bracket_open_end: PedalMarking.type.BRACKET_OPEN_END,
+    bracket_open_both: PedalMarking.type.BRACKET_OPEN_BOTH,
   };
 
   /**
@@ -103,6 +117,12 @@ export class PedalMarking extends Element {
       bracketLineWidth: 1,
       color: 'black',
     };
+
+    this.EndsStave = false;
+    this.endStave = null;
+    this.endStaveAddedWidth = 0;
+    this.startMargin = 0;
+    this.endMargin = 0;
   }
 
   /** Set pedal type. */
@@ -129,6 +149,16 @@ export class PedalMarking extends Element {
   /** Set the staff line to render the markings on. */
   setLine(line: number): this {
     this.line = line;
+    return this;
+  }
+
+  /** Set the end stave for pedal markings that extend to the end of a stave. */
+  setEndStave(stave: Stave): this {
+    this.endStave = stave;
+    this.endStaveAddedWidth = 0;
+    this.startMargin = 0;
+    this.endMargin = 0;
+    this.EndsStave = true;
     return this;
   }
 

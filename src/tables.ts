@@ -574,6 +574,34 @@ export class Tables {
     return ticks;
   }
 
+  static tabToGlyph(
+    fret: string | number,
+    scale: number = 1.0,
+    useAlternativeXGlyph: boolean = false
+  ): { text: string | number; code: string | null; getWidth: () => number; shift_y: number } {
+    let glyph: string | null = null;
+    let width: number = 0;
+    let shift_y: number = 0;
+
+    if (fret.toString().toUpperCase() === 'X') {
+      glyph = Glyphs.accidentalDoubleSharp;
+      if (useAlternativeXGlyph) {
+        glyph = Glyphs.noteheadXBlack;
+      }
+      width = Tables.textWidth('X');
+      shift_y = 0;
+    } else {
+      width = Tables.textWidth(fret.toString());
+    }
+
+    return {
+      text: fret,
+      code: glyph,
+      getWidth: () => width * scale,
+      shift_y,
+    };
+  }
+
   static codeNoteHead(type: string, duration: string): string {
     switch (type) {
       /* Diamond */

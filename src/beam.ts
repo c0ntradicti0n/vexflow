@@ -944,8 +944,8 @@ export class Beam extends Element {
           ctx.beginPath();
           ctx.moveTo(startBeamX, startBeamY);
           ctx.lineTo(startBeamX, startBeamY + beamThickness);
-          ctx.lineTo(lastBeamX + 1, lastBeamY + beamThickness);
-          ctx.lineTo(lastBeamX + 1, lastBeamY);
+          ctx.lineTo(lastBeamX + Stem.WIDTH, lastBeamY + beamThickness);
+          ctx.lineTo(lastBeamX + Stem.WIDTH, lastBeamY);
           ctx.closePath();
           ctx.fill();
         } else {
@@ -969,6 +969,16 @@ export class Beam extends Element {
    */
   postFormat(): void {
     if (this.postFormatted) return;
+
+    // Reset stem extensions to base values before recalculating beams,
+    // ensuring idempotent beam rendering when beams are recreated
+    // but notes/stems are reused (extensions won't accumulate).
+    for (const note of this.notes) {
+      const stem = note.getStem();
+      if (stem) {
+        stem.setExtension(note.getStemExtension());
+      }
+    }
 
     // Calculate a smart slope if we're not forcing the beams to be flat.
     if (isTabNote(this.notes[0]) || this.renderOptions.flatBeams) {

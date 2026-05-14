@@ -35,7 +35,14 @@ export class StaveSection extends StaveModifier {
     this.x = stave.getX() + stave.getModifierXShift(this.getPosition());
     const headroom = -1 * this.textMetrics.actualBoundingBoxDescent;
     const width = this.width + 2 * this.padding; // add left & right padding
-    const height = this.height + 2 * this.padding; // add top & bottom padding
+    let textHeight = this.height;
+    if (!textHeight && this.textMetrics.emHeightAscent >= 0) {
+      textHeight = this.textMetrics.emHeightAscent + 2;
+    }
+    if (!textHeight) {
+      textHeight = this.textMetrics.fontBoundingBoxAscent + 3;
+    }
+    const height = textHeight + 2 * this.padding; // add top & bottom padding
 
     //  Seems to be a good default y
     const y = stave.getYForTopText(1.5) + this.yShift;

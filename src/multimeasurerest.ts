@@ -205,6 +205,13 @@ export class MultiMeasureRest extends Element {
       left -= begModifiers[0].getWidth();
     }
 
+    // getNoteEndX() does not include end barline width. Subtract it.
+    const endModifiers = stave.getModifiers(StaveModifierPosition.END);
+    if (endModifiers.length >= 1 && isBarline(endModifiers[0])) {
+      const barline = endModifiers[0];
+      right -= barline.getPadding();
+    }
+
     const options = this.renderOptions;
     if (this.hasPaddingLeft) {
       left = stave.getX() + options.paddingLeft;

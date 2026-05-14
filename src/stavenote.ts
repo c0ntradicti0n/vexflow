@@ -375,6 +375,7 @@ export class StaveNote extends StemmableNote {
   protected dotShiftY: number;
   protected useDefaultHeadX: boolean;
   protected ledgerLineStyle: ElementStyle;
+  protected paddingRight: number;
 
   private _noteHeads: NoteHead[];
 
@@ -412,6 +413,8 @@ export class StaveNote extends StemmableNote {
       // number of stroke px to the left and right of head
       strokePx: noteStruct.strokePx || StaveNote.LEDGER_LINE_OFFSET,
     };
+
+    this.paddingRight = 0;
 
     this.calculateKeyProps();
     this.buildStem();
@@ -595,7 +598,7 @@ export class StaveNote extends StemmableNote {
 
   // Get the `BoundingBox` for the entire note
   getBoundingBox(): BoundingBox {
-    const boundingBox = new BoundingBox(this.getAbsoluteX(), this.ys[0], 0, 0);
+    const boundingBox = new BoundingBox(this.getAbsoluteX() - this.paddingRight, this.ys[0], 0, 0);
     this._noteHeads.forEach((notehead) => {
       boundingBox.mergeWith(notehead.getBoundingBox());
     });
@@ -899,7 +902,7 @@ export class StaveNote extends StemmableNote {
       }
     }
 
-    let width = this.getGlyphWidth() + this.leftDisplacedHeadPx + this.rightDisplacedHeadPx + noteHeadPadding;
+    let width = this.getGlyphWidth() + this.leftDisplacedHeadPx + this.rightDisplacedHeadPx + noteHeadPadding + this.paddingRight;
 
     // For upward flagged notes, the width of the flag needs to be added
     if (this.shouldDrawFlag() && this.stemDirection === Stem.UP) {
@@ -1206,7 +1209,24 @@ export class StaveNote extends StemmableNote {
 
     // Apply the overall style -- may be contradicted by local settings:
     ctx.openGroup('stavenote', this.getAttribute('id'));
+
+    // Save notehead styles and rebuild heads (e.g., slash noteheads)
+    const noteHeadStyles = this._noteHeads.map((head) => head.getStyle());
+    this.buildNoteHeads();
+    this._noteHeads.forEach((noteHead, index) => {
+      const style = noteHeadStyles[index];
+      if (style) noteHead.setStyle(style);
+    });
+
+    const { highestLine, lowestLine } = this.getNoteHeadBounds();
+    const ledgerLinesDrawn = highestLine >= 6 || lowestLine <= 0;
+    if (ledgerLinesDrawn) {
+      ctx.openGroup('ledgers', this.getAttribute('id') + 'ledgers');
+    }
     this.drawLedgerLines();
+    if (ledgerLinesDrawn) {
+      ctx.closeGroup();
+    }
     if (shouldRenderStem) this.drawStem();
     this.drawNoteHeads();
     this.drawFlag();

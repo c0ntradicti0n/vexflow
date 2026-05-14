@@ -134,9 +134,19 @@ export class Repetition extends StaveModifier {
       case Repetition.type.DS:
       case Repetition.type.DS_AL_FINE:
       case Repetition.type.FINE:
-      default:
         textX =
           x - (stave.getNoteStartX() - this.x) + stave.getWidth() - this.width - Metrics.get('Repetition.text.offsetX');
+        break;
+      case Repetition.type.DC_AL_CODA:
+      case Repetition.type.DS_AL_CODA:
+        textX =
+          x - (stave.getNoteStartX() - this.x) + stave.getWidth() - this.width - Metrics.get('Repetition.text.offsetX') - 12 - stave.options.verticalBarWidth - 12;
+        break;
+      default:
+        // Fallback for other types at the right side.
+        textX =
+          x - (stave.getNoteStartX() - this.x) + stave.getWidth() - this.width - Metrics.get('Repetition.text.offsetX');
+        break;
     }
 
     const y = stave.getYForTopText(stave.getNumLines()) + Metrics.get('Repetition.text.offsetY');

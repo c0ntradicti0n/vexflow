@@ -63,6 +63,7 @@ export interface TupletOptions {
   ratioed?: boolean;
   yOffset?: number;
   textYOffset?: number;
+  renderTupletNumber?: boolean;
 }
 
 export const enum TupletLocation {
@@ -78,6 +79,7 @@ export class Tuplet extends Element {
   notes: Note[];
   protected options: Required<TupletOptions>;
   protected textElement: Element;
+  public RenderTupletNumber: boolean;
 
   static get LOCATION_TOP(): number {
     return TupletLocation.TOP;
@@ -104,6 +106,7 @@ export class Tuplet extends Element {
     const location = options.location || Tuplet.LOCATION_TOP;
     const yOffset = options.yOffset || Metrics.get('Tuplet.yOffset');
     const textYOffset = options.textYOffset || Metrics.get('Tuplet.textYOffset');
+    const renderTupletNumber = options.renderTupletNumber !== undefined ? options.renderTupletNumber : true;
     this.options = {
       bracketed,
       location,
@@ -112,7 +115,9 @@ export class Tuplet extends Element {
       ratioed,
       yOffset,
       textYOffset,
+      renderTupletNumber,
     };
+    this.RenderTupletNumber = renderTupletNumber;
     this.textElement = new Element('Tuplet');
 
     this.setTupletLocation(location || Tuplet.LOCATION_TOP);
@@ -332,11 +337,13 @@ export class Tuplet extends Element {
     }
 
     // draw text
-    this.textElement.renderText(
-      ctx,
-      notationStartX,
-      yPos + this.textElement.getHeight() / 2 + (location === Tuplet.LOCATION_TOP ? -1 : 1) * textYOffset
-    );
+    if (this.RenderTupletNumber !== false) {
+      this.textElement.renderText(
+        ctx,
+        notationStartX,
+        yPos + this.textElement.getHeight() / 2 + (location === Tuplet.LOCATION_TOP ? -1 : 1) * textYOffset
+      );
+    }
 
     // Set up an interactive bounding box and finalize the tuplet rendering
     const bb = this.getBoundingBox();

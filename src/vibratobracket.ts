@@ -3,6 +3,7 @@
 // MIT License
 
 import { Element } from './element';
+import { Modifier } from './modifier';
 import { Note } from './note';
 import { Category } from './typeguard';
 import { log } from './util';
@@ -27,17 +28,19 @@ export class VibratoBracket extends Element {
 
   protected start?: Note;
   protected stop?: Note;
+  protected toEndOfStopStave?: boolean;
 
   /**
    * Either the stop or start note must be set, or both of them.
    * An undefined value for the start or stop note indicates that the vibrato
    * is drawn from the beginning or until the end of the stave accordingly.
    */
-  constructor(bracketData: { stop?: Note | null; start?: Note | null }) {
+  constructor(bracketData: { stop?: Note | null; start?: Note | null; toEndOfStopStave?: boolean }) {
     super();
 
     if (bracketData.start) this.start = bracketData.start;
     if (bracketData.stop) this.stop = bracketData.stop;
+    this.toEndOfStopStave = bracketData.toEndOfStopStave;
 
     this.line = 1;
   }
@@ -58,6 +61,19 @@ export class VibratoBracket extends Element {
   draw(): void {
     const ctx = this.checkContext();
     this.setRendered();
+
+    // Check for trill modifier on stop note to allow space
+    let trillOffset = 0;
+    if (this.stop) {
+      const modifiers = this.stop.getModifiers();
+      for (let i = 0; i < modifiers.length; i++) {
+        const modifier = modifiers[i];
+        if (modifier.getCategory() === Category.Ornament && (modifier as Modifier & { type: string }).type === 'tr') {
+          trillOffset = modifier.getWidth();
+        }
+      }
+    }
+
     const y: number =
       (this.start && this.start.checkStave().getYForTopText(this.line)) ||
       (this.stop && this.stop.checkStave().getYForTopText(this.line)) ||
@@ -69,11 +85,14 @@ export class VibratoBracket extends Element {
     // If stop note is not set then vibrato will be drawn
     // until the end of the stave
     const stopX: number =
-      (this.stop && this.stop.getAbsoluteX() - this.stop.getWidth() - 5) ||
+      (this.stop &&
+        (this.toEndOfStopStave
+          ? this.stop.getAbsoluteX() + this.stop.getWidth()
+          : this.stop.getAbsoluteX() - this.stop.getWidth() - 5)) ||
       (this.start && this.start.checkStave().getTieEndX() - 10) ||
       0;
 
-    this.vibrato.setVibratoWidth(stopX - startX);
+    this.vibrato.setVibratoWidth(stopX - startX + trillOffset);
 
     L('Rendering VibratoBracket: startX:', startX, 'stopX:', stopX, 'y:', y);
     this.vibrato.renderText(ctx, startX, y);

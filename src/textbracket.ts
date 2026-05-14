@@ -181,7 +181,7 @@ export class TextBracket extends Element {
     // Setup initial coordinates for the bracket line
     let startX = start.x;
     let lineY = superY;
-    const endX = stop.x + this.stop.getGlyphWidth();
+    let endX = stop.x + this.stop.getGlyphWidth();
 
     // Adjust x and y coordinates based on position
     if (this.position === TextBracketPosition.TOP) {
@@ -194,6 +194,13 @@ export class TextBracket extends Element {
       if (!this.renderOptions.underlineSuperscript) {
         startX += superWidth;
       }
+    }
+
+    // Guard against bracket going backward / overlapping text
+    if (endX < startX + 5 && this.position === TextBracketPosition.TOP) {
+      endX = startX + 5;
+    } else if (endX < startX + superWidth && this.position === TextBracketPosition.BOTTOM) {
+      endX = startX + superWidth;
     }
 
     if (this.renderOptions.dashed) {
