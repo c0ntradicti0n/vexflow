@@ -1,7 +1,7 @@
-import { Bend } from './bend.js';
-import { Modifier } from './modifier.js';
-import { Tables } from './tables.js';
-import { RuntimeError } from './util.js';
+import { Bend } from './bend';
+import { Modifier } from './modifier';
+import { Tables } from './tables';
+import { RuntimeError } from './util';
 export class Vibrato extends Modifier {
     static get CATEGORY() {
         return "Vibrato";

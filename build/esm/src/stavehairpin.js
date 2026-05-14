@@ -1,6 +1,6 @@
-import { Element } from './element.js';
-import { Modifier } from './modifier.js';
-import { RuntimeError } from './util.js';
+import { Element } from './element';
+import { Modifier } from './modifier';
+import { RuntimeError } from './util';
 export class StaveHairpin extends Element {
     static get CATEGORY() {
         return "StaveHairpin";

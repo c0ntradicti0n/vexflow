@@ -1,4 +1,4 @@
-import { Modifier, ModifierPosition } from './modifier.js';
+import { Modifier, ModifierPosition } from './modifier';
 export class Parenthesis extends Modifier {
     static get CATEGORY() {
         return "Parenthesis";

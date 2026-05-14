@@ -850,10 +850,14 @@ export class StaveNote extends StemmableNote {
         this.drawNoteHeads();
         if (this._noteXmlIds) {
             const noteXmlIds = this._noteXmlIds;
+            const staveNoteId = this.getAttribute('id');
             this._noteHeads.forEach((notehead, i) => {
                 const xmlId = noteXmlIds[i];
                 if (xmlId) {
-                    const el = document.getElementById('vf-' + notehead.getAttribute('id'));
+                    const noteHeadId = notehead.getAttribute('id');
+                    const el = noteHeadId
+                        ? document.getElementById('vf-' + noteHeadId)
+                        : document.getElementById('vf-' + staveNoteId);
                     if (el)
                         el.setAttribute('data-note-id', xmlId);
                 }

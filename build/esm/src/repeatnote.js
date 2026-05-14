@@ -1,5 +1,5 @@
-import { GlyphNote } from './glyphnote.js';
-import { Glyphs } from './glyphs.js';
+import { GlyphNote } from './glyphnote';
+import { Glyphs } from './glyphs';
 const CODES = {
     '1': Glyphs.repeat1Bar,
     '2': Glyphs.repeat2Bars,

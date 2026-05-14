@@ -1,4 +1,4 @@
-import { TabNote } from './tabnote.js';
+import { TabNote } from './tabnote';
 export class GraceTabNote extends TabNote {
     static get CATEGORY() {
         return "GraceTabNote";

@@ -1,6 +1,6 @@
-import { Fraction } from './fraction.js';
-import { Glyphs } from './glyphs.js';
-import { RuntimeError } from './util.js';
+import { Fraction } from './fraction';
+import { Glyphs } from './glyphs';
+import { RuntimeError } from './util';
 const RESOLUTION = 16384;
 const durations = {
     '1/2': RESOLUTION * 2,

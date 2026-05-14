@@ -1,7 +1,7 @@
-import { Metrics } from './metrics.js';
-import { Modifier, ModifierPosition } from './modifier.js';
-import { Tables } from './tables.js';
-import { RuntimeError } from './util.js';
+import { Metrics } from './metrics';
+import { Modifier, ModifierPosition } from './modifier';
+import { Tables } from './tables';
+import { RuntimeError } from './util';
 export class FretHandFinger extends Modifier {
     static get CATEGORY() {
         return "FretHandFinger";

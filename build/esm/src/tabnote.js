@@ -1,11 +1,11 @@
-import { Element } from './element.js';
-import { Glyphs } from './glyphs.js';
-import { Modifier } from './modifier.js';
-import { Note } from './note.js';
-import { Stem } from './stem.js';
-import { StemmableNote } from './stemmablenote.js';
-import { isDot } from './typeguard.js';
-import { defined, RuntimeError } from './util.js';
+import { Element } from './element';
+import { Glyphs } from './glyphs';
+import { Modifier } from './modifier';
+import { Note } from './note';
+import { Stem } from './stem';
+import { StemmableNote } from './stemmablenote';
+import { isDot } from './typeguard';
+import { defined, RuntimeError } from './util';
 function getUnusedStringGroups(numLines, stringsUsed) {
     const stemThrough = [];
     let group = [];

@@ -1,9 +1,9 @@
-import { BoundingBox } from './boundingbox.js';
-import { Element } from './element.js';
-import { Formatter } from './formatter.js';
-import { Note } from './note.js';
-import { Stave } from './stave.js';
-import { RuntimeError } from './util.js';
+import { BoundingBox } from './boundingbox';
+import { Element } from './element';
+import { Formatter } from './formatter';
+import { Note } from './note';
+import { Stave } from './stave';
+import { RuntimeError } from './util';
 export class System extends Element {
     static get CATEGORY() {
         return "System";

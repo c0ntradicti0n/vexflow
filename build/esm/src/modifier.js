@@ -1,5 +1,5 @@
-import { Element } from './element.js';
-import { defined, RuntimeError } from './util.js';
+import { Element } from './element';
+import { defined, RuntimeError } from './util';
 export var ModifierPosition;
 (function (ModifierPosition) {
     ModifierPosition[ModifierPosition["CENTER"] = 0] = "CENTER";

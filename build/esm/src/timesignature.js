@@ -1,7 +1,7 @@
-import { Element } from './element.js';
-import { Glyphs } from './glyphs.js';
-import { StaveModifier, StaveModifierPosition } from './stavemodifier.js';
-import { RuntimeError } from './util.js';
+import { Element } from './element';
+import { Glyphs } from './glyphs';
+import { StaveModifier, StaveModifierPosition } from './stavemodifier';
+import { RuntimeError } from './util';
 const assertIsValidTimeSig = (timeSpec) => {
     const numbers = timeSpec.split('/');
     numbers.forEach((number) => {

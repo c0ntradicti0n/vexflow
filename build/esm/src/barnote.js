@@ -1,6 +1,6 @@
-import { Note } from './note.js';
-import { Barline, BarlineType } from './stavebarline.js';
-import { log } from './util.js';
+import { Note } from './note';
+import { Barline, BarlineType } from './stavebarline';
+import { log } from './util';
 function L(...args) {
     if (BarNote.DEBUG)
         log('VexFlow.BarNote', args);

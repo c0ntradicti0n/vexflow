@@ -1,5 +1,5 @@
-import { Music } from './music.js';
-import { RuntimeError } from './util.js';
+import { Music } from './music';
+import { RuntimeError } from './util';
 export class KeyManager {
     constructor(key) {
         this.music = new Music();

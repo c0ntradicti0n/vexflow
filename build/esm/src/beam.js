@@ -1,9 +1,9 @@
-import { Element } from './element.js';
-import { Fraction } from './fraction.js';
-import { Stem } from './stem.js';
-import { Tables } from './tables.js';
-import { isStaveNote, isTabNote } from './typeguard.js';
-import { RuntimeError } from './util.js';
+import { Element } from './element';
+import { Fraction } from './fraction';
+import { Stem } from './stem';
+import { Tables } from './tables';
+import { isStaveNote, isTabNote } from './typeguard';
+import { RuntimeError } from './util';
 function calculateStemDirection(notes) {
     let lineSum = 0;
     notes.forEach((note) => {

@@ -7,7 +7,7 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
         step((generator = generator.apply(thisArg, _arguments || [])).next());
     });
 };
-import { Metrics } from './metrics.js';
+import { Metrics } from './metrics';
 export var FontWeight;
 (function (FontWeight) {
     FontWeight["NORMAL"] = "normal";

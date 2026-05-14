@@ -1,4 +1,4 @@
-import { RuntimeError } from './util.js';
+import { RuntimeError } from './util';
 class Index {
     constructor() {
         this.id = {};

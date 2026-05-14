@@ -1,5 +1,5 @@
-import { StaveModifier, StaveModifierPosition } from './stavemodifier.js';
-import { Tables } from './tables.js';
+import { StaveModifier, StaveModifierPosition } from './stavemodifier';
+import { Tables } from './tables';
 export var BarlineType;
 (function (BarlineType) {
     BarlineType[BarlineType["SINGLE"] = 1] = "SINGLE";

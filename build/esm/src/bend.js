@@ -1,8 +1,8 @@
-import { Element } from './element.js';
-import { Metrics } from './metrics.js';
-import { Modifier } from './modifier.js';
-import { isTabNote } from './typeguard.js';
-import { RuntimeError } from './util.js';
+import { Element } from './element';
+import { Metrics } from './metrics';
+import { Modifier } from './modifier';
+import { isTabNote } from './typeguard';
+import { RuntimeError } from './util';
 export class Bend extends Modifier {
     static get CATEGORY() {
         return "Bend";

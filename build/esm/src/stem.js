@@ -1,7 +1,7 @@
-import { Element } from './element.js';
-import { Metrics } from './metrics.js';
-import { Tables } from './tables.js';
-import { log, RuntimeError } from './util.js';
+import { Element } from './element';
+import { Metrics } from './metrics';
+import { Tables } from './tables';
+import { log, RuntimeError } from './util';
 function L(...args) {
     if (Stem.DEBUG)
         log('VexFlow.Stem', args);

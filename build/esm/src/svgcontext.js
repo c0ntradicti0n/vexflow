@@ -1,9 +1,9 @@
-import { Element } from './element.js';
-import { Font, FontStyle, FontWeight } from './font.js';
-import { Metrics } from './metrics.js';
-import { RenderContext } from './rendercontext.js';
-import { Tables } from './tables.js';
-import { normalizeAngle, prefix, RuntimeError } from './util.js';
+import { Element } from './element';
+import { Font, FontStyle, FontWeight } from './font';
+import { Metrics } from './metrics';
+import { RenderContext } from './rendercontext';
+import { Tables } from './tables';
+import { normalizeAngle, prefix, RuntimeError } from './util';
 const ATTRIBUTES_TO_IGNORE = {
     path: {
         x: true,

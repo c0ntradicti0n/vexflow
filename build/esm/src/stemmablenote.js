@@ -1,9 +1,9 @@
-import { Flag } from './flag.js';
-import { Glyphs } from './glyphs.js';
-import { Note } from './note.js';
-import { Stem } from './stem.js';
-import { Tables } from './tables.js';
-import { RuntimeError } from './util.js';
+import { Flag } from './flag';
+import { Glyphs } from './glyphs';
+import { Note } from './note';
+import { Stem } from './stem';
+import { Tables } from './tables';
+import { RuntimeError } from './util';
 export class StemmableNote extends Note {
     static get CATEGORY() {
         return "StemmableNote";

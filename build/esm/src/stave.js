@@ -1,19 +1,19 @@
-import { BoundingBox } from './boundingbox.js';
-import { Clef } from './clef.js';
-import { Element } from './element.js';
-import { KeySignature } from './keysignature.js';
-import { Metrics } from './metrics.js';
-import { Barline, BarlineType } from './stavebarline.js';
-import { StaveModifierPosition } from './stavemodifier.js';
-import { Repetition } from './staverepetition.js';
-import { StaveSection } from './stavesection.js';
-import { StaveTempo } from './stavetempo.js';
-import { StaveText } from './stavetext.js';
-import { Volta } from './stavevolta.js';
-import { Tables } from './tables.js';
-import { TimeSignature } from './timesignature.js';
-import { isBarline } from './typeguard.js';
-import { RuntimeError } from './util.js';
+import { BoundingBox } from './boundingbox';
+import { Clef } from './clef';
+import { Element } from './element';
+import { KeySignature } from './keysignature';
+import { Metrics } from './metrics';
+import { Barline, BarlineType } from './stavebarline';
+import { StaveModifierPosition } from './stavemodifier';
+import { Repetition } from './staverepetition';
+import { StaveSection } from './stavesection';
+import { StaveTempo } from './stavetempo';
+import { StaveText } from './stavetext';
+import { Volta } from './stavevolta';
+import { Tables } from './tables';
+import { TimeSignature } from './timesignature';
+import { isBarline } from './typeguard';
+import { RuntimeError } from './util';
 const SORT_ORDER_BEG_MODIFIERS = {
     [Barline.CATEGORY]: 0,
     [Clef.CATEGORY]: 1,

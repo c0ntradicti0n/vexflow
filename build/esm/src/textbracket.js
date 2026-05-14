@@ -1,8 +1,8 @@
-import { Element } from './element.js';
-import { Font } from './font.js';
-import { Renderer } from './renderer.js';
-import { Tables } from './tables.js';
-import { log, RuntimeError } from './util.js';
+import { Element } from './element';
+import { Font } from './font';
+import { Renderer } from './renderer';
+import { Tables } from './tables';
+import { log, RuntimeError } from './util';
 function L(...args) {
     if (TextBracket.DEBUG)
         log('VexFlow.TextBracket', args);

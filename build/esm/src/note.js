@@ -1,9 +1,9 @@
-import { Glyphs } from './glyphs.js';
-import { Metrics } from './metrics.js';
-import { drawDot } from './rendercontext.js';
-import { Tables } from './tables.js';
-import { Tickable } from './tickable.js';
-import { defined, RuntimeError } from './util.js';
+import { Glyphs } from './glyphs';
+import { Metrics } from './metrics';
+import { drawDot } from './rendercontext';
+import { Tables } from './tables';
+import { Tickable } from './tickable';
+import { defined, RuntimeError } from './util';
 export class Note extends Tickable {
     static get CATEGORY() {
         return "Note";

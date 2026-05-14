@@ -1,10 +1,10 @@
-import { Element } from './element.js';
-import { Formatter } from './formatter.js';
-import { Glyphs } from './glyphs.js';
-import { Metrics } from './metrics.js';
-import { Stem } from './stem.js';
-import { Tables } from './tables.js';
-import { RuntimeError } from './util.js';
+import { Element } from './element';
+import { Formatter } from './formatter';
+import { Glyphs } from './glyphs';
+import { Metrics } from './metrics';
+import { Stem } from './stem';
+import { Tables } from './tables';
+import { RuntimeError } from './util';
 export class Tuplet extends Element {
     static get CATEGORY() {
         return "Tuplet";

@@ -1,6 +1,6 @@
-import { Glyphs } from './glyphs.js';
-import { Note } from './note.js';
-import { log, RuntimeError } from './util.js';
+import { Glyphs } from './glyphs';
+import { Note } from './note';
+import { log, RuntimeError } from './util';
 function L(...args) {
     if (TextDynamics.DEBUG)
         log('VexFlow.TextDynamics', args);

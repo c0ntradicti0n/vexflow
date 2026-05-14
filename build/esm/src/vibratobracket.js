@@ -1,6 +1,6 @@
-import { Element } from './element.js';
-import { log } from './util.js';
-import { Vibrato } from './vibrato.js';
+import { Element } from './element';
+import { log } from './util';
+import { Vibrato } from './vibrato';
 function L(...args) {
     if (VibratoBracket.DEBUG)
         log('VexFlow.VibratoBracket', args);

@@ -1,7 +1,7 @@
-import { Glyphs } from './glyphs.js';
-import { Modifier } from './modifier.js';
-import { isStaveNote, isTabNote } from './typeguard.js';
-import { RuntimeError } from './util.js';
+import { Glyphs } from './glyphs';
+import { Modifier } from './modifier';
+import { isStaveNote, isTabNote } from './typeguard';
+import { RuntimeError } from './util';
 export class Dot extends Modifier {
     static get CATEGORY() {
         return "Dot";

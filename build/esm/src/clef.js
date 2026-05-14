@@ -1,7 +1,7 @@
-import { Glyphs } from './glyphs.js';
-import { Metrics } from './metrics.js';
-import { StaveModifier, StaveModifierPosition } from './stavemodifier.js';
-import { log } from './util.js';
+import { Glyphs } from './glyphs';
+import { Metrics } from './metrics';
+import { StaveModifier, StaveModifierPosition } from './stavemodifier';
+import { log } from './util';
 function L(...args) {
     if (Clef.DEBUG)
         log('VexFlow.Clef', args);

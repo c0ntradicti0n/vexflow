@@ -1,7 +1,7 @@
-import { Element } from './element.js';
-import { Glyphs } from './glyphs.js';
-import { Metrics } from './metrics.js';
-import { log, RuntimeError } from './util.js';
+import { Element } from './element';
+import { Glyphs } from './glyphs';
+import { Metrics } from './metrics';
+import { log, RuntimeError } from './util';
 function L(...args) {
     if (PedalMarking.DEBUG)
         log('VexFlow.PedalMarking', args);

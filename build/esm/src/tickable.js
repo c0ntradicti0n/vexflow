@@ -1,7 +1,7 @@
-import { Element } from './element.js';
-import { Fraction } from './fraction.js';
-import { Tables } from './tables.js';
-import { defined, RuntimeError } from './util.js';
+import { Element } from './element';
+import { Fraction } from './fraction';
+import { Tables } from './tables';
+import { defined, RuntimeError } from './util';
 export class Tickable extends Element {
     static get CATEGORY() {
         return "Tickable";

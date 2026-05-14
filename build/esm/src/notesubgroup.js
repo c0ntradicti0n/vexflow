@@ -1,7 +1,7 @@
-import { Formatter } from './formatter.js';
-import { Modifier } from './modifier.js';
-import { Tables } from './tables.js';
-import { Voice } from './voice.js';
+import { Formatter } from './formatter';
+import { Modifier } from './modifier';
+import { Tables } from './tables';
+import { Voice } from './voice';
 export class NoteSubGroup extends Modifier {
     static get CATEGORY() {
         return "NoteSubGroup";

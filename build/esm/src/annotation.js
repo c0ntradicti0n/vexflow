@@ -1,10 +1,10 @@
-import { Font } from './font.js';
-import { Metrics } from './metrics.js';
-import { Modifier, ModifierPosition } from './modifier.js';
-import { Stem } from './stem.js';
-import { Tables } from './tables.js';
-import { isStemmableNote, isTabNote } from './typeguard.js';
-import { log } from './util.js';
+import { Font } from './font';
+import { Metrics } from './metrics';
+import { Modifier, ModifierPosition } from './modifier';
+import { Stem } from './stem';
+import { Tables } from './tables';
+import { isStemmableNote, isTabNote } from './typeguard';
+import { log } from './util';
 function L(...args) {
     if (Annotation.DEBUG)
         log('VexFlow.Annotation', args);

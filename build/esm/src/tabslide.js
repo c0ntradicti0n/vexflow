@@ -1,5 +1,5 @@
-import { TabTie } from './tabtie.js';
-import { RuntimeError } from './util.js';
+import { TabTie } from './tabtie';
+import { RuntimeError } from './util';
 export class TabSlide extends TabTie {
     static get CATEGORY() {
         return "TabSlide";

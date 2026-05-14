@@ -1,8 +1,8 @@
-import { BoundingBox } from './boundingbox.js';
-import { Font } from './font.js';
-import { Metrics } from './metrics.js';
-import { Registry } from './registry.js';
-import { defined, prefix, RuntimeError } from './util.js';
+import { BoundingBox } from './boundingbox';
+import { Font } from './font';
+import { Metrics } from './metrics';
+import { Registry } from './registry';
+import { defined, prefix, RuntimeError } from './util';
 export class Element {
     static get CATEGORY() {
         return "Element";

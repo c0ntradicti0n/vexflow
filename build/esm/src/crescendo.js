@@ -1,6 +1,6 @@
-import { Note } from './note.js';
-import { TickContext } from './tickcontext.js';
-import { log } from './util.js';
+import { Note } from './note';
+import { TickContext } from './tickcontext';
+import { log } from './util';
 function L(...args) {
     if (Crescendo.DEBUG)
         log('VexFlow.Crescendo', args);

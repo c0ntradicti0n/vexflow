@@ -1238,10 +1238,15 @@ export class StaveNote extends StemmableNote {
     // Attach MusicXML note IDs as SVG data attributes for CSS targeting
     if (this._noteXmlIds) {
       const noteXmlIds: Record<number, string> = this._noteXmlIds;
+      const staveNoteId: string = this.getAttribute('id');
       this._noteHeads.forEach((notehead, i) => {
         const xmlId: string | undefined = noteXmlIds[i];
         if (xmlId) {
-          const el: HTMLElement | null = document.getElementById('vf-' + notehead.getAttribute('id'));
+          // Use notehead's own SVG element id (NoteHead uses attrs.id in openGroup)
+          const noteHeadId: string = notehead.getAttribute('id');
+          const el: HTMLElement | null = noteHeadId
+            ? document.getElementById('vf-' + noteHeadId)
+            : document.getElementById('vf-' + staveNoteId);
           if (el) el.setAttribute('data-note-id', xmlId);
         }
       });

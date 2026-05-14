@@ -1,5 +1,5 @@
-import { Element } from './element.js';
-import { RuntimeError } from './util.js';
+import { Element } from './element';
+import { RuntimeError } from './util';
 export class StaveTie extends Element {
     static get CATEGORY() {
         return "StaveTie";

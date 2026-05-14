@@ -1,7 +1,7 @@
-import { Element } from './element.js';
-import { Glyphs } from './glyphs.js';
-import { Tables } from './tables.js';
-import { RuntimeError } from './util.js';
+import { Element } from './element';
+import { Glyphs } from './glyphs';
+import { Tables } from './tables';
+import { RuntimeError } from './util';
 function drawBoldDoubleLine(ctx, type, topX, topY, botY) {
     if (type !== StaveConnector.type.BOLD_DOUBLE_LEFT && type !== StaveConnector.type.BOLD_DOUBLE_RIGHT) {
         throw new RuntimeError('InvalidConnector', 'A REPEAT_BEGIN or REPEAT_END type must be provided.');

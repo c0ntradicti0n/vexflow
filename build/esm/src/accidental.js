@@ -1,10 +1,10 @@
-import { Fraction } from './fraction.js';
-import { Metrics } from './metrics.js';
-import { Modifier } from './modifier.js';
-import { Music } from './music.js';
-import { Tables } from './tables.js';
-import { isAccidental, isGraceNote, isGraceNoteGroup, isStaveNote } from './typeguard.js';
-import { defined, log } from './util.js';
+import { Fraction } from './fraction';
+import { Metrics } from './metrics';
+import { Modifier } from './modifier';
+import { Music } from './music';
+import { Tables } from './tables';
+import { isAccidental, isGraceNote, isGraceNoteGroup, isStaveNote } from './typeguard';
+import { defined, log } from './util';
 function L(...args) {
     if (Accidental.DEBUG)
         log('VexFlow.Accidental', args);
