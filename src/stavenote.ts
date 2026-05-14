@@ -378,6 +378,8 @@ export class StaveNote extends StemmableNote {
   protected paddingRight: number;
 
   private _noteHeads: NoteHead[];
+  /** Maps notehead index to MusicXML note id for SVG data-note-id attributes. */
+  _noteXmlIds?: Record<number, string>;
 
   // Sorted variant of keyProps used internally.
   private sortedKeyProps: { keyProps: KeyProps; index: number }[] = [];
@@ -1230,6 +1232,17 @@ export class StaveNote extends StemmableNote {
     }
     if (shouldRenderStem) this.drawStem();
     this.drawNoteHeads();
+    // Attach MusicXML note IDs as SVG data attributes for CSS targeting
+    if (this._noteXmlIds) {
+      const noteXmlIds: Record<number, string> = this._noteXmlIds;
+      this._noteHeads.forEach((notehead, i) => {
+        const xmlId: string | undefined = noteXmlIds[i];
+        if (xmlId) {
+          const el: HTMLElement | null = document.getElementById('vf-' + notehead.getAttribute('id'));
+          if (el) el.setAttribute('data-note-id', xmlId);
+        }
+      });
+    }
     this.drawFlag();
     const bb = this.getBoundingBox();
     ctx.pointerRect(bb.getX(), bb.getY(), bb.getW(), bb.getH());

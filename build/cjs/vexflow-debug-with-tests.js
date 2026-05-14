@@ -1,5 +1,5 @@
 /*!
- * VexFlow 5.0.0   2026-05-14T18:31:31.820Z   6a7c33517e7b4801ce1631804685129efeb06cde
+ * VexFlow 5.0.0   2026-05-14T19:11:52.046Z   5bbd855bc3570ee0b317bfa9eca543139139786f
  * Copyright (c) 2023-present VexFlow contributors (see https://github.com/vexflow/vexflow/blob/main/AUTHORS.md).
  */
 (function webpackUniversalModuleDefinition(root, factory) {
@@ -30,8 +30,8 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export */ });
 // Gruntfile.js uses string-replace-loader to replace these values during build time.
 const VERSION = '5.0.0';
-const ID = '6a7c33517e7b4801ce1631804685129efeb06cde';
-const DATE = '2026-05-14T18:31:31.820Z';
+const ID = '5bbd855bc3570ee0b317bfa9eca543139139786f';
+const DATE = '2026-05-14T19:11:52.046Z';
 
 
 /***/ }),

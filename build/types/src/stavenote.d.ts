@@ -57,6 +57,8 @@ export declare class StaveNote extends StemmableNote {
     protected ledgerLineStyle: ElementStyle;
     protected paddingRight: number;
     private _noteHeads;
+    /** Maps notehead index to MusicXML note id for SVG data-note-id attributes. */
+    _noteXmlIds?: Record<number, string>;
     private sortedKeyProps;
     constructor(noteStruct: StaveNoteStruct);
     reset(): this;

@@ -827,10 +827,6 @@ export class StaveNote extends StemmableNote {
         ctx.openGroup('stavenote', this.getAttribute('id'));
         const noteHeadStyles = this._noteHeads.map((head) => head.getStyle());
         this.buildNoteHeads();
-        this._noteHeads.forEach((noteHead) => {
-            noteHead.setX(xBegin);
-            if (this.stave) noteHead.setStave(this.stave);
-        });
         this._noteHeads.forEach((noteHead, index) => {
             const style = noteHeadStyles[index];
             if (style)
@@ -848,6 +844,17 @@ export class StaveNote extends StemmableNote {
         if (shouldRenderStem)
             this.drawStem();
         this.drawNoteHeads();
+        if (this._noteXmlIds) {
+            const noteXmlIds = this._noteXmlIds;
+            this._noteHeads.forEach((notehead, i) => {
+                const xmlId = noteXmlIds[i];
+                if (xmlId) {
+                    const el = document.getElementById('vf-' + notehead.getAttribute('id'));
+                    if (el)
+                        el.setAttribute('data-note-id', xmlId);
+                }
+            });
+        }
         this.drawFlag();
         const bb = this.getBoundingBox();
         ctx.pointerRect(bb.getX(), bb.getY(), bb.getW(), bb.getH());
