@@ -168,7 +168,7 @@ export const MetricsDefaults: Record<string, any> = {
     strokeStyle: '#999999',
     fontSize: 8,
     padding: 12,
-    endPaddingMax: 10,
+    endPaddingMax: 5,
     endPaddingMin: 5,
     unalignedNotePadding: 10,
   },
