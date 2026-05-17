@@ -1,7 +1,7 @@
-import { Element } from './element';
-import { Fraction } from './fraction';
-import { Tables } from './tables';
-import { defined, RuntimeError, sumArray } from './util';
+import { Element } from './element.js';
+import { Fraction } from './fraction.js';
+import { Tables } from './tables.js';
+import { defined, RuntimeError, sumArray } from './util.js';
 export var VoiceMode;
 (function (VoiceMode) {
     VoiceMode[VoiceMode["STRICT"] = 1] = "STRICT";

@@ -1,5 +1,5 @@
-import { Note } from './note';
-import { TimeSignature } from './timesignature';
+import { Note } from './note.js';
+import { TimeSignature } from './timesignature.js';
 export class TimeSigNote extends Note {
     static get CATEGORY() {
         return "TimeSigNote";

@@ -1,5 +1,5 @@
-import { Element } from './element';
-import { defined } from './util';
+import { Element } from './element.js';
+import { defined } from './util.js';
 export var StaveModifierPosition;
 (function (StaveModifierPosition) {
     StaveModifierPosition[StaveModifierPosition["CENTER"] = 0] = "CENTER";

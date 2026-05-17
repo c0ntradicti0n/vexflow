@@ -1,9 +1,9 @@
-import { Element } from './element';
-import { Glyphs } from './glyphs';
-import { Metrics } from './metrics';
-import { Modifier } from './modifier';
-import { isNote, isStaveNote, isTabNote } from './typeguard';
-import { RuntimeError } from './util';
+import { Element } from './element.js';
+import { Glyphs } from './glyphs.js';
+import { Metrics } from './metrics.js';
+import { Modifier } from './modifier.js';
+import { isNote, isStaveNote, isTabNote } from './typeguard.js';
+import { RuntimeError } from './util.js';
 export class Stroke extends Modifier {
     static get CATEGORY() {
         return "Stroke";

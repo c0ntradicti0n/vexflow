@@ -1,7 +1,7 @@
-import { Element } from './element';
-import { Tables } from './tables';
-import { TextJustification } from './textnote';
-import { RuntimeError } from './util';
+import { Element } from './element.js';
+import { Tables } from './tables.js';
+import { TextJustification } from './textnote.js';
+import { RuntimeError } from './util.js';
 function drawArrowHead(ctx, x0, y0, x1, y1, x2, y2) {
     ctx.beginPath();
     ctx.moveTo(x0, y0);

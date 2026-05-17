@@ -1,4 +1,4 @@
-import { RuntimeError } from './util';
+import { RuntimeError } from './util.js';
 export class Fraction {
     static get CATEGORY() {
         return "Fraction";

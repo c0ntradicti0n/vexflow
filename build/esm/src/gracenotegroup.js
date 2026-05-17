@@ -1,13 +1,13 @@
-import { Beam } from './beam';
-import { Formatter } from './formatter';
-import { Modifier } from './modifier';
-import { StaveNote } from './stavenote';
-import { StaveTie } from './stavetie';
-import { Tables } from './tables';
-import { TabTie } from './tabtie';
-import { isStaveNote } from './typeguard';
-import { log } from './util';
-import { Voice } from './voice';
+import { Beam } from './beam.js';
+import { Formatter } from './formatter.js';
+import { Modifier } from './modifier.js';
+import { StaveNote } from './stavenote.js';
+import { StaveTie } from './stavetie.js';
+import { Tables } from './tables.js';
+import { TabTie } from './tabtie.js';
+import { isStaveNote } from './typeguard.js';
+import { log } from './util.js';
+import { Voice } from './voice.js';
 function L(...args) {
     if (GraceNoteGroup.DEBUG)
         log('VexFlow.GraceNoteGroup', args);

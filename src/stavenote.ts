@@ -106,6 +106,42 @@ export class StaveNote extends StemmableNote {
   static format(notes: StaveNote[], state: ModifierContextState): boolean {
     if (!notes || notes.length < 2) return false;
 
+    // Split notes by stave to avoid cross-staff collision adjustments.
+    const notesByStave = new Map<string, StaveNote[]>();
+    for (const note of notes) {
+      const stave = note.getStave();
+      const staveId = stave ? (stave as any).id || 'stave_undefined' : 'stave_undefined';
+      if (!notesByStave.has(staveId)) {
+        notesByStave.set(staveId, []);
+      }
+      notesByStave.get(staveId)!.push(note);
+    }
+
+    // If notes span multiple staves, format them independently.
+    if (notesByStave.size > 1) {
+      let maxRightShift = 0;
+      let maxLeftShift = 0;
+      let hasFormatted = false;
+      for (const group of Array.from(notesByStave.values())) {
+        if (group.length > 1) {
+          const subState = { ...state, leftShift: 0, rightShift: 0, right_shift: 0, left_shift: 0 } as any;
+          if (StaveNote.format(group, subState)) {
+            hasFormatted = true;
+            maxRightShift = Math.max(maxRightShift, subState.rightShift || subState.right_shift || 0);
+            maxLeftShift = Math.max(maxLeftShift, subState.leftShift || subState.left_shift || 0);
+          }
+        }
+      }
+      if (state.rightShift !== undefined) state.rightShift += maxRightShift;
+      // Also apply right_shift in case the system relies on earlier vexflow property names
+      if ((state as any).right_shift !== undefined) (state as any).right_shift += maxRightShift;
+
+      if (state.leftShift !== undefined) state.leftShift += maxLeftShift;
+      if ((state as any).left_shift !== undefined) (state as any).left_shift += maxLeftShift;
+
+      return hasFormatted;
+    }
+
     const notesList: StaveNoteFormatSettings[] = [];
 
     for (let i = 0; i < notes.length; i++) {
@@ -211,19 +247,38 @@ export class StaveNote extends StemmableNote {
           //If we are sharing a line, switch one notes stem direction.
           //If we are sharing a line and in the same voice, only then offset one note
           const lineDiff = Math.abs(noteU.line - noteL.line);
+
+          let disableXShift = false;
+          let halfNoteCount = 0;
+          let wholeNoteCount = 0;
+          if (noteU.note.duration === "h") halfNoteCount++;
+          else if (noteU.note.duration === "w") wholeNoteCount++;
+          if (noteL.note.duration === "h") halfNoteCount++;
+          else if (noteL.note.duration === "w") wholeNoteCount++;
+
+          const uDots = noteU.note.getModifiers().filter((item) => item.getCategory() === Category.Dot).length;
+          const lDots = noteL.note.getModifiers().filter((item) => item.getCategory() === Category.Dot).length;
+
+          let staggerConditions = halfNoteCount === 1 || wholeNoteCount === 1 || uDots !== lDots;
+          if ((notes[0] as any).stagger_same_whole_notes) {
+            staggerConditions = staggerConditions || wholeNoteCount === 2;
+          }
+
+          if (lineDiff === 0 && !staggerConditions) {
+            disableXShift = true;
+          }
+
           if (noteU.note.hasStem() && noteL.note.hasStem()) {
             const noteUHead = noteU.note.sortedKeyProps[0].keyProps.code;
             const noteLHead = noteL.note.sortedKeyProps[noteL.note.sortedKeyProps.length - 1].keyProps.code;
             if (
+              !disableXShift && (
               // If unison is not configured, shift
               !Tables.UNISON ||
               // If we have different noteheads, shift
               noteUHead !== noteLHead ||
               // If we have different dot values, shift
-              noteU.note.getModifiers().filter((item) => item.getCategory() === Category.Dot && item.getIndex() === 0)
-                .length !==
-                noteL.note.getModifiers().filter((item) => item.getCategory() === Category.Dot && item.getIndex() === 0)
-                  .length ||
+              uDots !== lDots ||
               // If the notes are quite close but not on the same line, shift
               (lineDiff < 1 && lineDiff > 0) ||
               // If styles are different, shift

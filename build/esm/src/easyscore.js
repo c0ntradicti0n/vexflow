@@ -1,10 +1,10 @@
-import { Articulation } from './articulation';
-import { Dot } from './dot';
-import { FretHandFinger } from './frethandfinger';
-import { Music } from './music';
-import { Parser } from './parser';
-import { Stem } from './stem';
-import { defined, log, RuntimeError } from './util';
+import { Articulation } from './articulation.js';
+import { Dot } from './dot.js';
+import { FretHandFinger } from './frethandfinger.js';
+import { Music } from './music.js';
+import { Parser } from './parser.js';
+import { Stem } from './stem.js';
+import { defined, log, RuntimeError } from './util.js';
 function L(...args) {
     if (EasyScore.DEBUG)
         log('VexFlow.EasyScore', args);

@@ -1,5 +1,5 @@
-import { Element } from './element';
-import { log } from './util';
+import { Element } from './element.js';
+import { log } from './util.js';
 function L(...args) {
     if (Flag.DEBUG)
         log('VexFlow.Flag', args);

@@ -1,7 +1,7 @@
-import { Element } from './element';
-import { Glyphs } from './glyphs';
-import { Metrics } from './metrics';
-import { StaveModifier, StaveModifierPosition } from './stavemodifier';
+import { Element } from './element.js';
+import { Glyphs } from './glyphs.js';
+import { Metrics } from './metrics.js';
+import { StaveModifier, StaveModifierPosition } from './stavemodifier.js';
 export class StaveTempo extends StaveModifier {
     static get CATEGORY() {
         return "StaveTempo";

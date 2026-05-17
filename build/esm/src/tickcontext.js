@@ -1,5 +1,5 @@
-import { Fraction } from './fraction';
-import { RuntimeError, sumArray } from './util';
+import { Fraction } from './fraction.js';
+import { RuntimeError, sumArray } from './util.js';
 export class TickContext {
     static getNextContext(tContext) {
         const contexts = tContext.tContexts;

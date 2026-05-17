@@ -1,19 +1,19 @@
-import { Accidental } from './accidental';
-import { Annotation } from './annotation';
-import { Articulation } from './articulation';
-import { Bend } from './bend';
-import { ChordSymbol } from './chordsymbol';
-import { Dot } from './dot';
-import { FretHandFinger } from './frethandfinger';
-import { GraceNoteGroup } from './gracenotegroup';
-import { NoteSubGroup } from './notesubgroup';
-import { Ornament } from './ornament';
-import { Parenthesis } from './parenthesis';
-import { StaveNote } from './stavenote';
-import { StringNumber } from './stringnumber';
-import { Stroke } from './strokes';
-import { log, RuntimeError } from './util';
-import { Vibrato } from './vibrato';
+import { Accidental } from './accidental.js';
+import { Annotation } from './annotation.js';
+import { Articulation } from './articulation.js';
+import { Bend } from './bend.js';
+import { ChordSymbol } from './chordsymbol.js';
+import { Dot } from './dot.js';
+import { FretHandFinger } from './frethandfinger.js';
+import { GraceNoteGroup } from './gracenotegroup.js';
+import { NoteSubGroup } from './notesubgroup.js';
+import { Ornament } from './ornament.js';
+import { Parenthesis } from './parenthesis.js';
+import { StaveNote } from './stavenote.js';
+import { StringNumber } from './stringnumber.js';
+import { Stroke } from './strokes.js';
+import { log, RuntimeError } from './util.js';
+import { Vibrato } from './vibrato.js';
 function L(...args) {
     if (ModifierContext.DEBUG)
         log('VexFlow.ModifierContext', args);

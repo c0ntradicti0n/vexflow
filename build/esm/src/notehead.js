@@ -1,6 +1,6 @@
-import { Note } from './note';
-import { Stem } from './stem';
-import { defined, log } from './util';
+import { Note } from './note.js';
+import { Stem } from './stem.js';
+import { defined, log } from './util.js';
 function L(...args) {
     if (NoteHead.DEBUG)
         log('VexFlow.NoteHead', args);

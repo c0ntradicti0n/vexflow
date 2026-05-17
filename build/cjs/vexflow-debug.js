@@ -1,5 +1,5 @@
 /*!
- * VexFlow 5.0.0   2026-05-14T19:11:52.046Z   5bbd855bc3570ee0b317bfa9eca543139139786f
+ * VexFlow 5.0.0   2026-05-15T13:38:25.472Z   467132aebe2994292d5a29041ff8d8fc2756f698
  * Copyright (c) 2023-present VexFlow contributors (see https://github.com/vexflow/vexflow/blob/main/AUTHORS.md).
  */
 (function webpackUniversalModuleDefinition(root, factory) {
@@ -30,8 +30,8 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export */ });
 // Gruntfile.js uses string-replace-loader to replace these values during build time.
 const VERSION = '5.0.0';
-const ID = '5bbd855bc3570ee0b317bfa9eca543139139786f';
-const DATE = '2026-05-14T19:11:52.046Z';
+const ID = '467132aebe2994292d5a29041ff8d8fc2756f698';
+const DATE = '2026-05-15T13:38:25.472Z';
 
 
 /***/ }),
@@ -14509,7 +14509,7 @@ const MetricsDefaults = {
         strokeStyle: '#999999',
         fontSize: 8,
         padding: 12,
-        endPaddingMax: 10,
+        endPaddingMax: 5,
         endPaddingMin: 5,
         unalignedNotePadding: 10,
     },
@@ -19326,6 +19326,42 @@ class StaveNote extends _stemmablenote__WEBPACK_IMPORTED_MODULE_7__.StemmableNot
     static format(notes, state) {
         if (!notes || notes.length < 2)
             return false;
+        // Split notes by stave to avoid cross-staff collision adjustments.
+        const notesByStave = new Map();
+        for (const note of notes) {
+            const stave = note.getStave();
+            const staveId = stave ? stave.id || 'stave_undefined' : 'stave_undefined';
+            if (!notesByStave.has(staveId)) {
+                notesByStave.set(staveId, []);
+            }
+            notesByStave.get(staveId).push(note);
+        }
+        // If notes span multiple staves, format them independently.
+        if (notesByStave.size > 1) {
+            let maxRightShift = 0;
+            let maxLeftShift = 0;
+            let hasFormatted = false;
+            for (const group of Array.from(notesByStave.values())) {
+                if (group.length > 1) {
+                    const subState = Object.assign(Object.assign({}, state), { leftShift: 0, rightShift: 0, right_shift: 0, left_shift: 0 });
+                    if (StaveNote.format(group, subState)) {
+                        hasFormatted = true;
+                        maxRightShift = Math.max(maxRightShift, subState.rightShift || subState.right_shift || 0);
+                        maxLeftShift = Math.max(maxLeftShift, subState.leftShift || subState.left_shift || 0);
+                    }
+                }
+            }
+            if (state.rightShift !== undefined)
+                state.rightShift += maxRightShift;
+            // Also apply right_shift in case the system relies on earlier vexflow property names
+            if (state.right_shift !== undefined)
+                state.right_shift += maxRightShift;
+            if (state.leftShift !== undefined)
+                state.leftShift += maxLeftShift;
+            if (state.left_shift !== undefined)
+                state.left_shift += maxLeftShift;
+            return hasFormatted;
+        }
         const notesList = [];
         for (let i = 0; i < notes.length; i++) {
             // Formatting uses sortedKeyProps to calculate line and minL.
@@ -19409,6 +19445,8 @@ class StaveNote extends _stemmablenote__WEBPACK_IMPORTED_MODULE_7__.StemmableNot
         const voiceXShift = Math.max(noteU.voiceShift, noteL.voiceShift);
         let xShift = 0;
         // Test for two voice note intersection
+        console.log(`[VEX_PROPS] noteU line=${noteU.line} noteL line=${noteL.line}`);
+        console.log(`[VEX_FMT] voices=2 noteU=${noteU.note.keys} minL=${noteU.minLine} maxL=${noteU.maxLine} stemDirU=${noteU.stemDirection} noteL=${noteL.note.keys} minL=${noteL.minLine} maxL=${noteL.maxLine} stemDirL=${noteL.stemDirection} lineSpacing=${noteU.note.hasStem() && noteL.note.hasStem() && noteU.stemDirection === noteL.stemDirection ? 0.0 : 0.5} voiceXShift=${voiceXShift}`);
         if (voices === 2) {
             const lineSpacing = noteU.note.hasStem() && noteL.note.hasStem() && noteU.stemDirection === noteL.stemDirection ? 0.0 : 0.5;
             if (noteL.isrest && noteU.isrest && noteU.note.duration === noteL.note.duration) {
@@ -19428,23 +19466,40 @@ class StaveNote extends _stemmablenote__WEBPACK_IMPORTED_MODULE_7__.StemmableNot
                     //If we are sharing a line, switch one notes stem direction.
                     //If we are sharing a line and in the same voice, only then offset one note
                     const lineDiff = Math.abs(noteU.line - noteL.line);
+                    let disableXShift = false;
+                    let halfNoteCount = 0;
+                    let wholeNoteCount = 0;
+                    if (noteU.note.duration === "h")
+                        halfNoteCount++;
+                    else if (noteU.note.duration === "w")
+                        wholeNoteCount++;
+                    if (noteL.note.duration === "h")
+                        halfNoteCount++;
+                    else if (noteL.note.duration === "w")
+                        wholeNoteCount++;
+                    const uDots = noteU.note.getModifiers().filter((item) => item.getCategory() === _typeguard__WEBPACK_IMPORTED_MODULE_9__.Category.Dot).length;
+                    const lDots = noteL.note.getModifiers().filter((item) => item.getCategory() === _typeguard__WEBPACK_IMPORTED_MODULE_9__.Category.Dot).length;
+                    let staggerConditions = halfNoteCount === 1 || wholeNoteCount === 1 || uDots !== lDots;
+                    if (notes[0].stagger_same_whole_notes) {
+                        staggerConditions = staggerConditions || wholeNoteCount === 2;
+                    }
+                    if (lineDiff === 0 && !staggerConditions) {
+                        disableXShift = true;
+                    }
                     if (noteU.note.hasStem() && noteL.note.hasStem()) {
                         const noteUHead = noteU.note.sortedKeyProps[0].keyProps.code;
                         const noteLHead = noteL.note.sortedKeyProps[noteL.note.sortedKeyProps.length - 1].keyProps.code;
-                        if (
+                        if (!disableXShift && (
                         // If unison is not configured, shift
                         !_tables__WEBPACK_IMPORTED_MODULE_8__.Tables.UNISON ||
                             // If we have different noteheads, shift
                             noteUHead !== noteLHead ||
                             // If we have different dot values, shift
-                            noteU.note.getModifiers().filter((item) => item.getCategory() === _typeguard__WEBPACK_IMPORTED_MODULE_9__.Category.Dot && item.getIndex() === 0)
-                                .length !==
-                                noteL.note.getModifiers().filter((item) => item.getCategory() === _typeguard__WEBPACK_IMPORTED_MODULE_9__.Category.Dot && item.getIndex() === 0)
-                                    .length ||
+                            uDots !== lDots ||
                             // If the notes are quite close but not on the same line, shift
                             (lineDiff < 1 && lineDiff > 0) ||
                             // If styles are different, shift
-                            JSON.stringify(noteU.note.getStyle()) !== JSON.stringify(noteL.note.getStyle())) {
+                            JSON.stringify(noteU.note.getStyle()) !== JSON.stringify(noteL.note.getStyle()))) {
                             xShift = voiceXShift + 2;
                             if (noteU.stemDirection === noteL.stemDirection) {
                                 // upper voice is middle voice, so shift it right
@@ -20270,8 +20325,6 @@ class StaveNote extends _stemmablenote__WEBPACK_IMPORTED_MODULE_7__.StemmableNot
         const ctx = this.checkContext();
         const xBegin = this.getNoteHeadBeginX();
         const shouldRenderStem = this.hasStem() && !this.beam;
-        // Format note head x positions
-        this._noteHeads.forEach((notehead) => notehead.setX(xBegin));
         if (this.stem) {
             // Format stem x positions
             const stemX = this.getStemX();
@@ -20288,6 +20341,12 @@ class StaveNote extends _stemmablenote__WEBPACK_IMPORTED_MODULE_7__.StemmableNot
             if (style)
                 noteHead.setStyle(style);
         });
+        // Apply x position and stave reference to newly built noteheads
+        this._noteHeads.forEach((noteHead) => {
+            noteHead.setX(xBegin);
+            if (this.stave)
+                noteHead.setStave(this.stave);
+        });
         const { highestLine, lowestLine } = this.getNoteHeadBounds();
         const ledgerLinesDrawn = highestLine >= 6 || lowestLine <= 0;
         if (ledgerLinesDrawn) {
@@ -20300,6 +20359,23 @@ class StaveNote extends _stemmablenote__WEBPACK_IMPORTED_MODULE_7__.StemmableNot
         if (shouldRenderStem)
             this.drawStem();
         this.drawNoteHeads();
+        // Attach MusicXML note IDs as SVG data attributes for CSS targeting
+        if (this._noteXmlIds) {
+            const noteXmlIds = this._noteXmlIds;
+            const staveNoteId = this.getAttribute('id');
+            this._noteHeads.forEach((notehead, i) => {
+                const xmlId = noteXmlIds[i];
+                if (xmlId) {
+                    // Use notehead's own SVG element id (NoteHead uses attrs.id in openGroup)
+                    const noteHeadId = notehead.getAttribute('id');
+                    const el = noteHeadId
+                        ? document.getElementById('vf-' + noteHeadId)
+                        : document.getElementById('vf-' + staveNoteId);
+                    if (el)
+                        el.setAttribute('data-note-id', xmlId);
+                }
+            });
+        }
         this.drawFlag();
         const bb = this.getBoundingBox();
         ctx.pointerRect(bb.getX(), bb.getY(), bb.getW(), bb.getH());

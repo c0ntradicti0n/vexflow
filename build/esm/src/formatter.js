@@ -1,14 +1,14 @@
-import { Beam } from './beam';
-import { Fraction } from './fraction';
-import { Metrics } from './metrics';
-import { ModifierContext } from './modifiercontext';
-import { Stave } from './stave';
-import { StaveConnector } from './staveconnector';
-import { Tables } from './tables';
-import { TickContext } from './tickcontext';
-import { isNote, isStaveNote } from './typeguard';
-import { defined, log, midLine, RuntimeError, sumArray } from './util';
-import { Voice } from './voice';
+import { Beam } from './beam.js';
+import { Fraction } from './fraction.js';
+import { Metrics } from './metrics.js';
+import { ModifierContext } from './modifiercontext.js';
+import { Stave } from './stave.js';
+import { StaveConnector } from './staveconnector.js';
+import { Tables } from './tables.js';
+import { TickContext } from './tickcontext.js';
+import { isNote, isStaveNote } from './typeguard.js';
+import { defined, log, midLine, RuntimeError, sumArray } from './util.js';
+import { Voice } from './voice.js';
 function createContexts(voices, makeContext, addToContext) {
     if (voices.length === 0)
         return {

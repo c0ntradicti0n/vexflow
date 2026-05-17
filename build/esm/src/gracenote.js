@@ -1,7 +1,7 @@
-import { StaveNote } from './stavenote';
-import { Stem } from './stem';
-import { Tables } from './tables';
-import { RuntimeError } from './util';
+import { StaveNote } from './stavenote.js';
+import { Stem } from './stem.js';
+import { Tables } from './tables.js';
+import { RuntimeError } from './util.js';
 export class GraceNote extends StaveNote {
     static get CATEGORY() {
         return "GraceNote";

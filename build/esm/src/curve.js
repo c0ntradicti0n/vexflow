@@ -1,5 +1,5 @@
-import { Element } from './element';
-import { RuntimeError } from './util';
+import { Element } from './element.js';
+import { RuntimeError } from './util.js';
 export var CurvePosition;
 (function (CurvePosition) {
     CurvePosition[CurvePosition["NEAR_HEAD"] = 1] = "NEAR_HEAD";

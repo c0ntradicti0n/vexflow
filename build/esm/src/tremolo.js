@@ -1,7 +1,7 @@
-import { Glyphs } from './glyphs';
-import { Metrics } from './metrics';
-import { Modifier } from './modifier';
-import { Stem } from './stem';
+import { Glyphs } from './glyphs.js';
+import { Metrics } from './metrics.js';
+import { Modifier } from './modifier.js';
+import { Stem } from './stem.js';
 export class Tremolo extends Modifier {
     static get CATEGORY() {
         return "Tremolo";

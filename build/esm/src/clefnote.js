@@ -1,5 +1,5 @@
-import { Clef } from './clef';
-import { Note } from './note';
+import { Clef } from './clef.js';
+import { Note } from './note.js';
 export class ClefNote extends Note {
     static get CATEGORY() {
         return "ClefNote";

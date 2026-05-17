@@ -1,10 +1,10 @@
-import { Element } from './element';
-import { Glyphs } from './glyphs';
-import { Metrics } from './metrics';
-import { StaveModifierPosition } from './stavemodifier';
-import { Tables } from './tables';
-import { isBarline } from './typeguard';
-import { defined, RuntimeError } from './util';
+import { Element } from './element.js';
+import { Glyphs } from './glyphs.js';
+import { Metrics } from './metrics.js';
+import { StaveModifierPosition } from './stavemodifier.js';
+import { Tables } from './tables.js';
+import { isBarline } from './typeguard.js';
+import { defined, RuntimeError } from './util.js';
 export class MultiMeasureRest extends Element {
     static get CATEGORY() {
         return "MultiMeasureRest";

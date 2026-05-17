@@ -1,6 +1,6 @@
-import { StemmableNote } from './stemmablenote';
-import { isAnnotation } from './typeguard';
-import { RuntimeError } from './util';
+import { StemmableNote } from './stemmablenote.js';
+import { isAnnotation } from './typeguard.js';
+import { RuntimeError } from './util.js';
 const ERROR_MSG = 'Ghost note must have valid initialization data to identify duration.';
 export class GhostNote extends StemmableNote {
     static get CATEGORY() {

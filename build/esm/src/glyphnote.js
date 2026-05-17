@@ -1,4 +1,4 @@
-import { Note } from './note';
+import { Note } from './note.js';
 export class GlyphNote extends Note {
     static get CATEGORY() {
         return "GlyphNote";

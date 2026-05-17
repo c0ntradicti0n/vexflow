@@ -1,5 +1,5 @@
-import { Tables } from './tables';
-import { RuntimeError } from './util';
+import { Tables } from './tables.js';
+import { RuntimeError } from './util.js';
 export class Tuning {
     static get names() {
         return {

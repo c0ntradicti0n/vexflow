@@ -1,4 +1,4 @@
-import { Stave } from './stave';
+import { Stave } from './stave.js';
 export class TabStave extends Stave {
     static get CATEGORY() {
         return "TabStave";

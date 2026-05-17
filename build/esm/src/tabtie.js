@@ -1,4 +1,4 @@
-import { StaveTie } from './stavetie';
+import { StaveTie } from './stavetie.js';
 export class TabTie extends StaveTie {
     static get CATEGORY() {
         return "TabTie";

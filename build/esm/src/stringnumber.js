@@ -1,10 +1,10 @@
-import { Metrics } from './metrics';
-import { Modifier, ModifierPosition } from './modifier';
-import { Renderer } from './renderer';
-import { Stem } from './stem';
-import { Tables } from './tables';
-import { isStaveNote, isStemmableNote } from './typeguard';
-import { RuntimeError } from './util';
+import { Metrics } from './metrics.js';
+import { Modifier, ModifierPosition } from './modifier.js';
+import { Renderer } from './renderer.js';
+import { Stem } from './stem.js';
+import { Tables } from './tables.js';
+import { isStaveNote, isStemmableNote } from './typeguard.js';
+import { RuntimeError } from './util.js';
 export class StringNumber extends Modifier {
     static get CATEGORY() {
         return "StringNumber";

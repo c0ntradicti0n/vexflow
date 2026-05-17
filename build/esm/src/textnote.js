@@ -1,8 +1,8 @@
-import { Element } from './element';
-import { Font } from './font';
-import { Glyphs } from './glyphs';
-import { Metrics } from './metrics';
-import { Note } from './note';
+import { Element } from './element.js';
+import { Font } from './font.js';
+import { Glyphs } from './glyphs.js';
+import { Metrics } from './metrics.js';
+import { Note } from './note.js';
 export var TextJustification;
 (function (TextJustification) {
     TextJustification[TextJustification["LEFT"] = 1] = "LEFT";

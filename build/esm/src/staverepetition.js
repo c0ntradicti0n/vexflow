@@ -1,6 +1,6 @@
-import { Glyphs } from './glyphs';
-import { Metrics } from './metrics';
-import { StaveModifier } from './stavemodifier';
+import { Glyphs } from './glyphs.js';
+import { Metrics } from './metrics.js';
+import { StaveModifier } from './stavemodifier.js';
 export class Repetition extends StaveModifier {
     static get CATEGORY() {
         return "Repetition";

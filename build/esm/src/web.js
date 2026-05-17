@@ -1,4 +1,4 @@
-import { globalObject } from './util';
+import { globalObject } from './util.js';
 export function isHTMLCanvas(element) {
     if (!element)
         return false;

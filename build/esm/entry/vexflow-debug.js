@@ -1,11 +1,11 @@
-import { VexFlow } from '../src/vexflow';
-import { Font } from '../src/font';
-import { Academico } from '../src/fonts/academico';
-import { AcademicoBold } from '../src/fonts/academicobold';
-import { Bravura } from '../src/fonts/bravura';
-import { Gonville } from '../src/fonts/gonville';
-import { Petaluma } from '../src/fonts/petaluma';
-import { PetalumaScript } from '../src/fonts/petalumascript';
+import { VexFlow } from '../src/vexflow.js';
+import { Font } from '../src/font.js';
+import { Academico } from '../src/fonts/academico.js';
+import { AcademicoBold } from '../src/fonts/academicobold.js';
+import { Bravura } from '../src/fonts/bravura.js';
+import { Gonville } from '../src/fonts/gonville.js';
+import { Petaluma } from '../src/fonts/petaluma.js';
+import { PetalumaScript } from '../src/fonts/petalumascript.js';
 const block = { display: 'block' };
 const swap = { display: 'swap' };
 const swapBold = { display: 'swap', weight: 'bold' };
@@ -27,5 +27,5 @@ VexFlow.BUILD.INFO = 'vexflow-debug';
 VexFlow.setFonts('Bravura', 'Academico');
 Promise.allSettled(fontLoadPromises).then(() => {
 });
-export * from '../src/index';
+export * from '../src/index.js';
 export default VexFlow;

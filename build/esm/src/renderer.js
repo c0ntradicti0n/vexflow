@@ -1,8 +1,8 @@
-import { CanvasContext } from './canvascontext';
-import { SVGContext } from './svgcontext';
-import { isRenderContext } from './typeguard';
-import { RuntimeError } from './util';
-import { isHTMLCanvas, isHTMLDiv } from './web';
+import { CanvasContext } from './canvascontext.js';
+import { SVGContext } from './svgcontext.js';
+import { isRenderContext } from './typeguard.js';
+import { RuntimeError } from './util.js';
+import { isHTMLCanvas, isHTMLDiv } from './web.js';
 export var RendererBackends;
 (function (RendererBackends) {
     RendererBackends[RendererBackends["CANVAS"] = 1] = "CANVAS";

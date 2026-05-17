@@ -1,10 +1,10 @@
-import { getBottomY, getInitialOffset, getTopY } from './articulation';
-import { Element } from './element';
-import { Metrics } from './metrics';
-import { Modifier, ModifierPosition } from './modifier';
-import { Stem } from './stem';
-import { Tables } from './tables';
-import { log } from './util';
+import { getBottomY, getInitialOffset, getTopY } from './articulation.js';
+import { Element } from './element.js';
+import { Metrics } from './metrics.js';
+import { Modifier, ModifierPosition } from './modifier.js';
+import { Stem } from './stem.js';
+import { Tables } from './tables.js';
+import { log } from './util.js';
 function L(...args) {
     if (Ornament.DEBUG)
         log('VexFlow.Ornament', args);

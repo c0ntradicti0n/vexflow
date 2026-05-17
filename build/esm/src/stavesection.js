@@ -1,5 +1,5 @@
-import { Metrics } from './metrics';
-import { StaveModifier } from './stavemodifier';
+import { Metrics } from './metrics.js';
+import { StaveModifier } from './stavemodifier.js';
 export class StaveSection extends StaveModifier {
     static get CATEGORY() {
         return "StaveSection";

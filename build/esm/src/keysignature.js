@@ -1,10 +1,10 @@
-import { BoundingBox } from './boundingbox';
-import { Element } from './element';
-import { Glyphs } from './glyphs';
-import { Stave } from './stave';
-import { StaveModifier, StaveModifierPosition } from './stavemodifier';
-import { Tables } from './tables';
-import { defined } from './util';
+import { BoundingBox } from './boundingbox.js';
+import { Element } from './element.js';
+import { Glyphs } from './glyphs.js';
+import { Stave } from './stave.js';
+import { StaveModifier, StaveModifierPosition } from './stavemodifier.js';
+import { Tables } from './tables.js';
+import { defined } from './util.js';
 export class KeySignature extends StaveModifier {
     static get CATEGORY() {
         return "KeySignature";

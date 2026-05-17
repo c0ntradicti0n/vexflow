@@ -1,5 +1,5 @@
-import { KeySignature } from './keysignature';
-import { Note } from './note';
+import { KeySignature } from './keysignature.js';
+import { Note } from './note.js';
 export class KeySigNote extends Note {
     static get CATEGORY() {
         return "KeySigNote";

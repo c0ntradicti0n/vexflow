@@ -1,7 +1,7 @@
-import { Font } from './font';
-import { RenderContext } from './rendercontext';
-import { globalObject, warn } from './util';
-import { isHTMLCanvas } from './web';
+import { Font } from './font.js';
+import { RenderContext } from './rendercontext.js';
+import { globalObject, warn } from './util.js';
+import { isHTMLCanvas } from './web.js';
 export class CanvasContext extends RenderContext {
     static get WIDTH() {
         return 600;

@@ -1,4 +1,4 @@
-import { RuntimeError } from './util';
+import { RuntimeError } from './util.js';
 export class Music {
     static get NUM_TONES() {
         return this.canonicalNotes.length;

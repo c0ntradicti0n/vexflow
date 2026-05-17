@@ -1,13 +1,13 @@
-import { BoundingBox } from './boundingbox';
-import { Glyphs } from './glyphs';
-import { Metrics } from './metrics';
-import { Modifier } from './modifier';
-import { Note } from './note';
-import { NoteHead } from './notehead';
-import { Stem } from './stem';
-import { StemmableNote } from './stemmablenote';
-import { Tables } from './tables';
-import { defined, log, midLine, RuntimeError } from './util';
+import { BoundingBox } from './boundingbox.js';
+import { Glyphs } from './glyphs.js';
+import { Metrics } from './metrics.js';
+import { Modifier } from './modifier.js';
+import { Note } from './note.js';
+import { NoteHead } from './notehead.js';
+import { Stem } from './stem.js';
+import { StemmableNote } from './stemmablenote.js';
+import { Tables } from './tables.js';
+import { defined, log, midLine, RuntimeError } from './util.js';
 function L(...args) {
     if (StaveNote.DEBUG)
         log('VexFlow.StaveNote', args);
@@ -40,6 +40,39 @@ export class StaveNote extends StemmableNote {
     static format(notes, state) {
         if (!notes || notes.length < 2)
             return false;
+        const notesByStave = new Map();
+        for (const note of notes) {
+            const stave = note.getStave();
+            const staveId = stave ? stave.id || 'stave_undefined' : 'stave_undefined';
+            if (!notesByStave.has(staveId)) {
+                notesByStave.set(staveId, []);
+            }
+            notesByStave.get(staveId).push(note);
+        }
+        if (notesByStave.size > 1) {
+            let maxRightShift = 0;
+            let maxLeftShift = 0;
+            let hasFormatted = false;
+            for (const group of Array.from(notesByStave.values())) {
+                if (group.length > 1) {
+                    const subState = Object.assign(Object.assign({}, state), { leftShift: 0, rightShift: 0, right_shift: 0, left_shift: 0 });
+                    if (StaveNote.format(group, subState)) {
+                        hasFormatted = true;
+                        maxRightShift = Math.max(maxRightShift, subState.rightShift || subState.right_shift || 0);
+                        maxLeftShift = Math.max(maxLeftShift, subState.leftShift || subState.left_shift || 0);
+                    }
+                }
+            }
+            if (state.rightShift !== undefined)
+                state.rightShift += maxRightShift;
+            if (state.right_shift !== undefined)
+                state.right_shift += maxRightShift;
+            if (state.leftShift !== undefined)
+                state.leftShift += maxLeftShift;
+            if (state.left_shift !== undefined)
+                state.left_shift += maxLeftShift;
+            return hasFormatted;
+        }
         const notesList = [];
         for (let i = 0; i < notes.length; i++) {
             const props = notes[i].sortedKeyProps;
@@ -113,6 +146,8 @@ export class StaveNote extends StemmableNote {
         }
         const voiceXShift = Math.max(noteU.voiceShift, noteL.voiceShift);
         let xShift = 0;
+        console.log(`[VEX_PROPS] noteU line=${noteU.line} noteL line=${noteL.line}`);
+        console.log(`[VEX_FMT] voices=2 noteU=${noteU.note.keys} minL=${noteU.minLine} maxL=${noteU.maxLine} stemDirU=${noteU.stemDirection} noteL=${noteL.note.keys} minL=${noteL.minLine} maxL=${noteL.maxLine} stemDirL=${noteL.stemDirection} lineSpacing=${noteU.note.hasStem() && noteL.note.hasStem() && noteU.stemDirection === noteL.stemDirection ? 0.0 : 0.5} voiceXShift=${voiceXShift}`);
         if (voices === 2) {
             const lineSpacing = noteU.note.hasStem() && noteL.note.hasStem() && noteU.stemDirection === noteL.stemDirection ? 0.0 : 0.5;
             if (noteL.isrest && noteU.isrest && noteU.note.duration === noteL.note.duration) {
@@ -127,17 +162,34 @@ export class StaveNote extends StemmableNote {
                 }
                 else {
                     const lineDiff = Math.abs(noteU.line - noteL.line);
+                    let disableXShift = false;
+                    let halfNoteCount = 0;
+                    let wholeNoteCount = 0;
+                    if (noteU.note.duration === "h")
+                        halfNoteCount++;
+                    else if (noteU.note.duration === "w")
+                        wholeNoteCount++;
+                    if (noteL.note.duration === "h")
+                        halfNoteCount++;
+                    else if (noteL.note.duration === "w")
+                        wholeNoteCount++;
+                    const uDots = noteU.note.getModifiers().filter((item) => item.getCategory() === "Dot").length;
+                    const lDots = noteL.note.getModifiers().filter((item) => item.getCategory() === "Dot").length;
+                    let staggerConditions = halfNoteCount === 1 || wholeNoteCount === 1 || uDots !== lDots;
+                    if (notes[0].stagger_same_whole_notes) {
+                        staggerConditions = staggerConditions || wholeNoteCount === 2;
+                    }
+                    if (lineDiff === 0 && !staggerConditions) {
+                        disableXShift = true;
+                    }
                     if (noteU.note.hasStem() && noteL.note.hasStem()) {
                         const noteUHead = noteU.note.sortedKeyProps[0].keyProps.code;
                         const noteLHead = noteL.note.sortedKeyProps[noteL.note.sortedKeyProps.length - 1].keyProps.code;
-                        if (!Tables.UNISON ||
+                        if (!disableXShift && (!Tables.UNISON ||
                             noteUHead !== noteLHead ||
-                            noteU.note.getModifiers().filter((item) => item.getCategory() === "Dot" && item.getIndex() === 0)
-                                .length !==
-                                noteL.note.getModifiers().filter((item) => item.getCategory() === "Dot" && item.getIndex() === 0)
-                                    .length ||
+                            uDots !== lDots ||
                             (lineDiff < 1 && lineDiff > 0) ||
-                            JSON.stringify(noteU.note.getStyle()) !== JSON.stringify(noteL.note.getStyle())) {
+                            JSON.stringify(noteU.note.getStyle()) !== JSON.stringify(noteL.note.getStyle()))) {
                             xShift = voiceXShift + 2;
                             if (noteU.stemDirection === noteL.stemDirection) {
                                 noteU.note.setXShift(xShift);

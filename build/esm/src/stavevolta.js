@@ -1,4 +1,4 @@
-import { StaveModifier } from './stavemodifier';
+import { StaveModifier } from './stavemodifier.js';
 export var VoltaType;
 (function (VoltaType) {
     VoltaType[VoltaType["NONE"] = 1] = "NONE";

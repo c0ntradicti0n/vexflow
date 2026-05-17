@@ -1,6 +1,6 @@
-import { StaveModifier, StaveModifierPosition } from './stavemodifier';
-import { TextJustification, TextNote } from './textnote';
-import { RuntimeError } from './util';
+import { StaveModifier, StaveModifierPosition } from './stavemodifier.js';
+import { TextJustification, TextNote } from './textnote.js';
+import { RuntimeError } from './util.js';
 export class StaveText extends StaveModifier {
     static get CATEGORY() {
         return "StaveText";

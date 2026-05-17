@@ -1,4 +1,4 @@
-import { log, RuntimeError } from './util';
+import { log, RuntimeError } from './util.js';
 function L(...args) {
     if (Parser.DEBUG)
         log('VexFlow.Parser', args);

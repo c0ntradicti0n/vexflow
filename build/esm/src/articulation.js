@@ -1,10 +1,10 @@
-import { Glyphs } from './glyphs';
-import { Modifier } from './modifier';
-import { Stem } from './stem';
-import { Tables } from './tables';
-import { TickContext } from './tickcontext';
-import { isGraceNote, isStaveNote, isStemmableNote, isTabNote } from './typeguard';
-import { log, RuntimeError } from './util';
+import { Glyphs } from './glyphs.js';
+import { Modifier } from './modifier.js';
+import { Stem } from './stem.js';
+import { Tables } from './tables.js';
+import { TickContext } from './tickcontext.js';
+import { isGraceNote, isStaveNote, isStemmableNote, isTabNote } from './typeguard.js';
+import { log, RuntimeError } from './util.js';
 function L(...args) {
     if (Articulation.DEBUG)
         log('VexFlow.Articulation', args);
