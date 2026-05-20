@@ -842,7 +842,7 @@ export class StaveNote extends StemmableNote {
         x += this.flag.getWidth();
       }
     } else if (position === BELOW || position === ABOVE) {
-      x = this.getGlyphWidth() / 2;
+      x = this.getGlyphWidth() / 2 + this.xShift;
     }
 
     // addtional y shifts for rests

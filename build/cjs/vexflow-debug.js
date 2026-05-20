@@ -1,5 +1,5 @@
 /*!
- * VexFlow 5.0.0   2026-05-20T00:05:04.787Z   230f7b85127d34683ec1015d3ec9988b1ec1285a
+ * VexFlow 5.0.0   2026-05-20T10:06:44.233Z   ee94ef518eba6250a3026202f20262ad686ba21b
  * Copyright (c) 2023-present VexFlow contributors (see https://github.com/vexflow/vexflow/blob/main/AUTHORS.md).
  */
 (function webpackUniversalModuleDefinition(root, factory) {
@@ -30,8 +30,8 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export */ });
 // Gruntfile.js uses string-replace-loader to replace these values during build time.
 const VERSION = '5.0.0';
-const ID = '230f7b85127d34683ec1015d3ec9988b1ec1285a';
-const DATE = '2026-05-20T00:05:04.787Z';
+const ID = 'ee94ef518eba6250a3026202f20262ad686ba21b';
+const DATE = '2026-05-20T10:06:44.233Z';
 
 
 /***/ }),
@@ -1149,6 +1149,9 @@ class Articulation extends _modifier__WEBPACK_IMPORTED_MODULE_1__.Modifier {
         const isTab = (0,_typeguard__WEBPACK_IMPORTED_MODULE_5__.isTabNote)(note);
         // Articulations are centered over/under the note head.
         let { x } = note.getModifierStartXY(position, index);
+        // setOrigin is (0,*) to avoid bbox corruption on re-format. Since originX=0
+        // means left-anchored text in SVG, offset x to center the glyph on the notehead.
+        x -= this.getWidth() / 2;
         // Breath mark support: shift x toward the next note
         if (this.type === 'abr') {
             const noteTickContext = note.getTickContext();
@@ -19984,7 +19987,7 @@ class StaveNote extends _stemmablenote__WEBPACK_IMPORTED_MODULE_7__.StemmableNot
             }
         }
         else if (position === BELOW || position === ABOVE) {
-            x = this.getGlyphWidth() / 2;
+            x = this.getGlyphWidth() / 2 + this.xShift;
         }
         // addtional y shifts for rests
         let restShift = 0;

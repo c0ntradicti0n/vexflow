@@ -361,6 +361,9 @@ export class Articulation extends Modifier {
 
     // Articulations are centered over/under the note head.
     let { x } = note.getModifierStartXY(position, index);
+    // setOrigin is (0,*) to avoid bbox corruption on re-format. Since originX=0
+    // means left-anchored text in SVG, offset x to center the glyph on the notehead.
+    x -= this.getWidth() / 2;
     // Breath mark support: shift x toward the next note
     if (this.type === 'abr') {
       const noteTickContext = note.getTickContext();

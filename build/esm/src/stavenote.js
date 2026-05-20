@@ -587,7 +587,7 @@ export class StaveNote extends StemmableNote {
             }
         }
         else if (position === BELOW || position === ABOVE) {
-            x = this.getGlyphWidth() / 2;
+            x = this.getGlyphWidth() / 2 + this.xShift;
         }
         let restShift = 0;
         switch (this._noteHeads[index].getText()) {
