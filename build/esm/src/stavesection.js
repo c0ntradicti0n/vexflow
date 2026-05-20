@@ -38,6 +38,6 @@ export class StaveSection extends StaveModifier {
             ctx.rect(x, y - height + headroom, width, height);
             ctx.stroke();
         }
-        this.renderText(ctx, this.xShift + this.padding, y - this.padding);
+        this.renderText(ctx, this.padding, y - this.yShift - this.padding);
     }
 }

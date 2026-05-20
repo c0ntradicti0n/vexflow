@@ -1,5 +1,5 @@
 /*!
- * VexFlow 5.0.0   2026-05-20T10:06:44.233Z   ee94ef518eba6250a3026202f20262ad686ba21b
+ * VexFlow 5.0.0   2026-05-20T11:14:16.620Z   4ffc493716b115b834061783acff45cff85a4004
  * Copyright (c) 2023-present VexFlow contributors (see https://github.com/vexflow/vexflow/blob/main/AUTHORS.md).
  */
 (function webpackUniversalModuleDefinition(root, factory) {
@@ -30,8 +30,8 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export */ });
 // Gruntfile.js uses string-replace-loader to replace these values during build time.
 const VERSION = '5.0.0';
-const ID = 'ee94ef518eba6250a3026202f20262ad686ba21b';
-const DATE = '2026-05-20T10:06:44.233Z';
+const ID = '4ffc493716b115b834061783acff45cff85a4004';
+const DATE = '2026-05-20T11:14:16.620Z';
 
 
 /***/ }),
@@ -20616,7 +20616,7 @@ class StaveSection extends _stavemodifier__WEBPACK_IMPORTED_MODULE_1__.StaveModi
             ctx.rect(x, y - height + headroom, width, height);
             ctx.stroke();
         }
-        this.renderText(ctx, this.xShift + this.padding, y - this.padding);
+        this.renderText(ctx, this.padding, y - this.yShift - this.padding);
     }
 }
 
