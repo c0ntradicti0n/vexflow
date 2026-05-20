@@ -283,6 +283,7 @@ export class StaveNote extends StemmableNote {
               (lineDiff < 1 && lineDiff > 0) ||
               // If styles are different, shift
               JSON.stringify(noteU.note.getStyle()) !== JSON.stringify(noteL.note.getStyle())
+              )
             ) {
               xShift = voiceXShift + 2;
               if (noteU.stemDirection === noteL.stemDirection) {

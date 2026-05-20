@@ -1,5 +1,5 @@
 /*!
- * VexFlow 5.0.0   2026-05-15T13:38:25.472Z   467132aebe2994292d5a29041ff8d8fc2756f698
+ * VexFlow 5.0.0   2026-05-20T00:05:04.787Z   230f7b85127d34683ec1015d3ec9988b1ec1285a
  * Copyright (c) 2023-present VexFlow contributors (see https://github.com/vexflow/vexflow/blob/main/AUTHORS.md).
  */
 (function webpackUniversalModuleDefinition(root, factory) {
@@ -30,8 +30,8 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export */ });
 // Gruntfile.js uses string-replace-loader to replace these values during build time.
 const VERSION = '5.0.0';
-const ID = '467132aebe2994292d5a29041ff8d8fc2756f698';
-const DATE = '2026-05-15T13:38:25.472Z';
+const ID = '230f7b85127d34683ec1015d3ec9988b1ec1285a';
+const DATE = '2026-05-20T00:05:04.787Z';
 
 
 /***/ }),
@@ -987,6 +987,10 @@ class Articulation extends _modifier__WEBPACK_IMPORTED_MODULE_1__.Modifier {
     static get CATEGORY() {
         return _typeguard__WEBPACK_IMPORTED_MODULE_5__.Category.Articulation;
     }
+    setYShift(y) {
+        this._userYShift = y;
+        return super.setYShift(y);
+    }
     /**
      * FIXME:
      * Most of the complex formatting logic (ie: snapping to space) is
@@ -1041,7 +1045,7 @@ class Articulation extends _modifier__WEBPACK_IMPORTED_MODULE_1__.Modifier {
                 }
                 articulation.setTextLine(state.topTextLine);
                 state.topTextLine += increment;
-                articulation.setOrigin(0.5, 1);
+                articulation.setOrigin(0, 1);
             }
             else if (articulation.getPosition() === BELOW) {
                 let noteLine = Math.max(lines - note.getLineNumber(), 0);
@@ -1056,7 +1060,7 @@ class Articulation extends _modifier__WEBPACK_IMPORTED_MODULE_1__.Modifier {
                 }
                 articulation.setTextLine(state.textLine);
                 state.textLine += increment;
-                articulation.setOrigin(0.5, 0);
+                articulation.setOrigin(0, 0);
             }
         });
         const width = articulations
@@ -1099,6 +1103,7 @@ class Articulation extends _modifier__WEBPACK_IMPORTED_MODULE_1__.Modifier {
         super();
         this.heightShift = 0;
         this.breathMarkDistance = 0.8;
+        this._userYShift = 0;
         this.type = type;
         this.position = ABOVE;
         if (!_tables__WEBPACK_IMPORTED_MODULE_3__.Tables.articulationCodes(this.type)) {
@@ -1183,7 +1188,11 @@ class Articulation extends _modifier__WEBPACK_IMPORTED_MODULE_1__.Modifier {
             const articLine = distanceFromNote + Number(noteLine);
             const snappedLine = snapLineToStaff(canSitBetweenLines, articLine, position, offsetDirection);
             if (isWithinLines(snappedLine, position))
-                this.setOrigin(0.5, 0.5);
+                this.setOrigin(0, 0.5);
+            // setOriginX/Y reads bbox from prior render, corrupting xShift/yShift.
+            // Reset — draw() computes fresh positions from note geometry.
+            this.xShift = 0;
+            this.yShift = this._userYShift;
             y += Math.abs(snappedLine - articLine) * staffSpace * offsetDirection;
         }
         // Respect modifier.y_shift
@@ -19445,8 +19454,6 @@ class StaveNote extends _stemmablenote__WEBPACK_IMPORTED_MODULE_7__.StemmableNot
         const voiceXShift = Math.max(noteU.voiceShift, noteL.voiceShift);
         let xShift = 0;
         // Test for two voice note intersection
-        console.log(`[VEX_PROPS] noteU line=${noteU.line} noteL line=${noteL.line}`);
-        console.log(`[VEX_FMT] voices=2 noteU=${noteU.note.keys} minL=${noteU.minLine} maxL=${noteU.maxLine} stemDirU=${noteU.stemDirection} noteL=${noteL.note.keys} minL=${noteL.minLine} maxL=${noteL.maxLine} stemDirL=${noteL.stemDirection} lineSpacing=${noteU.note.hasStem() && noteL.note.hasStem() && noteU.stemDirection === noteL.stemDirection ? 0.0 : 0.5} voiceXShift=${voiceXShift}`);
         if (voices === 2) {
             const lineSpacing = noteU.note.hasStem() && noteL.note.hasStem() && noteU.stemDirection === noteL.stemDirection ? 0.0 : 0.5;
             if (noteL.isrest && noteU.isrest && noteU.note.duration === noteL.note.duration) {

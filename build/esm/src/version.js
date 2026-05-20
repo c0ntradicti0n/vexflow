@@ -1,3 +1,3 @@
 export const VERSION = '5.0.0';
-export const ID = '467132aebe2994292d5a29041ff8d8fc2756f698';
-export const DATE = '2026-05-15T13:38:25.472Z';
+export const ID = '230f7b85127d34683ec1015d3ec9988b1ec1285a';
+export const DATE = '2026-05-20T00:05:04.787Z';

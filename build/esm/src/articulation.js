@@ -132,6 +132,10 @@ export class Articulation extends Modifier {
     static get CATEGORY() {
         return "Articulation";
     }
+    setYShift(y) {
+        this._userYShift = y;
+        return super.setYShift(y);
+    }
     static format(articulations, state) {
         if (!articulations || articulations.length === 0)
             return false;
@@ -166,7 +170,7 @@ export class Articulation extends Modifier {
                 }
                 articulation.setTextLine(state.topTextLine);
                 state.topTextLine += increment;
-                articulation.setOrigin(0.5, 1);
+                articulation.setOrigin(0, 1);
             }
             else if (articulation.getPosition() === BELOW) {
                 let noteLine = Math.max(lines - note.getLineNumber(), 0);
@@ -180,7 +184,7 @@ export class Articulation extends Modifier {
                 }
                 articulation.setTextLine(state.textLine);
                 state.textLine += increment;
-                articulation.setOrigin(0.5, 0);
+                articulation.setOrigin(0, 0);
             }
         });
         const width = articulations
@@ -215,6 +219,7 @@ export class Articulation extends Modifier {
         super();
         this.heightShift = 0;
         this.breathMarkDistance = 0.8;
+        this._userYShift = 0;
         this.type = type;
         this.position = ABOVE;
         if (!Tables.articulationCodes(this.type)) {
@@ -294,7 +299,9 @@ export class Articulation extends Modifier {
             const articLine = distanceFromNote + Number(noteLine);
             const snappedLine = snapLineToStaff(canSitBetweenLines, articLine, position, offsetDirection);
             if (isWithinLines(snappedLine, position))
-                this.setOrigin(0.5, 0.5);
+                this.setOrigin(0, 0.5);
+            this.xShift = 0;
+            this.yShift = this._userYShift;
             y += Math.abs(snappedLine - articLine) * staffSpace * offsetDirection;
         }
         if (this.yShift) {

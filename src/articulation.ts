@@ -182,6 +182,14 @@ export class Articulation extends Modifier {
 
   protected heightShift = 0;
   protected breathMarkDistance: number = 0.8;
+
+  private _userYShift: number = 0;
+
+  setYShift(y: number): this {
+    this._userYShift = y;
+    return super.setYShift(y);
+  }
+
   /**
    * FIXME:
    * Most of the complex formatting logic (ie: snapping to space) is
@@ -240,7 +248,7 @@ export class Articulation extends Modifier {
         }
         articulation.setTextLine(state.topTextLine);
         state.topTextLine += increment;
-        articulation.setOrigin(0.5, 1);
+        articulation.setOrigin(0, 1);
       } else if (articulation.getPosition() === BELOW) {
         let noteLine = Math.max(lines - note.getLineNumber(), 0);
         if (stemDirection === Stem.DOWN) {
@@ -254,7 +262,7 @@ export class Articulation extends Modifier {
         }
         articulation.setTextLine(state.textLine);
         state.textLine += increment;
-        articulation.setOrigin(0.5, 0);
+        articulation.setOrigin(0, 0);
       }
     });
 
@@ -396,7 +404,11 @@ export class Articulation extends Modifier {
       const articLine = distanceFromNote + Number(noteLine);
       const snappedLine = snapLineToStaff(canSitBetweenLines, articLine, position, offsetDirection);
 
-      if (isWithinLines(snappedLine, position)) this.setOrigin(0.5, 0.5);
+      if (isWithinLines(snappedLine, position)) this.setOrigin(0, 0.5);
+      // setOriginX/Y reads bbox from prior render, corrupting xShift/yShift.
+      // Reset — draw() computes fresh positions from note geometry.
+      this.xShift = 0;
+      this.yShift = this._userYShift;
 
       y += Math.abs(snappedLine - articLine) * staffSpace * offsetDirection;
     }

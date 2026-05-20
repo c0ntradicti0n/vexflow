@@ -40,6 +40,8 @@ export declare class Articulation extends Modifier {
     protected articulation: ArticulationStruct;
     protected heightShift: number;
     protected breathMarkDistance: number;
+    private _userYShift;
+    setYShift(y: number): this;
     /**
      * FIXME:
      * Most of the complex formatting logic (ie: snapping to space) is

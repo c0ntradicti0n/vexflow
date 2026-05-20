@@ -146,8 +146,6 @@ export class StaveNote extends StemmableNote {
         }
         const voiceXShift = Math.max(noteU.voiceShift, noteL.voiceShift);
         let xShift = 0;
-        console.log(`[VEX_PROPS] noteU line=${noteU.line} noteL line=${noteL.line}`);
-        console.log(`[VEX_FMT] voices=2 noteU=${noteU.note.keys} minL=${noteU.minLine} maxL=${noteU.maxLine} stemDirU=${noteU.stemDirection} noteL=${noteL.note.keys} minL=${noteL.minLine} maxL=${noteL.maxLine} stemDirL=${noteL.stemDirection} lineSpacing=${noteU.note.hasStem() && noteL.note.hasStem() && noteU.stemDirection === noteL.stemDirection ? 0.0 : 0.5} voiceXShift=${voiceXShift}`);
         if (voices === 2) {
             const lineSpacing = noteU.note.hasStem() && noteL.note.hasStem() && noteU.stemDirection === noteL.stemDirection ? 0.0 : 0.5;
             if (noteL.isrest && noteU.isrest && noteU.note.duration === noteL.note.duration) {
