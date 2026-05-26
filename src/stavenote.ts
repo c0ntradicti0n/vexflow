@@ -251,10 +251,10 @@ export class StaveNote extends StemmableNote {
           let disableXShift = false;
           let halfNoteCount = 0;
           let wholeNoteCount = 0;
-          if (noteU.note.duration === "h") halfNoteCount++;
-          else if (noteU.note.duration === "w") wholeNoteCount++;
-          if (noteL.note.duration === "h") halfNoteCount++;
-          else if (noteL.note.duration === "w") wholeNoteCount++;
+          if (noteU.note.duration === 'h') halfNoteCount++;
+          else if (noteU.note.duration === 'w') wholeNoteCount++;
+          if (noteL.note.duration === 'h') halfNoteCount++;
+          else if (noteL.note.duration === 'w') wholeNoteCount++;
 
           const uDots = noteU.note.getModifiers().filter((item) => item.getCategory() === Category.Dot).length;
           const lDots = noteL.note.getModifiers().filter((item) => item.getCategory() === Category.Dot).length;
@@ -272,18 +272,17 @@ export class StaveNote extends StemmableNote {
             const noteUHead = noteU.note.sortedKeyProps[0].keyProps.code;
             const noteLHead = noteL.note.sortedKeyProps[noteL.note.sortedKeyProps.length - 1].keyProps.code;
             if (
-              !disableXShift && (
+              !disableXShift &&
               // If unison is not configured, shift
-              !Tables.UNISON ||
-              // If we have different noteheads, shift
-              noteUHead !== noteLHead ||
-              // If we have different dot values, shift
-              uDots !== lDots ||
-              // If the notes are quite close but not on the same line, shift
-              (lineDiff < 1 && lineDiff > 0) ||
-              // If styles are different, shift
-              JSON.stringify(noteU.note.getStyle()) !== JSON.stringify(noteL.note.getStyle())
-              )
+              (!Tables.UNISON ||
+                // If we have different noteheads, shift
+                noteUHead !== noteLHead ||
+                // If we have different dot values, shift
+                uDots !== lDots ||
+                // If the notes are quite close but not on the same line, shift
+                (lineDiff < 1 && lineDiff > 0) ||
+                // If styles are different, shift
+                JSON.stringify(noteU.note.getStyle()) !== JSON.stringify(noteL.note.getStyle()))
             ) {
               xShift = voiceXShift + 2;
               if (noteU.stemDirection === noteL.stemDirection) {

@@ -50,6 +50,7 @@ export class NoteSubGroup extends Modifier {
       subNote.setIgnoreTicks(false);
     });
     this.width = 0;
+    this.setSpacingFromNextModifier(5);
 
     this.formatter = new Formatter();
     this.voice = new Voice({
@@ -65,7 +66,7 @@ export class NoteSubGroup extends Modifier {
     if (this.preFormatted) return;
 
     this.formatter.joinVoices([this.voice]).format([this.voice], 0);
-    this.setWidth(this.formatter.getMinTotalWidth());
+    this.setWidth(this.formatter.getMinTotalWidth() + 5); // 5px padding so clef doesn't collide with previous note
     this.preFormatted = true;
   }
 
