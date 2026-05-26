@@ -1,5 +1,5 @@
 /*!
- * VexFlow 5.0.0   2026-05-20T11:14:16.620Z   4ffc493716b115b834061783acff45cff85a4004
+ * VexFlow 5.0.0   2026-05-26T08:22:41.275Z   778fb794877daa058e0b99b6d960a1ef512f467c
  * Copyright (c) 2023-present VexFlow contributors (see https://github.com/vexflow/vexflow/blob/main/AUTHORS.md).
  */
 (function webpackUniversalModuleDefinition(root, factory) {
@@ -30,8 +30,8 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export */ });
 // Gruntfile.js uses string-replace-loader to replace these values during build time.
 const VERSION = '5.0.0';
-const ID = '4ffc493716b115b834061783acff45cff85a4004';
-const DATE = '2026-05-20T11:14:16.620Z';
+const ID = '778fb794877daa058e0b99b6d960a1ef512f467c';
+const DATE = '2026-05-26T08:22:41.275Z';
 
 
 /***/ }),
@@ -1151,7 +1151,10 @@ class Articulation extends _modifier__WEBPACK_IMPORTED_MODULE_1__.Modifier {
         let { x } = note.getModifierStartXY(position, index);
         // setOrigin is (0,*) to avoid bbox corruption on re-format. Since originX=0
         // means left-anchored text in SVG, offset x to center the glyph on the notehead.
-        x -= this.getWidth() / 2;
+        // Fallback width for environments where the music font is not available
+        // for canvas measurement (getWidth returns 0).
+        const glyphWidth = this.getWidth();
+        x -= (glyphWidth > 0 ? glyphWidth : 12) / 2;
         // Breath mark support: shift x toward the next note
         if (this.type === 'abr') {
             const noteTickContext = note.getTickContext();
@@ -16272,6 +16275,7 @@ class NoteSubGroup extends _modifier__WEBPACK_IMPORTED_MODULE_1__.Modifier {
             subNote.setIgnoreTicks(false);
         });
         this.width = 0;
+        this.setSpacingFromNextModifier(5);
         this.formatter = new _formatter__WEBPACK_IMPORTED_MODULE_0__.Formatter();
         this.voice = new _voice__WEBPACK_IMPORTED_MODULE_4__.Voice({
             numBeats: 4,
@@ -16284,7 +16288,7 @@ class NoteSubGroup extends _modifier__WEBPACK_IMPORTED_MODULE_1__.Modifier {
         if (this.preFormatted)
             return;
         this.formatter.joinVoices([this.voice]).format([this.voice], 0);
-        this.setWidth(this.formatter.getMinTotalWidth());
+        this.setWidth(this.formatter.getMinTotalWidth() + 5); // 5px padding so clef doesn't collide with previous note
         this.preFormatted = true;
     }
     setWidth(width) {
@@ -19479,13 +19483,13 @@ class StaveNote extends _stemmablenote__WEBPACK_IMPORTED_MODULE_7__.StemmableNot
                     let disableXShift = false;
                     let halfNoteCount = 0;
                     let wholeNoteCount = 0;
-                    if (noteU.note.duration === "h")
+                    if (noteU.note.duration === 'h')
                         halfNoteCount++;
-                    else if (noteU.note.duration === "w")
+                    else if (noteU.note.duration === 'w')
                         wholeNoteCount++;
-                    if (noteL.note.duration === "h")
+                    if (noteL.note.duration === 'h')
                         halfNoteCount++;
-                    else if (noteL.note.duration === "w")
+                    else if (noteL.note.duration === 'w')
                         wholeNoteCount++;
                     const uDots = noteU.note.getModifiers().filter((item) => item.getCategory() === _typeguard__WEBPACK_IMPORTED_MODULE_9__.Category.Dot).length;
                     const lDots = noteL.note.getModifiers().filter((item) => item.getCategory() === _typeguard__WEBPACK_IMPORTED_MODULE_9__.Category.Dot).length;
@@ -19499,17 +19503,17 @@ class StaveNote extends _stemmablenote__WEBPACK_IMPORTED_MODULE_7__.StemmableNot
                     if (noteU.note.hasStem() && noteL.note.hasStem()) {
                         const noteUHead = noteU.note.sortedKeyProps[0].keyProps.code;
                         const noteLHead = noteL.note.sortedKeyProps[noteL.note.sortedKeyProps.length - 1].keyProps.code;
-                        if (!disableXShift && (
-                        // If unison is not configured, shift
-                        !_tables__WEBPACK_IMPORTED_MODULE_8__.Tables.UNISON ||
-                            // If we have different noteheads, shift
-                            noteUHead !== noteLHead ||
-                            // If we have different dot values, shift
-                            uDots !== lDots ||
-                            // If the notes are quite close but not on the same line, shift
-                            (lineDiff < 1 && lineDiff > 0) ||
-                            // If styles are different, shift
-                            JSON.stringify(noteU.note.getStyle()) !== JSON.stringify(noteL.note.getStyle()))) {
+                        if (!disableXShift &&
+                            // If unison is not configured, shift
+                            (!_tables__WEBPACK_IMPORTED_MODULE_8__.Tables.UNISON ||
+                                // If we have different noteheads, shift
+                                noteUHead !== noteLHead ||
+                                // If we have different dot values, shift
+                                uDots !== lDots ||
+                                // If the notes are quite close but not on the same line, shift
+                                (lineDiff < 1 && lineDiff > 0) ||
+                                // If styles are different, shift
+                                JSON.stringify(noteU.note.getStyle()) !== JSON.stringify(noteL.note.getStyle()))) {
                             xShift = voiceXShift + 2;
                             if (noteU.stemDirection === noteL.stemDirection) {
                                 // upper voice is middle voice, so shift it right

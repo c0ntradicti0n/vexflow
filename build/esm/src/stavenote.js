@@ -163,13 +163,13 @@ export class StaveNote extends StemmableNote {
                     let disableXShift = false;
                     let halfNoteCount = 0;
                     let wholeNoteCount = 0;
-                    if (noteU.note.duration === "h")
+                    if (noteU.note.duration === 'h')
                         halfNoteCount++;
-                    else if (noteU.note.duration === "w")
+                    else if (noteU.note.duration === 'w')
                         wholeNoteCount++;
-                    if (noteL.note.duration === "h")
+                    if (noteL.note.duration === 'h')
                         halfNoteCount++;
-                    else if (noteL.note.duration === "w")
+                    else if (noteL.note.duration === 'w')
                         wholeNoteCount++;
                     const uDots = noteU.note.getModifiers().filter((item) => item.getCategory() === "Dot").length;
                     const lDots = noteL.note.getModifiers().filter((item) => item.getCategory() === "Dot").length;
@@ -183,11 +183,12 @@ export class StaveNote extends StemmableNote {
                     if (noteU.note.hasStem() && noteL.note.hasStem()) {
                         const noteUHead = noteU.note.sortedKeyProps[0].keyProps.code;
                         const noteLHead = noteL.note.sortedKeyProps[noteL.note.sortedKeyProps.length - 1].keyProps.code;
-                        if (!disableXShift && (!Tables.UNISON ||
-                            noteUHead !== noteLHead ||
-                            uDots !== lDots ||
-                            (lineDiff < 1 && lineDiff > 0) ||
-                            JSON.stringify(noteU.note.getStyle()) !== JSON.stringify(noteL.note.getStyle()))) {
+                        if (!disableXShift &&
+                            (!Tables.UNISON ||
+                                noteUHead !== noteLHead ||
+                                uDots !== lDots ||
+                                (lineDiff < 1 && lineDiff > 0) ||
+                                JSON.stringify(noteU.note.getStyle()) !== JSON.stringify(noteL.note.getStyle()))) {
                             xShift = voiceXShift + 2;
                             if (noteU.stemDirection === noteL.stemDirection) {
                                 noteU.note.setXShift(xShift);

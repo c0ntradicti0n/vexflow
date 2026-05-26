@@ -27,6 +27,7 @@ export class NoteSubGroup extends Modifier {
             subNote.setIgnoreTicks(false);
         });
         this.width = 0;
+        this.setSpacingFromNextModifier(5);
         this.formatter = new Formatter();
         this.voice = new Voice({
             numBeats: 4,
@@ -39,7 +40,7 @@ export class NoteSubGroup extends Modifier {
         if (this.preFormatted)
             return;
         this.formatter.joinVoices([this.voice]).format([this.voice], 0);
-        this.setWidth(this.formatter.getMinTotalWidth());
+        this.setWidth(this.formatter.getMinTotalWidth() + 5);
         this.preFormatted = true;
     }
     setWidth(width) {

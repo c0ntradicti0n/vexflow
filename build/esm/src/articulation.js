@@ -261,7 +261,8 @@ export class Articulation extends Modifier {
         const staffSpace = stave.getSpacingBetweenLines();
         const isTab = isTabNote(note);
         let { x } = note.getModifierStartXY(position, index);
-        x -= this.getWidth() / 2;
+        const glyphWidth = this.getWidth();
+        x -= (glyphWidth > 0 ? glyphWidth : 12) / 2;
         if (this.type === 'abr') {
             const noteTickContext = note.getTickContext();
             if (noteTickContext) {
