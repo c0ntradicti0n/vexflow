@@ -802,7 +802,9 @@ export class Formatter {
         if (index > 0) {
           const contextX = context.getX();
           const ideal = idealDistances[index];
-          const errorPx = defined(ideal.fromTickable).getX() + ideal.expectedDistance - (contextX + spaceAccum);
+          const fromTickable = ideal.fromTickable;
+          const fromX: number = defined(fromTickable).getX();
+          const errorPx = fromX + ideal.expectedDistance - (contextX + spaceAccum);
 
           let negativeShiftPx = 0;
           if (errorPx > 0) {
@@ -1068,6 +1070,14 @@ export class Formatter {
     };
 
     this.voices = voices;
+
+    // Reset xShift on all tickables to clear stale state from prior format calls.
+    voices.forEach((voice) => {
+      voice.getTickables().forEach((tickable: Tickable) => {
+        tickable.setXShift(0);
+      });
+    });
+
     const softmaxFactor = this.formatterOptions.softmaxFactor;
     if (softmaxFactor) {
       this.voices.forEach((v) => v.setSoftmaxFactor(softmaxFactor));

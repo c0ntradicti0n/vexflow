@@ -1,5 +1,5 @@
 /*!
- * VexFlow 5.0.0   2026-05-26T08:22:41.275Z   778fb794877daa058e0b99b6d960a1ef512f467c
+ * VexFlow 5.0.0   2026-06-05T08:30:49.676Z   7d92055a68ccd36838fffd19901aedfb54855cf1
  * Copyright (c) 2023-present VexFlow contributors (see https://github.com/vexflow/vexflow/blob/main/AUTHORS.md).
  */
 (function webpackUniversalModuleDefinition(root, factory) {
@@ -30,8 +30,8 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export */ });
 // Gruntfile.js uses string-replace-loader to replace these values during build time.
 const VERSION = '5.0.0';
-const ID = '778fb794877daa058e0b99b6d960a1ef512f467c';
-const DATE = '2026-05-26T08:22:41.275Z';
+const ID = '7d92055a68ccd36838fffd19901aedfb54855cf1';
+const DATE = '2026-06-05T08:30:49.676Z';
 
 
 /***/ }),
@@ -6414,6 +6414,13 @@ class Formatter {
         // and preFormat to apply Y values to the notes;
         if (voicesParam && stave) {
             voicesParam.forEach((voice) => voice.setStave(stave).preFormat());
+            // DEBUG: print voice state
+            if (justifyWidth > 0) {
+                const voiceInfo = voicesParam.map((v, vi) => {
+                    return 'v' + vi + ' preFmt=' + (v.preFormatted === true);
+                });
+                console.log('FMT voices preFormat done: ' + voiceInfo.join(', ') + ' staveW=' + (stave ? stave.getWidth().toFixed(1) : '?'));
+            }
         }
         // Now distribute the ticks to each tick context, and assign them their
         // own X positions.
@@ -6437,6 +6444,21 @@ class Formatter {
             // Calculate shift for the next tick.
             shift = width - metrics.totalLeftPx;
         });
+        // DEBUG: print pass 1 positions
+        if (justifyWidth > 0 && contextList.length > 0) {
+            const callN = ++Formatter.callCount;
+            const pass1Info = contextList.map((t) => {
+                const c = contextMap[t];
+                const tbs = c.getTickables();
+                const labels = tbs.map((tb) => {
+                    var _a, _b, _c, _d, _e;
+                    const isR = ((_b = (_a = tb).isRest) === null || _b === void 0 ? void 0 : _b.call(_a)) ? 'R' : 'N';
+                    return isR + '(ticks=' + ((_e = (_d = (_c = tb.getTicks) === null || _c === void 0 ? void 0 : _c.call(tb)) === null || _d === void 0 ? void 0 : _d.value()) !== null && _e !== void 0 ? _e : 0) + ')';
+                });
+                return 't=' + t + ' X=' + c.getX().toFixed(1) + ' w=' + c.getWidth().toFixed(1) + ' [' + labels.join(',') + ']';
+            });
+            console.log('FMT #' + callN + ' pass1 (jw=' + justifyWidth.toFixed(1) + ' ctxCnt=' + contextList.length + '): ' + pass1Info.join(' | '));
+        }
         // Use softmax based on all notes across all staves. (options.globalSoftmax)
         const { globalSoftmax, softmaxFactor, maxIterations } = this.formatterOptions;
         const exp = (tick) => Math.pow(softmaxFactor, (contextMap[tick].getMaxTicks().value() / totalTicks));
@@ -6521,11 +6543,14 @@ class Formatter {
             const centerX = adjustedJustifyWidth / 2;
             let spaceAccum = 0;
             contextList.forEach((tick, index) => {
+                var _a, _b, _c, _d, _e, _f, _g;
                 const context = contextMap[tick];
                 if (index > 0) {
                     const contextX = context.getX();
                     const ideal = idealDistances[index];
-                    const errorPx = (0,_util__WEBPACK_IMPORTED_MODULE_9__.defined)(ideal.fromTickable).getX() + ideal.expectedDistance - (contextX + spaceAccum);
+                    const fromTickable = ideal.fromTickable;
+                    const fromX = (0,_util__WEBPACK_IMPORTED_MODULE_9__.defined)(fromTickable).getX();
+                    const errorPx = fromX + ideal.expectedDistance - (contextX + spaceAccum);
                     let negativeShiftPx = 0;
                     if (errorPx > 0) {
                         spaceAccum += errorPx;
@@ -6535,6 +6560,28 @@ class Formatter {
                         spaceAccum += -negativeShiftPx;
                     }
                     context.setX(contextX + spaceAccum);
+                    // DEBUG: print shift details for m10-formatted calls
+                    if (justifyWidth > 0 && contextList.length > 0) {
+                        const firstCtx = contextMap[contextList[0]];
+                        const firstTbs = firstCtx.getTickables();
+                        const isM10 = firstTbs.some((tb) => { var _a, _b, _c, _d, _e; return ((_b = (_a = tb).isRest) === null || _b === void 0 ? void 0 : _b.call(_a)) && ((_e = (_d = (_c = tb.getTicks) === null || _c === void 0 ? void 0 : _c.call(tb)) === null || _d === void 0 ? void 0 : _d.value()) !== null && _e !== void 0 ? _e : 0) === 8192; });
+                        if (isM10 && fromTickable) {
+                            const ftCtx = (_a = fromTickable.checkTickContext) === null || _a === void 0 ? void 0 : _a.call(fromTickable, '');
+                            console.log('FMT shiftDetail t=' + tick +
+                                ' ctxX=' + contextX.toFixed(1) +
+                                ' fromX=' + fromX.toFixed(1) +
+                                ' fromTC_X=' + (ftCtx ? ftCtx.getX().toFixed(1) : '?') +
+                                ' fromXShift=' + ((_d = (_c = (_b = fromTickable).getXShift) === null || _c === void 0 ? void 0 : _c.call(_b)) !== null && _d !== void 0 ? _d : 0).toFixed(1) +
+                                ' fromIsRest=' + ((_g = (_f = (_e = fromTickable).isRest) === null || _f === void 0 ? void 0 : _f.call(_e)) !== null && _g !== void 0 ? _g : false) +
+                                ' fromType=' + fromTickable.constructor.name +
+                                ' expD=' + ideal.expectedDistance.toFixed(1) +
+                                ' errPx=' + errorPx.toFixed(1) +
+                                ' maxNeg=' + ideal.maxNegativeShiftPx.toFixed(1) +
+                                ' negShift=' + negativeShiftPx.toFixed(1) +
+                                ' accum=' + spaceAccum.toFixed(1) +
+                                ' resultX=' + context.getX().toFixed(1));
+                        }
+                    }
                 }
                 // Move center aligned tickables to middle
                 context.getCenterAlignedTickables().forEach((tickable) => {
@@ -6553,6 +6600,15 @@ class Formatter {
         let targetWidth = adjustedJustifyWidth;
         const distances = calculateIdealDistances(targetWidth);
         let actualWidth = shiftToIdealDistances(distances);
+        // DEBUG: print positions after first shiftToIdealDistances
+        if (justifyWidth > 0 && contextList.length > 0) {
+            const callN = Formatter.callCount;
+            const afterShift = contextList.map((t) => {
+                const c = contextMap[t];
+                return 't=' + t + ' X=' + c.getX().toFixed(1);
+            });
+            console.log('FMT #' + callN + ' afterShift (adjJW=' + adjustedJustifyWidth.toFixed(1) + ' targetW=' + targetWidth.toFixed(1) + ' actualW=' + actualWidth.toFixed(1) + '): ' + afterShift.join(' | '));
+        }
         // Just one context. Done formatting.
         if (contextList.length === 1)
             return 0;
@@ -6597,6 +6653,15 @@ class Formatter {
             paddingMin = paddingMax - (configMaxPadding - configMinPadding);
             actualWidth = shiftToIdealDistances(calculateIdealDistances(targetWidth));
             iterations--;
+            // DEBUG: print positions during compression
+            if (justifyWidth > 0 && contextList.length > 0) {
+                const callN = Formatter.callCount;
+                const compInfo = contextList.map((t) => {
+                    const c = contextMap[t];
+                    return 't=' + t + ' X=' + c.getX().toFixed(1);
+                });
+                console.log('FMT #' + callN + ' compress iter left=' + iterations + ' targetW=' + targetWidth.toFixed(1) + ' actualW=' + actualWidth.toFixed(1) + ' maxX=' + maxX.toFixed(1) + ': ' + compInfo.join(' | '));
+            }
         }
         this.justifyWidth = justifyWidth;
         return this.evaluate();
@@ -6762,6 +6827,12 @@ class Formatter {
     format(voices, justifyWidth, options) {
         const opts = Object.assign({ alignRests: false }, options);
         this.voices = voices;
+        // Reset xShift on all tickables to clear stale state from prior format calls.
+        voices.forEach((voice) => {
+            voice.getTickables().forEach((tickable) => {
+                tickable.setXShift(0);
+            });
+        });
         const softmaxFactor = this.formatterOptions.softmaxFactor;
         if (softmaxFactor) {
             this.voices.forEach((v) => v.setSoftmaxFactor(softmaxFactor));
@@ -6788,6 +6859,7 @@ class Formatter {
 }
 // To enable logging for this class. Set `VexFlow.Formatter.DEBUG` to `true`.
 Formatter.DEBUG = false;
+Formatter.callCount = 0;
 
 
 /***/ }),
