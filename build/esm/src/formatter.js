@@ -310,12 +310,6 @@ export class Formatter {
         this.lossHistory = [];
         if (voicesParam && stave) {
             voicesParam.forEach((voice) => voice.setStave(stave).preFormat());
-            if (justifyWidth > 0) {
-                const voiceInfo = voicesParam.map((v, vi) => {
-                    return 'v' + vi + ' preFmt=' + (v.preFormatted === true);
-                });
-                console.log('FMT voices preFormat done: ' + voiceInfo.join(', ') + ' staveW=' + (stave ? stave.getWidth().toFixed(1) : '?'));
-            }
         }
         let x = 0;
         let shift = 0;
@@ -333,20 +327,6 @@ export class Formatter {
             context.setX(x);
             shift = width - metrics.totalLeftPx;
         });
-        if (justifyWidth > 0 && contextList.length > 0) {
-            const callN = ++Formatter.callCount;
-            const pass1Info = contextList.map((t) => {
-                const c = contextMap[t];
-                const tbs = c.getTickables();
-                const labels = tbs.map((tb) => {
-                    var _a, _b, _c, _d, _e;
-                    const isR = ((_b = (_a = tb).isRest) === null || _b === void 0 ? void 0 : _b.call(_a)) ? 'R' : 'N';
-                    return isR + '(ticks=' + ((_e = (_d = (_c = tb.getTicks) === null || _c === void 0 ? void 0 : _c.call(tb)) === null || _d === void 0 ? void 0 : _d.value()) !== null && _e !== void 0 ? _e : 0) + ')';
-                });
-                return 't=' + t + ' X=' + c.getX().toFixed(1) + ' w=' + c.getWidth().toFixed(1) + ' [' + labels.join(',') + ']';
-            });
-            console.log('FMT #' + callN + ' pass1 (jw=' + justifyWidth.toFixed(1) + ' ctxCnt=' + contextList.length + '): ' + pass1Info.join(' | '));
-        }
         const { globalSoftmax, softmaxFactor, maxIterations } = this.formatterOptions;
         const exp = (tick) => Math.pow(softmaxFactor, (contextMap[tick].getMaxTicks().value() / totalTicks));
         const expTicksUsed = sumArray(contextList.map(exp));
@@ -413,7 +393,6 @@ export class Formatter {
             const centerX = adjustedJustifyWidth / 2;
             let spaceAccum = 0;
             contextList.forEach((tick, index) => {
-                var _a, _b, _c, _d, _e, _f, _g;
                 const context = contextMap[tick];
                 if (index > 0) {
                     const contextX = context.getX();
@@ -430,27 +409,6 @@ export class Formatter {
                         spaceAccum += -negativeShiftPx;
                     }
                     context.setX(contextX + spaceAccum);
-                    if (justifyWidth > 0 && contextList.length > 0) {
-                        const firstCtx = contextMap[contextList[0]];
-                        const firstTbs = firstCtx.getTickables();
-                        const isM10 = firstTbs.some((tb) => { var _a, _b, _c, _d, _e; return ((_b = (_a = tb).isRest) === null || _b === void 0 ? void 0 : _b.call(_a)) && ((_e = (_d = (_c = tb.getTicks) === null || _c === void 0 ? void 0 : _c.call(tb)) === null || _d === void 0 ? void 0 : _d.value()) !== null && _e !== void 0 ? _e : 0) === 8192; });
-                        if (isM10 && fromTickable) {
-                            const ftCtx = (_a = fromTickable.checkTickContext) === null || _a === void 0 ? void 0 : _a.call(fromTickable, '');
-                            console.log('FMT shiftDetail t=' + tick +
-                                ' ctxX=' + contextX.toFixed(1) +
-                                ' fromX=' + fromX.toFixed(1) +
-                                ' fromTC_X=' + (ftCtx ? ftCtx.getX().toFixed(1) : '?') +
-                                ' fromXShift=' + ((_d = (_c = (_b = fromTickable).getXShift) === null || _c === void 0 ? void 0 : _c.call(_b)) !== null && _d !== void 0 ? _d : 0).toFixed(1) +
-                                ' fromIsRest=' + ((_g = (_f = (_e = fromTickable).isRest) === null || _f === void 0 ? void 0 : _f.call(_e)) !== null && _g !== void 0 ? _g : false) +
-                                ' fromType=' + fromTickable.constructor.name +
-                                ' expD=' + ideal.expectedDistance.toFixed(1) +
-                                ' errPx=' + errorPx.toFixed(1) +
-                                ' maxNeg=' + ideal.maxNegativeShiftPx.toFixed(1) +
-                                ' negShift=' + negativeShiftPx.toFixed(1) +
-                                ' accum=' + spaceAccum.toFixed(1) +
-                                ' resultX=' + context.getX().toFixed(1));
-                        }
-                    }
                 }
                 context.getCenterAlignedTickables().forEach((tickable) => {
                     tickable.setCenterXShift(centerX - context.getX());
@@ -468,14 +426,6 @@ export class Formatter {
         let targetWidth = adjustedJustifyWidth;
         const distances = calculateIdealDistances(targetWidth);
         let actualWidth = shiftToIdealDistances(distances);
-        if (justifyWidth > 0 && contextList.length > 0) {
-            const callN = Formatter.callCount;
-            const afterShift = contextList.map((t) => {
-                const c = contextMap[t];
-                return 't=' + t + ' X=' + c.getX().toFixed(1);
-            });
-            console.log('FMT #' + callN + ' afterShift (adjJW=' + adjustedJustifyWidth.toFixed(1) + ' targetW=' + targetWidth.toFixed(1) + ' actualW=' + actualWidth.toFixed(1) + '): ' + afterShift.join(' | '));
-        }
         if (contextList.length === 1)
             return 0;
         const calcMinDistance = (targetWidth, distances) => {
@@ -512,14 +462,6 @@ export class Formatter {
             paddingMin = paddingMax - (configMaxPadding - configMinPadding);
             actualWidth = shiftToIdealDistances(calculateIdealDistances(targetWidth));
             iterations--;
-            if (justifyWidth > 0 && contextList.length > 0) {
-                const callN = Formatter.callCount;
-                const compInfo = contextList.map((t) => {
-                    const c = contextMap[t];
-                    return 't=' + t + ' X=' + c.getX().toFixed(1);
-                });
-                console.log('FMT #' + callN + ' compress iter left=' + iterations + ' targetW=' + targetWidth.toFixed(1) + ' actualW=' + actualWidth.toFixed(1) + ' maxX=' + maxX.toFixed(1) + ': ' + compInfo.join(' | '));
-            }
         }
         this.justifyWidth = justifyWidth;
         return this.evaluate();
@@ -672,4 +614,3 @@ export class Formatter {
     }
 }
 Formatter.DEBUG = false;
-Formatter.callCount = 0;

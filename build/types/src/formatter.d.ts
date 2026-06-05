@@ -51,7 +51,6 @@ export interface AlignmentModifierContexts {
  */
 export declare class Formatter {
     static DEBUG: boolean;
-    static callCount: number;
     protected hasMinTotalWidth: boolean;
     protected minTotalWidth: number;
     protected contextGaps: {
