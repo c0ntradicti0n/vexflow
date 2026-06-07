@@ -802,9 +802,7 @@ export class Formatter {
         if (index > 0) {
           const contextX = context.getX();
           const ideal = idealDistances[index];
-          const fromTickable = ideal.fromTickable;
-          const fromX: number = defined(fromTickable).getX();
-          const errorPx = fromX + ideal.expectedDistance - (contextX + spaceAccum);
+          const errorPx = defined(ideal.fromTickable).getX() + ideal.expectedDistance - (contextX + spaceAccum);
 
           let negativeShiftPx = 0;
           if (errorPx > 0) {
@@ -815,9 +813,21 @@ export class Formatter {
           }
           context.setX(contextX + spaceAccum);
         }
-        // Move center aligned tickables to middle
+        // Move center aligned tickables to middle (measure center).
+        // Use justifyWidth rather than adjustedJustifyWidth: the latter subtracts
+        // lastContext.notePx, which for single-context voices double-counts the
+        // tickable's own width and produces a wrong center.
+        // Formula derivation:
+        //   absX = ctxX + nsx + pad + cxs
+        //   absX + gw/2 = nsx + (neX - nsx)/2
+        //   cxs = (neX - nsx)/2 - ctxX - pad - gw/2
+        //   neX - nsx = jw + pad + endPaddingMax
+        //   cxs = jw/2 - ctxX - pad/2 + endPaddingMax/2 - gw/2
         context.getCenterAlignedTickables().forEach((tickable: Tickable) => {
-          tickable.setCenterXShift(centerX - context.getX());
+          tickable.setCenterXShift(
+            justifyWidth / 2 - context.getX() - leftPadding / 2
+            + configMaxPadding / 2 - (tickable as any).getGlyphWidth() / 2
+          );
         });
       });
 
@@ -884,6 +894,53 @@ export class Formatter {
     }
 
     this.justifyWidth = justifyWidth;
+
+    // Center rests within their time slots (not whole-measure rests — those
+    // are already handled via alignCenter in shiftToIdealDistances).
+    // Use the stave that was passed through formatToStave/format (it has
+    // proper noteStartX/noteEndX), not tickable.getStave() which may return
+    // a different instance.
+    const centeringStave = stave || (voicesParam && voicesParam.length > 0 ? voicesParam[0].getTickables()[0]?.getStave() : undefined);
+    if (centeringStave) {
+      const stavePadding = Metrics.get('Stave.padding', 0);
+      const noteAreaEnd = centeringStave.getNoteEndX() - centeringStave.getNoteStartX() - stavePadding;
+
+      // Collect tickables by voice with their context indices
+      const voiceEntries: Map<number, Array<{ tickable: Tickable; contextIndex: number }>> = new Map();
+      contextList.forEach((tick, index) => {
+        const context = contextMap[tick];
+        const byVoice = context.getTickablesByVoice();
+        Object.keys(byVoice).forEach((voiceKey) => {
+          const voiceIdx = parseInt(voiceKey, 10);
+          if (!voiceEntries.has(voiceIdx)) {
+            voiceEntries.set(voiceIdx, []);
+          }
+          voiceEntries.get(voiceIdx)!.push({ tickable: byVoice[voiceKey], contextIndex: index });
+        });
+      });
+
+      voiceEntries.forEach((entries) => {
+        entries.forEach((entry, i) => {
+          const { tickable, contextIndex } = entry;
+          if (isStaveNote(tickable) && tickable.isRest() && !(tickable as any)._alignCenter) {
+            const context = contextMap[contextList[contextIndex]];
+            const slotStart = context.getX();
+            let slotEnd: number;
+            if (i + 1 < entries.length) {
+              const nextContext = contextMap[contextList[entries[i + 1].contextIndex]];
+              slotEnd = nextContext.getX();
+            } else {
+              slotEnd = noteAreaEnd;
+            }
+            const glyphWidth = tickable.getGlyphWidth();
+            const centerXShift = (slotEnd - slotStart - glyphWidth) / 2;
+            tickable.setCenterAlignment(true);
+            tickable.setCenterXShift(centerXShift);
+          }
+        });
+      });
+    }
+
     return this.evaluate();
   }
 
@@ -1070,14 +1127,6 @@ export class Formatter {
     };
 
     this.voices = voices;
-
-    // Reset xShift on all tickables to clear stale state from prior format calls.
-    voices.forEach((voice) => {
-      voice.getTickables().forEach((tickable: Tickable) => {
-        tickable.setXShift(0);
-      });
-    });
-
     const softmaxFactor = this.formatterOptions.softmaxFactor;
     if (softmaxFactor) {
       this.voices.forEach((v) => v.setSoftmaxFactor(softmaxFactor));
@@ -1095,7 +1144,7 @@ export class Formatter {
 
   // This method is just like `format` except that the `justifyWidth` is inferred from the `stave`.
   formatToStave(voices: Voice[], stave: Stave, optionsParam?: FormatParams): this {
-    const options: FormatParams = { context: stave.getContext(), ...optionsParam };
+    const options: FormatParams = { context: stave.getContext(), stave, ...optionsParam };
 
     const justifyWidth = stave.getNoteEndX() - stave.getNoteStartX() - Stave.defaultPadding;
     L('Formatting voices to width: ', justifyWidth);
