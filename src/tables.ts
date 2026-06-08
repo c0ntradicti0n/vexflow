@@ -238,6 +238,7 @@ const articulations: Record<string, ArticulationStruct> = {
     belowCode: Glyphs.pluckedSnapPizzicatoBelow,
     betweenLines: false,
   }, // Snap pizzicato
+  abr: { code: Glyphs.breathMarkComma, betweenLines: false }, // Breath mark
   ah: { code: Glyphs.stringsHarmonic, betweenLines: false }, // Natural harmonic or open note
   'a@': { aboveCode: Glyphs.fermataAbove, belowCode: Glyphs.fermataBelow, betweenLines: false }, // Fermata
   'a@a': { code: Glyphs.fermataAbove, betweenLines: false }, // Fermata above staff

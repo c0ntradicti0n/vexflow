@@ -81,10 +81,17 @@ export class Repetition extends StaveModifier {
         const ctx = stave.checkContext();
         let textX = 0;
         this.text = text;
-        if (drawCoda) {
-            this.text += ' \ue048';
-        }
         this.setFont(Metrics.getFontInfo('Repetition.text'));
+        const textWidth = this.width;
+        let codaWidth = 0;
+        if (drawCoda) {
+            ctx.save();
+            ctx.setFont(Metrics.getFontInfo('Repetition.coda'));
+            codaWidth = ctx.measureText(Glyphs.coda).width;
+            ctx.restore();
+        }
+        const totalWidth = textWidth + (drawCoda ? codaWidth + 4 : 0);
+        const textOffsetX = Metrics.get('Repetition.text.offsetX');
         switch (this.symbolType) {
             case Repetition.type.CODA_LEFT:
                 textX = stave.getVerticalBarWidth();
@@ -94,28 +101,26 @@ export class Repetition extends StaveModifier {
             case Repetition.type.DS:
             case Repetition.type.DS_AL_FINE:
             case Repetition.type.FINE:
-                textX =
-                    x - (stave.getNoteStartX() - this.x) + stave.getWidth() - this.width - Metrics.get('Repetition.text.offsetX');
+                textX = -(totalWidth) - textOffsetX;
                 break;
             case Repetition.type.DC_AL_CODA:
             case Repetition.type.DS_AL_CODA:
-                textX =
-                    x -
-                        (stave.getNoteStartX() - this.x) +
-                        stave.getWidth() -
-                        this.width -
-                        Metrics.get('Repetition.text.offsetX') -
-                        12 -
-                        stave.options.verticalBarWidth -
-                        12;
+                textX = -(totalWidth) - textOffsetX;
                 break;
             default:
-                textX =
-                    x - (stave.getNoteStartX() - this.x) + stave.getWidth() - this.width - Metrics.get('Repetition.text.offsetX');
+                textX = -(totalWidth) - textOffsetX;
                 break;
         }
         const y = stave.getYForTopText(stave.getNumLines()) + Metrics.get('Repetition.text.offsetY');
         this.renderText(ctx, textX, y);
+        if (drawCoda) {
+            ctx.save();
+            ctx.setFont(Metrics.getFontInfo('Repetition.coda'));
+            const codaX = textX + this.x + this.xShift + textWidth + 4;
+            const codaY = y + this.y + this.yShift;
+            ctx.fillText(Glyphs.coda, codaX, codaY);
+            ctx.restore();
+        }
         return this;
     }
 }

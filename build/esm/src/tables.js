@@ -209,6 +209,7 @@ const articulations = {
         belowCode: Glyphs.pluckedSnapPizzicatoBelow,
         betweenLines: false,
     },
+    abr: { code: Glyphs.breathMarkComma, betweenLines: false },
     ah: { code: Glyphs.stringsHarmonic, betweenLines: false },
     'a@': { aboveCode: Glyphs.fermataAbove, belowCode: Glyphs.fermataBelow, betweenLines: false },
     'a@a': { code: Glyphs.fermataAbove, betweenLines: false },

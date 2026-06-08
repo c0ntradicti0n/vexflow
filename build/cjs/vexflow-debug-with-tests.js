@@ -1,5 +1,5 @@
 /*!
- * VexFlow 5.0.0   2026-06-08T12:13:48.374Z   70bce0b246f59456dfde8e8eb472cf58a3352b3d
+ * VexFlow 5.0.0   2026-06-08T14:20:07.509Z   4ad429eb6950b30e8e64d5d06df1b1293ddaa7d7
  * Copyright (c) 2023-present VexFlow contributors (see https://github.com/vexflow/vexflow/blob/main/AUTHORS.md).
  */
 (function webpackUniversalModuleDefinition(root, factory) {
@@ -30,8 +30,8 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export */ });
 // Gruntfile.js uses string-replace-loader to replace these values during build time.
 const VERSION = '5.0.0';
-const ID = '70bce0b246f59456dfde8e8eb472cf58a3352b3d';
-const DATE = '2026-06-08T12:13:48.374Z';
+const ID = '4ad429eb6950b30e8e64d5d06df1b1293ddaa7d7';
+const DATE = '2026-06-08T14:20:07.509Z';
 
 
 /***/ }),
@@ -20564,45 +20564,51 @@ class Repetition extends _stavemodifier__WEBPACK_IMPORTED_MODULE_2__.StaveModifi
         const ctx = stave.checkContext();
         let textX = 0;
         this.text = text;
-        if (drawCoda) {
-            this.text += ' \ue048' /*coda*/;
-        }
         this.setFont(_metrics__WEBPACK_IMPORTED_MODULE_1__.Metrics.getFontInfo('Repetition.text'));
+        const textWidth = this.width;
+        // Measure coda glyph width at larger font so we can right-align the combined group
+        let codaWidth = 0;
+        if (drawCoda) {
+            ctx.save();
+            ctx.setFont(_metrics__WEBPACK_IMPORTED_MODULE_1__.Metrics.getFontInfo('Repetition.coda'));
+            codaWidth = ctx.measureText(_glyphs__WEBPACK_IMPORTED_MODULE_0__.Glyphs.coda).width;
+            ctx.restore();
+        }
+        const totalWidth = textWidth + (drawCoda ? codaWidth + 4 : 0);
+        const textOffsetX = _metrics__WEBPACK_IMPORTED_MODULE_1__.Metrics.get('Repetition.text.offsetX');
         switch (this.symbolType) {
             // To the left
             case Repetition.type.CODA_LEFT:
-                // Offset Coda text to right of stave beginning
                 textX = stave.getVerticalBarWidth();
                 break;
-            // To the right
+            // To the right: this.x set by stave.format() to end position.
+            // renderText adds this.x + this.xShift, so textX is leftward offset.
             case Repetition.type.DC:
             case Repetition.type.DC_AL_FINE:
             case Repetition.type.DS:
             case Repetition.type.DS_AL_FINE:
             case Repetition.type.FINE:
-                textX =
-                    x - (stave.getNoteStartX() - this.x) + stave.getWidth() - this.width - _metrics__WEBPACK_IMPORTED_MODULE_1__.Metrics.get('Repetition.text.offsetX');
+                textX = -(totalWidth) - textOffsetX;
                 break;
             case Repetition.type.DC_AL_CODA:
             case Repetition.type.DS_AL_CODA:
-                textX =
-                    x -
-                        (stave.getNoteStartX() - this.x) +
-                        stave.getWidth() -
-                        this.width -
-                        _metrics__WEBPACK_IMPORTED_MODULE_1__.Metrics.get('Repetition.text.offsetX') -
-                        12 -
-                        stave.options.verticalBarWidth -
-                        12;
+                textX = -(totalWidth) - textOffsetX;
                 break;
             default:
-                // Fallback for other types at the right side.
-                textX =
-                    x - (stave.getNoteStartX() - this.x) + stave.getWidth() - this.width - _metrics__WEBPACK_IMPORTED_MODULE_1__.Metrics.get('Repetition.text.offsetX');
+                // TO_CODA and other right-side types
+                textX = -(totalWidth) - textOffsetX;
                 break;
         }
         const y = stave.getYForTopText(stave.getNumLines()) + _metrics__WEBPACK_IMPORTED_MODULE_1__.Metrics.get('Repetition.text.offsetY');
         this.renderText(ctx, textX, y);
+        if (drawCoda) {
+            ctx.save();
+            ctx.setFont(_metrics__WEBPACK_IMPORTED_MODULE_1__.Metrics.getFontInfo('Repetition.coda'));
+            const codaX = textX + this.x + this.xShift + textWidth + 4;
+            const codaY = y + this.y + this.yShift;
+            ctx.fillText(_glyphs__WEBPACK_IMPORTED_MODULE_0__.Glyphs.coda, codaX, codaY);
+            ctx.restore();
+        }
         return this;
     }
 }
@@ -23132,6 +23138,7 @@ const articulations = {
         belowCode: _glyphs__WEBPACK_IMPORTED_MODULE_1__.Glyphs.pluckedSnapPizzicatoBelow,
         betweenLines: false,
     }, // Snap pizzicato
+    abr: { code: _glyphs__WEBPACK_IMPORTED_MODULE_1__.Glyphs.breathMarkComma, betweenLines: false }, // Breath mark
     ah: { code: _glyphs__WEBPACK_IMPORTED_MODULE_1__.Glyphs.stringsHarmonic, betweenLines: false }, // Natural harmonic or open note
     'a@': { aboveCode: _glyphs__WEBPACK_IMPORTED_MODULE_1__.Glyphs.fermataAbove, belowCode: _glyphs__WEBPACK_IMPORTED_MODULE_1__.Glyphs.fermataBelow, betweenLines: false }, // Fermata
     'a@a': { code: _glyphs__WEBPACK_IMPORTED_MODULE_1__.Glyphs.fermataAbove, betweenLines: false }, // Fermata above staff

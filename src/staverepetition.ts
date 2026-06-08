@@ -118,47 +118,57 @@ export class Repetition extends StaveModifier {
     let textX = 0;
 
     this.text = text;
-    if (drawCoda) {
-      this.text += ' \ue048' /*coda*/;
-    }
     this.setFont(Metrics.getFontInfo('Repetition.text'));
+    const textWidth: number = this.width;
+
+    // Measure coda glyph width at larger font so we can right-align the combined group
+    let codaWidth: number = 0;
+    if (drawCoda) {
+      ctx.save();
+      ctx.setFont(Metrics.getFontInfo('Repetition.coda'));
+      codaWidth = ctx.measureText(Glyphs.coda).width;
+      ctx.restore();
+    }
+
+    const totalWidth: number = textWidth + (drawCoda ? codaWidth + 4 : 0);
+    const textOffsetX: number = Metrics.get('Repetition.text.offsetX');
+
     switch (this.symbolType) {
       // To the left
       case Repetition.type.CODA_LEFT:
-        // Offset Coda text to right of stave beginning
         textX = stave.getVerticalBarWidth();
         break;
-      // To the right
+      // To the right: this.x set by stave.format() to end position.
+      // renderText adds this.x + this.xShift, so textX is leftward offset.
       case Repetition.type.DC:
       case Repetition.type.DC_AL_FINE:
       case Repetition.type.DS:
       case Repetition.type.DS_AL_FINE:
       case Repetition.type.FINE:
-        textX =
-          x - (stave.getNoteStartX() - this.x) + stave.getWidth() - this.width - Metrics.get('Repetition.text.offsetX');
+        textX = -(totalWidth) - textOffsetX;
         break;
       case Repetition.type.DC_AL_CODA:
       case Repetition.type.DS_AL_CODA:
-        textX =
-          x -
-          (stave.getNoteStartX() - this.x) +
-          stave.getWidth() -
-          this.width -
-          Metrics.get('Repetition.text.offsetX') -
-          12 -
-          stave.options.verticalBarWidth -
-          12;
+        textX = -(totalWidth) - textOffsetX;
         break;
       default:
-        // Fallback for other types at the right side.
-        textX =
-          x - (stave.getNoteStartX() - this.x) + stave.getWidth() - this.width - Metrics.get('Repetition.text.offsetX');
+        // TO_CODA and other right-side types
+        textX = -(totalWidth) - textOffsetX;
         break;
     }
 
     const y = stave.getYForTopText(stave.getNumLines()) + Metrics.get('Repetition.text.offsetY');
 
     this.renderText(ctx, textX, y);
+
+    if (drawCoda) {
+      ctx.save();
+      ctx.setFont(Metrics.getFontInfo('Repetition.coda'));
+      const codaX: number = textX + this.x + this.xShift + textWidth + 4;
+      const codaY: number = y + this.y + this.yShift;
+      ctx.fillText(Glyphs.coda, codaX, codaY);
+      ctx.restore();
+    }
 
     return this;
   }
