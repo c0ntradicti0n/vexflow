@@ -1,5 +1,5 @@
 /*!
- * VexFlow 5.0.0   2026-06-08T14:20:07.509Z   4ad429eb6950b30e8e64d5d06df1b1293ddaa7d7
+ * VexFlow 5.0.0   2026-06-08T20:23:58.018Z   c8568388053e8e3d6cbb771c8cb3cc1b3f86e9d2
  * Copyright (c) 2023-present VexFlow contributors (see https://github.com/vexflow/vexflow/blob/main/AUTHORS.md).
  */
 (function webpackUniversalModuleDefinition(root, factory) {
@@ -30,8 +30,8 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export */ });
 // Gruntfile.js uses string-replace-loader to replace these values during build time.
 const VERSION = '5.0.0';
-const ID = '4ad429eb6950b30e8e64d5d06df1b1293ddaa7d7';
-const DATE = '2026-06-08T14:20:07.509Z';
+const ID = 'c8568388053e8e3d6cbb771c8cb3cc1b3f86e9d2';
+const DATE = '2026-06-08T20:23:58.018Z';
 
 
 /***/ }),
@@ -19570,8 +19570,8 @@ class StaveNote extends _stemmablenote__WEBPACK_IMPORTED_MODULE_7__.StemmableNot
                             (!_tables__WEBPACK_IMPORTED_MODULE_8__.Tables.UNISON ||
                                 // If we have different noteheads, shift
                                 noteUHead !== noteLHead ||
-                                // If we have different dot values, shift
-                                uDots !== lDots ||
+                                // If we have different dot values and not on the same line, shift
+                                (uDots !== lDots && lineDiff > 0) ||
                                 // If the notes are quite close but not on the same line, shift
                                 (lineDiff < 1 && lineDiff > 0) ||
                                 // If styles are different, shift
@@ -19686,8 +19686,13 @@ class StaveNote extends _stemmablenote__WEBPACK_IMPORTED_MODULE_7__.StemmableNot
             // shift lower voice rest down
             shiftRestVertical(noteL, noteM, -1);
         }
-        // If middle voice intersects upper or lower voice
-        if (noteU.minLine <= noteM.maxLine + 0.5 || noteM.minLine <= noteL.maxLine) {
+        // If middle voice intersects upper or lower voice, shift middle note right.
+        // Skip when noteU and noteM are at exact unison (same line) — the unison
+        // takes priority over stem/nearby collisions with the lower voice.
+        const noteU_M_unison = noteU.minLine === noteM.maxLine;
+        const noteU_M_overlap = noteU.minLine <= noteM.maxLine + 0.5 && !noteU_M_unison;
+        const noteM_L_overlap = noteM.minLine <= noteL.maxLine && noteM.minLine !== noteL.maxLine;
+        if (noteU_M_overlap || (noteM_L_overlap && !noteU_M_unison)) {
             // shift middle note right
             xShift = voiceXShift + 2;
             noteM.note.setXShift(xShift);
@@ -20705,57 +20710,58 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export */ __webpack_require__.d(__webpack_exports__, {
 /* harmony export */   StaveTempo: () => (/* binding */ StaveTempo)
 /* harmony export */ });
-/* harmony import */ var _element__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./element */ "./src/element.ts");
-/* harmony import */ var _glyphs__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./glyphs */ "./src/glyphs.ts");
-/* harmony import */ var _metrics__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ./metrics */ "./src/metrics.ts");
-/* harmony import */ var _stavemodifier__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ./stavemodifier */ "./src/stavemodifier.ts");
-/* harmony import */ var _typeguard__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! ./typeguard */ "./src/typeguard.ts");
+/* harmony import */ var _glyphs__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./glyphs */ "./src/glyphs.ts");
+/* harmony import */ var _note__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./note */ "./src/note.ts");
+/* harmony import */ var _stavemodifier__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ./stavemodifier */ "./src/stavemodifier.ts");
+/* harmony import */ var _typeguard__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ./typeguard */ "./src/typeguard.ts");
 // Copyright (c) 2023-present VexFlow contributors: https://github.com/vexflow/vexflow/graphs/contributors
 // @author: Radosaw Eichler 2012
 
 
 
 
-
-class StaveTempo extends _stavemodifier__WEBPACK_IMPORTED_MODULE_3__.StaveModifier {
+class StaveTempo extends _stavemodifier__WEBPACK_IMPORTED_MODULE_2__.StaveModifier {
     static get CATEGORY() {
-        return _typeguard__WEBPACK_IMPORTED_MODULE_4__.Category.StaveTempo;
+        return _typeguard__WEBPACK_IMPORTED_MODULE_3__.Category.StaveTempo;
     }
     constructor(tempo, x, shiftY) {
         super();
+        this.renderOptions = {
+            glyphFontScale: 30,
+        };
         this.durationToCode = {
-            '1/4': _glyphs__WEBPACK_IMPORTED_MODULE_1__.Glyphs.metNoteDoubleWholeSquare,
-            long: _glyphs__WEBPACK_IMPORTED_MODULE_1__.Glyphs.metNoteDoubleWholeSquare,
-            '1/2': _glyphs__WEBPACK_IMPORTED_MODULE_1__.Glyphs.metNoteDoubleWhole,
-            breve: _glyphs__WEBPACK_IMPORTED_MODULE_1__.Glyphs.metNoteDoubleWhole,
-            1: _glyphs__WEBPACK_IMPORTED_MODULE_1__.Glyphs.metNoteWhole,
-            whole: _glyphs__WEBPACK_IMPORTED_MODULE_1__.Glyphs.metNoteWhole,
-            w: _glyphs__WEBPACK_IMPORTED_MODULE_1__.Glyphs.metNoteWhole,
-            2: _glyphs__WEBPACK_IMPORTED_MODULE_1__.Glyphs.metNoteHalfUp,
-            half: _glyphs__WEBPACK_IMPORTED_MODULE_1__.Glyphs.metNoteHalfUp,
-            h: _glyphs__WEBPACK_IMPORTED_MODULE_1__.Glyphs.metNoteHalfUp,
-            4: _glyphs__WEBPACK_IMPORTED_MODULE_1__.Glyphs.metNoteQuarterUp,
-            quarter: _glyphs__WEBPACK_IMPORTED_MODULE_1__.Glyphs.metNoteQuarterUp,
-            q: _glyphs__WEBPACK_IMPORTED_MODULE_1__.Glyphs.metNoteQuarterUp,
-            8: _glyphs__WEBPACK_IMPORTED_MODULE_1__.Glyphs.metNote8thUp,
-            eighth: _glyphs__WEBPACK_IMPORTED_MODULE_1__.Glyphs.metNote8thUp,
-            16: _glyphs__WEBPACK_IMPORTED_MODULE_1__.Glyphs.metNote16thUp,
-            '16th': _glyphs__WEBPACK_IMPORTED_MODULE_1__.Glyphs.metNote16thUp,
-            32: _glyphs__WEBPACK_IMPORTED_MODULE_1__.Glyphs.metNote32ndUp,
-            '32nd': _glyphs__WEBPACK_IMPORTED_MODULE_1__.Glyphs.metNote32ndUp,
-            64: _glyphs__WEBPACK_IMPORTED_MODULE_1__.Glyphs.metNote64thUp,
-            '64th': _glyphs__WEBPACK_IMPORTED_MODULE_1__.Glyphs.metNote64thUp,
-            128: _glyphs__WEBPACK_IMPORTED_MODULE_1__.Glyphs.metNote128thUp,
-            '128th': _glyphs__WEBPACK_IMPORTED_MODULE_1__.Glyphs.metNote128thUp,
-            256: _glyphs__WEBPACK_IMPORTED_MODULE_1__.Glyphs.metNote256thUp,
-            '256th': _glyphs__WEBPACK_IMPORTED_MODULE_1__.Glyphs.metNote256thUp,
-            512: _glyphs__WEBPACK_IMPORTED_MODULE_1__.Glyphs.metNote512thUp,
-            '512th': _glyphs__WEBPACK_IMPORTED_MODULE_1__.Glyphs.metNote512thUp,
-            1024: _glyphs__WEBPACK_IMPORTED_MODULE_1__.Glyphs.metNote1024thUp,
-            '1024th': _glyphs__WEBPACK_IMPORTED_MODULE_1__.Glyphs.metNote1024thUp,
+            '1/4': _glyphs__WEBPACK_IMPORTED_MODULE_0__.Glyphs.metNoteDoubleWholeSquare,
+            long: _glyphs__WEBPACK_IMPORTED_MODULE_0__.Glyphs.metNoteDoubleWholeSquare,
+            '1/2': _glyphs__WEBPACK_IMPORTED_MODULE_0__.Glyphs.metNoteDoubleWhole,
+            breve: _glyphs__WEBPACK_IMPORTED_MODULE_0__.Glyphs.metNoteDoubleWhole,
+            1: _glyphs__WEBPACK_IMPORTED_MODULE_0__.Glyphs.metNoteWhole,
+            whole: _glyphs__WEBPACK_IMPORTED_MODULE_0__.Glyphs.metNoteWhole,
+            w: _glyphs__WEBPACK_IMPORTED_MODULE_0__.Glyphs.metNoteWhole,
+            2: _glyphs__WEBPACK_IMPORTED_MODULE_0__.Glyphs.metNoteHalfUp,
+            half: _glyphs__WEBPACK_IMPORTED_MODULE_0__.Glyphs.metNoteHalfUp,
+            h: _glyphs__WEBPACK_IMPORTED_MODULE_0__.Glyphs.metNoteHalfUp,
+            4: _glyphs__WEBPACK_IMPORTED_MODULE_0__.Glyphs.metNoteQuarterUp,
+            quarter: _glyphs__WEBPACK_IMPORTED_MODULE_0__.Glyphs.metNoteQuarterUp,
+            q: _glyphs__WEBPACK_IMPORTED_MODULE_0__.Glyphs.metNoteQuarterUp,
+            8: _glyphs__WEBPACK_IMPORTED_MODULE_0__.Glyphs.metNote8thUp,
+            eighth: _glyphs__WEBPACK_IMPORTED_MODULE_0__.Glyphs.metNote8thUp,
+            16: _glyphs__WEBPACK_IMPORTED_MODULE_0__.Glyphs.metNote16thUp,
+            '16th': _glyphs__WEBPACK_IMPORTED_MODULE_0__.Glyphs.metNote16thUp,
+            32: _glyphs__WEBPACK_IMPORTED_MODULE_0__.Glyphs.metNote32ndUp,
+            '32nd': _glyphs__WEBPACK_IMPORTED_MODULE_0__.Glyphs.metNote32ndUp,
+            64: _glyphs__WEBPACK_IMPORTED_MODULE_0__.Glyphs.metNote64thUp,
+            '64th': _glyphs__WEBPACK_IMPORTED_MODULE_0__.Glyphs.metNote64thUp,
+            128: _glyphs__WEBPACK_IMPORTED_MODULE_0__.Glyphs.metNote128thUp,
+            '128th': _glyphs__WEBPACK_IMPORTED_MODULE_0__.Glyphs.metNote128thUp,
+            256: _glyphs__WEBPACK_IMPORTED_MODULE_0__.Glyphs.metNote256thUp,
+            '256th': _glyphs__WEBPACK_IMPORTED_MODULE_0__.Glyphs.metNote256thUp,
+            512: _glyphs__WEBPACK_IMPORTED_MODULE_0__.Glyphs.metNote512thUp,
+            '512th': _glyphs__WEBPACK_IMPORTED_MODULE_0__.Glyphs.metNote512thUp,
+            1024: _glyphs__WEBPACK_IMPORTED_MODULE_0__.Glyphs.metNote1024thUp,
+            '1024th': _glyphs__WEBPACK_IMPORTED_MODULE_0__.Glyphs.metNote1024thUp,
         };
         this.tempo = tempo;
-        this.position = _stavemodifier__WEBPACK_IMPORTED_MODULE_3__.StaveModifierPosition.ABOVE;
+        this.position = _stavemodifier__WEBPACK_IMPORTED_MODULE_2__.StaveModifierPosition.ABOVE;
         this.x = x;
         this.setXShift(10);
         this.setYShift(shiftY);
@@ -20771,96 +20777,221 @@ class StaveTempo extends _stavemodifier__WEBPACK_IMPORTED_MODULE_3__.StaveModifi
         this.setRendered();
         const { name, duration, dots, bpm, duration2, dots2, parenthesis, noteEquation } = this.tempo;
         let x = this.x + shiftX;
-        const y = stave.getYForTopText(1);
-        const el = new _element__WEBPACK_IMPORTED_MODULE_0__.Element('StaveTempo.glyph');
-        const elText = new _element__WEBPACK_IMPORTED_MODULE_0__.Element('StaveTempo');
+        const y = stave.getYForTopText(1) + this.yShift;
         ctx.openGroup('stavetempo');
         if (name) {
-            this.text = name;
-            this.fontInfo = _metrics__WEBPACK_IMPORTED_MODULE_2__.Metrics.getFontInfo('StaveTempo.name');
-            this.renderText(ctx, shiftX, y);
-            x += this.getWidth() + 3;
-        }
-        if ((name && duration) || parenthesis) {
-            elText.setText('(');
-            elText.renderText(ctx, x + this.xShift, y + this.yShift);
-            x += elText.getWidth() + 3;
-        }
-        if (duration) {
-            el.setText(this.durationToCode[duration]);
-            el.renderText(ctx, x + this.xShift, y + this.yShift);
-            x += el.getWidth() + 3;
-            if (dots) {
-                // Draw dot
-                el.setText(_glyphs__WEBPACK_IMPORTED_MODULE_1__.Glyphs.metAugmentationDot);
-                for (let i = 0; i < dots; i++) {
-                    el.renderText(ctx, x + this.xShift, y + 2 + this.yShift);
-                    x += el.getWidth() + 3;
-                }
-            }
-            elText.setText('=');
-            elText.renderText(ctx, x + this.xShift, y + this.yShift);
-            x += elText.getWidth() + 3;
-            if (duration2) {
-                el.setText(this.durationToCode[duration2]);
-                el.renderText(ctx, x + this.xShift, y + this.yShift);
-                x += el.getWidth() + 3;
-                if (dots2) {
-                    // Draw dot
-                    el.setText(_glyphs__WEBPACK_IMPORTED_MODULE_1__.Glyphs.metAugmentationDot);
-                    for (let i = 0; i < dots2; i++) {
-                        el.renderText(ctx, x + this.xShift, y + 2 + this.yShift);
-                        x += el.getWidth() + 3;
-                    }
-                }
-            }
-            else if (bpm) {
-                ctx.openGroup('bpm');
-                elText.setText('' + bpm);
-                elText.renderText(ctx, x + this.xShift, y + this.yShift);
-                x += elText.getWidth() + 3;
-                ctx.closeGroup();
-            }
-            if (name || parenthesis) {
-                elText.setText(')');
-                elText.renderText(ctx, x + this.xShift, y + this.yShift);
-            }
+            this.setFont(this._fontInfo);
+            ctx.fillText(name, x, y);
+            x += ctx.measureText(name).width;
         }
         if (noteEquation) {
-            x = this.drawNoteEquation(ctx, x, y, 1, noteEquation);
+            x = this.drawNoteEquation(ctx, x, y, noteEquation);
+        }
+        else if (duration && bpm) {
+            this.setFont(Object.assign(Object.assign({}, this._fontInfo), { weight: 'normal' }));
+            if (name) {
+                x += ctx.measureText(' ').width;
+                ctx.fillText('(', x, y);
+                x += ctx.measureText('(').width;
+            }
+            const scale = this.renderOptions.glyphFontScale / 38;
+            const glyphCode = this.durationToCode[duration];
+            x += 3 * scale;
+            ctx.fillText(glyphCode, x, y);
+            x += ctx.measureText(glyphCode).width;
+            for (let i = 0; i < (dots || 0); i++) {
+                x += 6 * scale;
+                ctx.beginPath();
+                ctx.arc(x, y + 2 * scale, 2 * scale, 0, Math.PI * 2, false);
+                ctx.fill();
+            }
+            ctx.openGroup('bpm');
+            this.setFont(Object.assign(Object.assign({}, this._fontInfo), { weight: 'normal' }));
+            ctx.fillText(' = ' + bpm + (name ? ')' : ''), x + 3 * scale, y);
+            ctx.closeGroup();
         }
         ctx.closeGroup();
     }
-    drawNoteEquation(ctx, x, y, scale, noteEquation) {
-        const elText = new _element__WEBPACK_IMPORTED_MODULE_0__.Element('StaveTempo');
-        for (let i = 0; i < noteEquation.length; i++) {
-            if (i > 0) {
-                elText.setText('=');
-                elText.renderText(ctx, x + this.xShift, y + this.yShift);
-                x += elText.getWidth() + 3;
+    drawNoteEquation(ctx, x, y, noteEquation) {
+        const glyphPt = 22;
+        const stemScale = glyphPt / 38;
+        const baseSpacing = 4 * stemScale;
+        // Flatten the array into VF4-style {left, right} groups by detecting
+        // the boundary: notes after the first group that aren't beam-continued
+        // or bracket-continued belong to the right group.
+        let splitIndex = noteEquation.length;
+        for (let i = 1; i < noteEquation.length; i++) {
+            const prev = noteEquation[i - 1];
+            const curr = noteEquation[i];
+            const continuesBeam = curr.beam === 'end' || curr.beam === 'continue';
+            const continuesBracket = prev.bracketStart || curr.bracketEnd;
+            if (!continuesBeam && !continuesBracket) {
+                splitIndex = i;
+                break;
             }
-            x = this.drawNoteGroup(ctx, x, y, scale, noteEquation[i]);
         }
+        const leftItems = noteEquation.slice(0, splitIndex);
+        const rightItems = noteEquation.slice(splitIndex);
+        // Build VF4-style group objects
+        const buildGroup = (items) => {
+            if (items.length === 0)
+                return { notes: [] };
+            const notes = items.map((item) => ({
+                duration: item.duration,
+                dots: item.dots || 0,
+                beam: item.beam,
+            }));
+            const group = { notes };
+            if (items[0].tupletNum) {
+                group.tuplet = {
+                    actualNotes: items[0].tupletNum,
+                    normalNotes: items[0].notesOccupied,
+                    bracket: items[0].bracketStart === true,
+                    showNumber: 'actual',
+                };
+            }
+            return group;
+        };
+        const leftGroup = buildGroup(leftItems);
+        const rightGroup = buildGroup(rightItems);
+        // Draw left group
+        x = this.drawNoteGroup(ctx, x, y, stemScale, baseSpacing, leftGroup);
+        // Draw equals sign
+        this.setFont(Object.assign(Object.assign({}, this._fontInfo), { weight: 'bold' }));
+        x += 1.5 * baseSpacing;
+        ctx.fillText('=', x, y);
+        x += ctx.measureText('=').width + 1.5 * baseSpacing;
+        // Draw right group
+        x = this.drawNoteGroup(ctx, x, y, stemScale, baseSpacing, rightGroup);
         return x;
     }
-    drawNoteGroup(ctx, x, y, scale, noteGroup) {
-        const el = new _element__WEBPACK_IMPORTED_MODULE_0__.Element('StaveTempo.glyph');
-        el.setText(this.durationToCode[noteGroup.duration]);
-        el.renderText(ctx, x + this.xShift, y + this.yShift);
-        x += el.getWidth() + 3;
-        if (noteGroup.dots) {
-            el.setText(_glyphs__WEBPACK_IMPORTED_MODULE_1__.Glyphs.metAugmentationDot);
-            for (let i = 0; i < noteGroup.dots; i++) {
-                el.renderText(ctx, x + this.xShift, y + 2 + this.yShift);
-                x += el.getWidth() + 3;
+    /**
+     * Draw a group of notes with beams connecting flagged notes and optional tuplet bracket.
+     * Ported from VF4's drawNoteGroup — renders note heads, stems, beams, and brackets
+     * using direct canvas operations instead of pre-combined metronome glyphs.
+     */
+    drawNoteGroup(ctx, x, y, stemScale, baseSpacing, group) {
+        const notes = group.notes;
+        const tuplet = group.tuplet;
+        this.setFont(Object.assign(Object.assign({}, this._fontInfo), { size: 22 }));
+        const notePositions = [];
+        const beamSegments = [];
+        let currentBeamGroup = [];
+        for (let i = 0; i < notes.length; i++) {
+            const note = notes[i];
+            const glyphProps = _note__WEBPACK_IMPORTED_MODULE_1__.Note.getGlyphProps(note.duration, 'n');
+            const headGlyph = glyphProps.codeHead;
+            if (!headGlyph)
+                continue;
+            x += 3 * stemScale;
+            const noteX = x;
+            // Draw note head
+            ctx.fillText(headGlyph, x, y);
+            x += ctx.measureText(headGlyph).width;
+            let stemTopY = y;
+            // Draw stem
+            if (glyphProps.stem) {
+                const stemHeight = 18 * stemScale;
+                stemTopY = y - stemHeight;
+                ctx.fillRect(x - stemScale, stemTopY, stemScale, stemHeight);
+                // Only draw flag for non-beamed notes
+                if (glyphProps.codeFlagUp && !note.beam) {
+                    const flagGlyph = glyphProps.codeFlagUp;
+                    if (flagGlyph) {
+                        ctx.fillText(flagGlyph, x, stemTopY);
+                    }
+                    if (!note.dots)
+                        x += 6 * stemScale;
+                }
+            }
+            // Draw dots
+            for (let d = 0; d < (note.dots || 0); d++) {
+                x += 6 * stemScale;
+                ctx.beginPath();
+                ctx.arc(x, y + 2 * stemScale, 2 * stemScale, 0, Math.PI * 2, false);
+                ctx.fill();
+            }
+            const pos = { x: noteX, y_top: stemTopY, stemX: x, code: glyphProps };
+            notePositions.push(pos);
+            // Track beam groups
+            if (note.beam === 'begin') {
+                currentBeamGroup = [pos];
+            }
+            else if (note.beam === 'continue') {
+                currentBeamGroup.push(pos);
+            }
+            else if (note.beam === 'end') {
+                currentBeamGroup.push(pos);
+                beamSegments.push(currentBeamGroup);
+                currentBeamGroup = [];
+            }
+            // Inter-note spacing
+            if (i < notes.length - 1) {
+                x += tuplet ? 2 * baseSpacing : baseSpacing;
             }
         }
-        if (noteGroup.tupletNum) {
-            const tupletEl = new _element__WEBPACK_IMPORTED_MODULE_0__.Element('StaveTempo');
-            tupletEl.setText(`${noteGroup.tupletNum}`);
-            const tupletY = y - 30;
-            const tupletX = x - 3 - el.getWidth() / 2 - tupletEl.getWidth() / 2;
-            tupletEl.renderText(ctx, tupletX + this.xShift, tupletY + this.yShift);
+        // Draw beams
+        const beamThickness = 3 * stemScale;
+        for (const segment of beamSegments) {
+            if (segment.length < 2)
+                continue;
+            const firstStem = segment[0];
+            const lastStem = segment[segment.length - 1];
+            let maxBeamCount = 0;
+            for (const pos of segment) {
+                if (pos.code.beamCount) {
+                    maxBeamCount = Math.max(maxBeamCount, pos.code.beamCount);
+                }
+            }
+            for (let b = 0; b < maxBeamCount; b++) {
+                const beamY = firstStem.y_top + b * (beamThickness + 1 * stemScale);
+                ctx.fillRect(firstStem.stemX - stemScale, beamY, lastStem.stemX - firstStem.stemX + stemScale, beamThickness);
+            }
+        }
+        // Draw tuplet bracket and number
+        if (tuplet && notePositions.length > 0) {
+            const firstPos = notePositions[0];
+            const lastPos = notePositions[notePositions.length - 1];
+            let minY = firstPos.y_top;
+            for (const pos of notePositions) {
+                minY = Math.min(minY, pos.y_top);
+            }
+            const bracketOverhang = 1.25 * baseSpacing;
+            const bracketY = minY - 1.5 * baseSpacing;
+            const bracketStartX = firstPos.x - 0.5 * baseSpacing;
+            const bracketEndX = lastPos.stemX + bracketOverhang;
+            this.setFont(Object.assign(Object.assign({}, this._fontInfo), { size: (Number(this._fontInfo.size) - 3) || 11, weight: 'bold' }));
+            if (tuplet.bracket) {
+                const hookHeight = baseSpacing;
+                const numberText = tuplet.showNumber === 'both'
+                    ? `${tuplet.actualNotes}:${tuplet.normalNotes}`
+                    : `${tuplet.actualNotes}`;
+                const midX = (bracketStartX + bracketEndX) / 2;
+                const numberWidth = ctx.measureText(numberText).width;
+                const gapHalf = numberWidth / 2 + 2 * stemScale;
+                ctx.beginPath();
+                // Left hook
+                ctx.moveTo(bracketStartX, bracketY + hookHeight);
+                ctx.lineTo(bracketStartX, bracketY);
+                // Line to gap
+                ctx.lineTo(midX - gapHalf, bracketY);
+                ctx.stroke();
+                ctx.beginPath();
+                // Line from gap
+                ctx.moveTo(midX + gapHalf, bracketY);
+                ctx.lineTo(bracketEndX, bracketY);
+                // Right hook
+                ctx.lineTo(bracketEndX, bracketY + hookHeight);
+                ctx.stroke();
+                // Number
+                ctx.fillText(numberText, midX - numberWidth / 2, bracketY - 1 * stemScale);
+            }
+            else {
+                const numberText = `${tuplet.actualNotes}`;
+                const midX = (bracketStartX + bracketEndX) / 2;
+                const numberWidth = ctx.measureText(numberText).width;
+                ctx.fillText(numberText, midX - numberWidth / 2, bracketY - 1 * stemScale);
+            }
         }
         return x;
     }

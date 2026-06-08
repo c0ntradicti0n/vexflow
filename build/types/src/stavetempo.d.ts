@@ -5,53 +5,38 @@ export interface NoteEquationItem {
     dots?: number;
     tupletNum?: number;
     notesOccupied?: number;
+    /** Beam state for multi-note groups: "begin", "continue", "end". */
+    beam?: string;
+    /** This note starts a tuplet bracket group. */
+    bracketStart?: boolean;
+    /** This note ends a tuplet bracket group. */
+    bracketEnd?: boolean;
 }
 export interface StaveTempoOptions {
-    /** free text i.e.: 'Adagio', 'Andate grazioso', ... */
     name?: string;
-    /**
-     * Indicates whether or not to put the metronome mark in parentheses.
-     * It is no if not specified.
-     * */
     parenthesis?: boolean;
-    /**
-     * Indicates the graphical note type to use in a metronome mark.
-     * see: `StaveTempo.durationToCode`.
-     */
     duration?: string;
-    /**
-     * Specifies the number of augmentation dots for a metronome mark note.
-     */
     dots?: number;
-    /**
-     * Specifies the beats per minute associated with the metronome mark.
-     * i.e.: 120, "c. 108", "132-144"
-     */
     bpm?: number | string;
-    /**
-     * Indicates the graphical note type to use at the right of the equation
-     *  in a metronome mark.
-     * see: `StaveTempo.durationToCode`.
-     */
     duration2?: string;
-    /**
-     * Specifies the number of augmentation dots for a metronome mark note
-     * at the right of the equation.
-     */
     dots2?: number;
-    /**
-     * Array of note groups for complex metronome / swing notation.
-     * Each group is rendered with an equals sign between.
-     */
     noteEquation?: NoteEquationItem[];
 }
 export declare class StaveTempo extends StaveModifier {
     static get CATEGORY(): string;
     protected tempo: StaveTempoOptions;
+    protected renderOptions: {
+        glyphFontScale: number;
+    };
     constructor(tempo: StaveTempoOptions, x: number, shiftY: number);
     protected durationToCode: Record<string, string>;
     setTempo(tempo: StaveTempoOptions): this;
     draw(): void;
-    drawNoteEquation(ctx: RenderContext, x: number, y: number, scale: number, noteEquation: NoteEquationItem[]): number;
-    drawNoteGroup(ctx: RenderContext, x: number, y: number, scale: number, noteGroup: NoteEquationItem): number;
+    drawNoteEquation(ctx: RenderContext, x: number, y: number, noteEquation: NoteEquationItem[]): number;
+    /**
+     * Draw a group of notes with beams connecting flagged notes and optional tuplet bracket.
+     * Ported from VF4's drawNoteGroup — renders note heads, stems, beams, and brackets
+     * using direct canvas operations instead of pre-combined metronome glyphs.
+     */
+    drawNoteGroup(ctx: RenderContext, x: number, y: number, stemScale: number, baseSpacing: number, group: any): number;
 }

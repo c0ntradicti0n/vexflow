@@ -186,7 +186,7 @@ export class StaveNote extends StemmableNote {
                         if (!disableXShift &&
                             (!Tables.UNISON ||
                                 noteUHead !== noteLHead ||
-                                uDots !== lDots ||
+                                (uDots !== lDots && lineDiff > 0) ||
                                 (lineDiff < 1 && lineDiff > 0) ||
                                 JSON.stringify(noteU.note.getStyle()) !== JSON.stringify(noteL.note.getStyle()))) {
                             xShift = voiceXShift + 2;
@@ -277,7 +277,10 @@ export class StaveNote extends StemmableNote {
         if (noteL.isrest && noteM.minLine <= noteL.maxLine) {
             shiftRestVertical(noteL, noteM, -1);
         }
-        if (noteU.minLine <= noteM.maxLine + 0.5 || noteM.minLine <= noteL.maxLine) {
+        const noteU_M_unison = noteU.minLine === noteM.maxLine;
+        const noteU_M_overlap = noteU.minLine <= noteM.maxLine + 0.5 && !noteU_M_unison;
+        const noteM_L_overlap = noteM.minLine <= noteL.maxLine && noteM.minLine !== noteL.maxLine;
+        if (noteU_M_overlap || (noteM_L_overlap && !noteU_M_unison)) {
             xShift = voiceXShift + 2;
             noteM.note.setXShift(xShift);
             if (noteL.note.hasBeam() === false) {

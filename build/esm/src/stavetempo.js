@@ -1,6 +1,5 @@
-import { Element } from './element.js';
 import { Glyphs } from './glyphs.js';
-import { Metrics } from './metrics.js';
+import { Note } from './note.js';
 import { StaveModifier, StaveModifierPosition } from './stavemodifier.js';
 export class StaveTempo extends StaveModifier {
     static get CATEGORY() {
@@ -8,6 +7,9 @@ export class StaveTempo extends StaveModifier {
     }
     constructor(tempo, x, shiftY) {
         super();
+        this.renderOptions = {
+            glyphFontScale: 30,
+        };
         this.durationToCode = {
             '1/4': Glyphs.metNoteDoubleWholeSquare,
             long: Glyphs.metNoteDoubleWholeSquare,
@@ -56,94 +58,196 @@ export class StaveTempo extends StaveModifier {
         this.setRendered();
         const { name, duration, dots, bpm, duration2, dots2, parenthesis, noteEquation } = this.tempo;
         let x = this.x + shiftX;
-        const y = stave.getYForTopText(1);
-        const el = new Element('StaveTempo.glyph');
-        const elText = new Element('StaveTempo');
+        const y = stave.getYForTopText(1) + this.yShift;
         ctx.openGroup('stavetempo');
         if (name) {
-            this.text = name;
-            this.fontInfo = Metrics.getFontInfo('StaveTempo.name');
-            this.renderText(ctx, shiftX, y);
-            x += this.getWidth() + 3;
-        }
-        if ((name && duration) || parenthesis) {
-            elText.setText('(');
-            elText.renderText(ctx, x + this.xShift, y + this.yShift);
-            x += elText.getWidth() + 3;
-        }
-        if (duration) {
-            el.setText(this.durationToCode[duration]);
-            el.renderText(ctx, x + this.xShift, y + this.yShift);
-            x += el.getWidth() + 3;
-            if (dots) {
-                el.setText(Glyphs.metAugmentationDot);
-                for (let i = 0; i < dots; i++) {
-                    el.renderText(ctx, x + this.xShift, y + 2 + this.yShift);
-                    x += el.getWidth() + 3;
-                }
-            }
-            elText.setText('=');
-            elText.renderText(ctx, x + this.xShift, y + this.yShift);
-            x += elText.getWidth() + 3;
-            if (duration2) {
-                el.setText(this.durationToCode[duration2]);
-                el.renderText(ctx, x + this.xShift, y + this.yShift);
-                x += el.getWidth() + 3;
-                if (dots2) {
-                    el.setText(Glyphs.metAugmentationDot);
-                    for (let i = 0; i < dots2; i++) {
-                        el.renderText(ctx, x + this.xShift, y + 2 + this.yShift);
-                        x += el.getWidth() + 3;
-                    }
-                }
-            }
-            else if (bpm) {
-                ctx.openGroup('bpm');
-                elText.setText('' + bpm);
-                elText.renderText(ctx, x + this.xShift, y + this.yShift);
-                x += elText.getWidth() + 3;
-                ctx.closeGroup();
-            }
-            if (name || parenthesis) {
-                elText.setText(')');
-                elText.renderText(ctx, x + this.xShift, y + this.yShift);
-            }
+            this.setFont(this._fontInfo);
+            ctx.fillText(name, x, y);
+            x += ctx.measureText(name).width;
         }
         if (noteEquation) {
-            x = this.drawNoteEquation(ctx, x, y, 1, noteEquation);
+            x = this.drawNoteEquation(ctx, x, y, noteEquation);
+        }
+        else if (duration && bpm) {
+            this.setFont(Object.assign(Object.assign({}, this._fontInfo), { weight: 'normal' }));
+            if (name) {
+                x += ctx.measureText(' ').width;
+                ctx.fillText('(', x, y);
+                x += ctx.measureText('(').width;
+            }
+            const scale = this.renderOptions.glyphFontScale / 38;
+            const glyphCode = this.durationToCode[duration];
+            x += 3 * scale;
+            ctx.fillText(glyphCode, x, y);
+            x += ctx.measureText(glyphCode).width;
+            for (let i = 0; i < (dots || 0); i++) {
+                x += 6 * scale;
+                ctx.beginPath();
+                ctx.arc(x, y + 2 * scale, 2 * scale, 0, Math.PI * 2, false);
+                ctx.fill();
+            }
+            ctx.openGroup('bpm');
+            this.setFont(Object.assign(Object.assign({}, this._fontInfo), { weight: 'normal' }));
+            ctx.fillText(' = ' + bpm + (name ? ')' : ''), x + 3 * scale, y);
+            ctx.closeGroup();
         }
         ctx.closeGroup();
     }
-    drawNoteEquation(ctx, x, y, scale, noteEquation) {
-        const elText = new Element('StaveTempo');
-        for (let i = 0; i < noteEquation.length; i++) {
-            if (i > 0) {
-                elText.setText('=');
-                elText.renderText(ctx, x + this.xShift, y + this.yShift);
-                x += elText.getWidth() + 3;
+    drawNoteEquation(ctx, x, y, noteEquation) {
+        const glyphPt = 22;
+        const stemScale = glyphPt / 38;
+        const baseSpacing = 4 * stemScale;
+        let splitIndex = noteEquation.length;
+        for (let i = 1; i < noteEquation.length; i++) {
+            const prev = noteEquation[i - 1];
+            const curr = noteEquation[i];
+            const continuesBeam = curr.beam === 'end' || curr.beam === 'continue';
+            const continuesBracket = prev.bracketStart || curr.bracketEnd;
+            if (!continuesBeam && !continuesBracket) {
+                splitIndex = i;
+                break;
             }
-            x = this.drawNoteGroup(ctx, x, y, scale, noteEquation[i]);
         }
+        const leftItems = noteEquation.slice(0, splitIndex);
+        const rightItems = noteEquation.slice(splitIndex);
+        const buildGroup = (items) => {
+            if (items.length === 0)
+                return { notes: [] };
+            const notes = items.map((item) => ({
+                duration: item.duration,
+                dots: item.dots || 0,
+                beam: item.beam,
+            }));
+            const group = { notes };
+            if (items[0].tupletNum) {
+                group.tuplet = {
+                    actualNotes: items[0].tupletNum,
+                    normalNotes: items[0].notesOccupied,
+                    bracket: items[0].bracketStart === true,
+                    showNumber: 'actual',
+                };
+            }
+            return group;
+        };
+        const leftGroup = buildGroup(leftItems);
+        const rightGroup = buildGroup(rightItems);
+        x = this.drawNoteGroup(ctx, x, y, stemScale, baseSpacing, leftGroup);
+        this.setFont(Object.assign(Object.assign({}, this._fontInfo), { weight: 'bold' }));
+        x += 1.5 * baseSpacing;
+        ctx.fillText('=', x, y);
+        x += ctx.measureText('=').width + 1.5 * baseSpacing;
+        x = this.drawNoteGroup(ctx, x, y, stemScale, baseSpacing, rightGroup);
         return x;
     }
-    drawNoteGroup(ctx, x, y, scale, noteGroup) {
-        const el = new Element('StaveTempo.glyph');
-        el.setText(this.durationToCode[noteGroup.duration]);
-        el.renderText(ctx, x + this.xShift, y + this.yShift);
-        x += el.getWidth() + 3;
-        if (noteGroup.dots) {
-            el.setText(Glyphs.metAugmentationDot);
-            for (let i = 0; i < noteGroup.dots; i++) {
-                el.renderText(ctx, x + this.xShift, y + 2 + this.yShift);
-                x += el.getWidth() + 3;
+    drawNoteGroup(ctx, x, y, stemScale, baseSpacing, group) {
+        const notes = group.notes;
+        const tuplet = group.tuplet;
+        this.setFont(Object.assign(Object.assign({}, this._fontInfo), { size: 22 }));
+        const notePositions = [];
+        const beamSegments = [];
+        let currentBeamGroup = [];
+        for (let i = 0; i < notes.length; i++) {
+            const note = notes[i];
+            const glyphProps = Note.getGlyphProps(note.duration, 'n');
+            const headGlyph = glyphProps.codeHead;
+            if (!headGlyph)
+                continue;
+            x += 3 * stemScale;
+            const noteX = x;
+            ctx.fillText(headGlyph, x, y);
+            x += ctx.measureText(headGlyph).width;
+            let stemTopY = y;
+            if (glyphProps.stem) {
+                const stemHeight = 18 * stemScale;
+                stemTopY = y - stemHeight;
+                ctx.fillRect(x - stemScale, stemTopY, stemScale, stemHeight);
+                if (glyphProps.codeFlagUp && !note.beam) {
+                    const flagGlyph = glyphProps.codeFlagUp;
+                    if (flagGlyph) {
+                        ctx.fillText(flagGlyph, x, stemTopY);
+                    }
+                    if (!note.dots)
+                        x += 6 * stemScale;
+                }
+            }
+            for (let d = 0; d < (note.dots || 0); d++) {
+                x += 6 * stemScale;
+                ctx.beginPath();
+                ctx.arc(x, y + 2 * stemScale, 2 * stemScale, 0, Math.PI * 2, false);
+                ctx.fill();
+            }
+            const pos = { x: noteX, y_top: stemTopY, stemX: x, code: glyphProps };
+            notePositions.push(pos);
+            if (note.beam === 'begin') {
+                currentBeamGroup = [pos];
+            }
+            else if (note.beam === 'continue') {
+                currentBeamGroup.push(pos);
+            }
+            else if (note.beam === 'end') {
+                currentBeamGroup.push(pos);
+                beamSegments.push(currentBeamGroup);
+                currentBeamGroup = [];
+            }
+            if (i < notes.length - 1) {
+                x += tuplet ? 2 * baseSpacing : baseSpacing;
             }
         }
-        if (noteGroup.tupletNum) {
-            const tupletEl = new Element('StaveTempo');
-            tupletEl.setText(`${noteGroup.tupletNum}`);
-            const tupletY = y - 30;
-            const tupletX = x - 3 - el.getWidth() / 2 - tupletEl.getWidth() / 2;
-            tupletEl.renderText(ctx, tupletX + this.xShift, tupletY + this.yShift);
+        const beamThickness = 3 * stemScale;
+        for (const segment of beamSegments) {
+            if (segment.length < 2)
+                continue;
+            const firstStem = segment[0];
+            const lastStem = segment[segment.length - 1];
+            let maxBeamCount = 0;
+            for (const pos of segment) {
+                if (pos.code.beamCount) {
+                    maxBeamCount = Math.max(maxBeamCount, pos.code.beamCount);
+                }
+            }
+            for (let b = 0; b < maxBeamCount; b++) {
+                const beamY = firstStem.y_top + b * (beamThickness + 1 * stemScale);
+                ctx.fillRect(firstStem.stemX - stemScale, beamY, lastStem.stemX - firstStem.stemX + stemScale, beamThickness);
+            }
+        }
+        if (tuplet && notePositions.length > 0) {
+            const firstPos = notePositions[0];
+            const lastPos = notePositions[notePositions.length - 1];
+            let minY = firstPos.y_top;
+            for (const pos of notePositions) {
+                minY = Math.min(minY, pos.y_top);
+            }
+            const bracketOverhang = 1.25 * baseSpacing;
+            const bracketY = minY - 1.5 * baseSpacing;
+            const bracketStartX = firstPos.x - 0.5 * baseSpacing;
+            const bracketEndX = lastPos.stemX + bracketOverhang;
+            this.setFont(Object.assign(Object.assign({}, this._fontInfo), { size: (Number(this._fontInfo.size) - 3) || 11, weight: 'bold' }));
+            if (tuplet.bracket) {
+                const hookHeight = baseSpacing;
+                const numberText = tuplet.showNumber === 'both'
+                    ? `${tuplet.actualNotes}:${tuplet.normalNotes}`
+                    : `${tuplet.actualNotes}`;
+                const midX = (bracketStartX + bracketEndX) / 2;
+                const numberWidth = ctx.measureText(numberText).width;
+                const gapHalf = numberWidth / 2 + 2 * stemScale;
+                ctx.beginPath();
+                ctx.moveTo(bracketStartX, bracketY + hookHeight);
+                ctx.lineTo(bracketStartX, bracketY);
+                ctx.lineTo(midX - gapHalf, bracketY);
+                ctx.stroke();
+                ctx.beginPath();
+                ctx.moveTo(midX + gapHalf, bracketY);
+                ctx.lineTo(bracketEndX, bracketY);
+                ctx.lineTo(bracketEndX, bracketY + hookHeight);
+                ctx.stroke();
+                ctx.fillText(numberText, midX - numberWidth / 2, bracketY - 1 * stemScale);
+            }
+            else {
+                const numberText = `${tuplet.actualNotes}`;
+                const midX = (bracketStartX + bracketEndX) / 2;
+                const numberWidth = ctx.measureText(numberText).width;
+                ctx.fillText(numberText, midX - numberWidth / 2, bracketY - 1 * stemScale);
+            }
         }
         return x;
     }
