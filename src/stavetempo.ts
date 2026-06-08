@@ -102,7 +102,7 @@ export class StaveTempo extends StaveModifier {
     ctx.openGroup('stavetempo');
 
     if (name) {
-      this.setFont(this._fontInfo);
+      ctx.setFont(this._fontInfo);
       ctx.fillText(name, x, y);
       x += ctx.measureText(name).width;
     }
@@ -110,7 +110,7 @@ export class StaveTempo extends StaveModifier {
     if (noteEquation) {
       x = this.drawNoteEquation(ctx, x, y, noteEquation);
     } else if (duration && bpm) {
-      this.setFont({ ...this._fontInfo, weight: 'normal' });
+      ctx.setFont({ ...this._fontInfo, weight: 'normal' });
 
       if (name) {
         x += ctx.measureText(' ').width;
@@ -133,7 +133,7 @@ export class StaveTempo extends StaveModifier {
       }
 
       ctx.openGroup('bpm');
-      this.setFont({ ...this._fontInfo, weight: 'normal' });
+      ctx.setFont({ ...this._fontInfo, weight: 'normal' });
       ctx.fillText(' = ' + bpm + (name ? ')' : ''), x + 3 * scale, y);
       ctx.closeGroup();
     }
@@ -143,9 +143,9 @@ export class StaveTempo extends StaveModifier {
   }
 
   drawNoteEquation(ctx: RenderContext, x: number, y: number, noteEquation: NoteEquationItem[]): number {
-    const glyphPt = 22;
+    const glyphPt = 20;
     const stemScale = glyphPt / 38;
-    const baseSpacing = 4 * stemScale;
+    const baseSpacing = 3 * stemScale;
 
     // Flatten the array into VF4-style {left, right} groups by detecting
     // the boundary: notes after the first group that aren't beam-continued
@@ -192,7 +192,7 @@ export class StaveTempo extends StaveModifier {
     x = this.drawNoteGroup(ctx, x, y, stemScale, baseSpacing, leftGroup);
 
     // Draw equals sign
-    this.setFont({ ...this._fontInfo, weight: 'bold' });
+    ctx.setFont({ ...this._fontInfo, weight: 'bold' });
     x += 1.5 * baseSpacing;
     ctx.fillText('=', x, y);
     x += ctx.measureText('=').width + 1.5 * baseSpacing;
@@ -219,7 +219,7 @@ export class StaveTempo extends StaveModifier {
     const notes = group.notes;
     const tuplet = group.tuplet;
 
-    this.setFont({ ...this._fontInfo, size: 22 });
+    ctx.setFont({ ...this._fontInfo, size: 20 });
 
     const notePositions: any[] = [];
     const beamSegments: any[][] = [];
@@ -242,7 +242,7 @@ export class StaveTempo extends StaveModifier {
 
       // Draw stem
       if (glyphProps.stem) {
-        const stemHeight = 18 * stemScale;
+        const stemHeight = 24 * stemScale;
 
         stemTopY = y - stemHeight;
         ctx.fillRect(x - stemScale, stemTopY, stemScale, stemHeight);
@@ -325,7 +325,7 @@ export class StaveTempo extends StaveModifier {
       const bracketStartX = firstPos.x - 0.5 * baseSpacing;
       const bracketEndX = lastPos.stemX + bracketOverhang;
 
-      this.setFont({ ...this._fontInfo, size: (Number(this._fontInfo.size) - 3) || 11, weight: 'bold' });
+      ctx.setFont({ ...this._fontInfo, size: (Number(this._fontInfo.size) - 3) || 11, weight: 'bold' });
 
       if (tuplet.bracket) {
         const hookHeight = baseSpacing;
