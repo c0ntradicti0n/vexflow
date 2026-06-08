@@ -95,7 +95,8 @@ export class StaveTempo extends StaveModifier {
     this.setRendered();
 
     const { name, duration, dots, bpm, duration2, dots2, parenthesis, noteEquation } = this.tempo;
-    let x = this.x + shiftX;
+    const startX = this.x + shiftX;
+    let x = startX;
     const y = stave.getYForTopText(1) + this.yShift;
 
     ctx.openGroup('stavetempo');
@@ -137,6 +138,7 @@ export class StaveTempo extends StaveModifier {
       ctx.closeGroup();
     }
 
+    this.width = x - startX;
     ctx.closeGroup();
   }
 

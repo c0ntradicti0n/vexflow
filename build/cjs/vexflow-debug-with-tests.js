@@ -1,5 +1,5 @@
 /*!
- * VexFlow 5.0.0   2026-06-08T20:23:58.018Z   c8568388053e8e3d6cbb771c8cb3cc1b3f86e9d2
+ * VexFlow 5.0.0   2026-06-08T20:36:58.534Z   99c34388594ed0b21f44491cdf84cfea26ee46e8
  * Copyright (c) 2023-present VexFlow contributors (see https://github.com/vexflow/vexflow/blob/main/AUTHORS.md).
  */
 (function webpackUniversalModuleDefinition(root, factory) {
@@ -30,8 +30,8 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export */ });
 // Gruntfile.js uses string-replace-loader to replace these values during build time.
 const VERSION = '5.0.0';
-const ID = 'c8568388053e8e3d6cbb771c8cb3cc1b3f86e9d2';
-const DATE = '2026-06-08T20:23:58.018Z';
+const ID = '99c34388594ed0b21f44491cdf84cfea26ee46e8';
+const DATE = '2026-06-08T20:36:58.534Z';
 
 
 /***/ }),
@@ -20776,7 +20776,8 @@ class StaveTempo extends _stavemodifier__WEBPACK_IMPORTED_MODULE_2__.StaveModifi
         const ctx = stave.checkContext();
         this.setRendered();
         const { name, duration, dots, bpm, duration2, dots2, parenthesis, noteEquation } = this.tempo;
-        let x = this.x + shiftX;
+        const startX = this.x + shiftX;
+        let x = startX;
         const y = stave.getYForTopText(1) + this.yShift;
         ctx.openGroup('stavetempo');
         if (name) {
@@ -20810,6 +20811,7 @@ class StaveTempo extends _stavemodifier__WEBPACK_IMPORTED_MODULE_2__.StaveModifi
             ctx.fillText(' = ' + bpm + (name ? ')' : ''), x + 3 * scale, y);
             ctx.closeGroup();
         }
+        this.width = x - startX;
         ctx.closeGroup();
     }
     drawNoteEquation(ctx, x, y, noteEquation) {

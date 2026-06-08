@@ -57,7 +57,8 @@ export class StaveTempo extends StaveModifier {
         const ctx = stave.checkContext();
         this.setRendered();
         const { name, duration, dots, bpm, duration2, dots2, parenthesis, noteEquation } = this.tempo;
-        let x = this.x + shiftX;
+        const startX = this.x + shiftX;
+        let x = startX;
         const y = stave.getYForTopText(1) + this.yShift;
         ctx.openGroup('stavetempo');
         if (name) {
@@ -91,6 +92,7 @@ export class StaveTempo extends StaveModifier {
             ctx.fillText(' = ' + bpm + (name ? ')' : ''), x + 3 * scale, y);
             ctx.closeGroup();
         }
+        this.width = x - startX;
         ctx.closeGroup();
     }
     drawNoteEquation(ctx, x, y, noteEquation) {
