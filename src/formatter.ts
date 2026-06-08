@@ -920,23 +920,30 @@ export class Formatter {
       });
 
       voiceEntries.forEach((entries) => {
+        let ticksAccum = 0;
         entries.forEach((entry, i) => {
           const { tickable, contextIndex } = entry;
+          const tickDuration = tickable.getTicks().value();
           if (isStaveNote(tickable) && tickable.isRest() && !(tickable as any)._alignCenter) {
-            const context = contextMap[contextList[contextIndex]];
-            const slotStart = context.getX();
-            let slotEnd: number;
-            if (i + 1 < entries.length) {
-              const nextContext = contextMap[contextList[entries[i + 1].contextIndex]];
-              slotEnd = nextContext.getX();
-            } else {
-              slotEnd = noteAreaEnd;
+            // Only center half and whole rests within their duration span.
+            // Quarter, 8th, 16th etc. rests should be positioned like notes (no centering).
+            const restDuration: string = (tickable as any).duration ?? "";
+            if (restDuration === "h" || restDuration === "w") {
+              const context = contextMap[contextList[contextIndex]];
+              const glyphWidth = tickable.getGlyphWidth();
+              const totalTicks = tickable.getVoice().getTotalTicks().value();
+              // Compute proportional slot within the note area, independent of context X.
+              const slotStart = (ticksAccum / totalTicks) * noteAreaEnd;
+              const slotEnd = Math.min(((ticksAccum + tickDuration) / totalTicks) * noteAreaEnd, noteAreaEnd);
+              // Center the rest within its slot. The formula cancels out context.getX()
+              // so the rest's absolute position is purely determined by its tick position,
+              // like whole-bar rests in shiftToIdealDistances.
+              const centerXShift = (slotStart + slotEnd) / 2 - glyphWidth / 2 - context.getX();
+              tickable.setCenterAlignment(true);
+              tickable.setCenterXShift(centerXShift);
             }
-            const glyphWidth = tickable.getGlyphWidth();
-            const centerXShift = (slotEnd - slotStart - glyphWidth) / 2;
-            tickable.setCenterAlignment(true);
-            tickable.setCenterXShift(centerXShift);
           }
+          ticksAccum += tickDuration;
         });
       });
     }

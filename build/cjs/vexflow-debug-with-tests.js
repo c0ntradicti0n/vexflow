@@ -1,5 +1,5 @@
 /*!
- * VexFlow 5.0.0   2026-06-07T20:44:13.917Z   6707dd3c8a6ace6105b0c85995795fea14ed473a
+ * VexFlow 5.0.0   2026-06-08T12:13:48.374Z   70bce0b246f59456dfde8e8eb472cf58a3352b3d
  * Copyright (c) 2023-present VexFlow contributors (see https://github.com/vexflow/vexflow/blob/main/AUTHORS.md).
  */
 (function webpackUniversalModuleDefinition(root, factory) {
@@ -30,8 +30,8 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export */ });
 // Gruntfile.js uses string-replace-loader to replace these values during build time.
 const VERSION = '5.0.0';
-const ID = '6707dd3c8a6ace6105b0c85995795fea14ed473a';
-const DATE = '2026-06-07T20:44:13.917Z';
+const ID = '70bce0b246f59456dfde8e8eb472cf58a3352b3d';
+const DATE = '2026-06-08T12:13:48.374Z';
 
 
 /***/ }),
@@ -6633,24 +6633,31 @@ class Formatter {
                 });
             });
             voiceEntries.forEach((entries) => {
+                let ticksAccum = 0;
                 entries.forEach((entry, i) => {
+                    var _a;
                     const { tickable, contextIndex } = entry;
+                    const tickDuration = tickable.getTicks().value();
                     if ((0,_typeguard__WEBPACK_IMPORTED_MODULE_8__.isStaveNote)(tickable) && tickable.isRest() && !tickable._alignCenter) {
-                        const context = contextMap[contextList[contextIndex]];
-                        const slotStart = context.getX();
-                        let slotEnd;
-                        if (i + 1 < entries.length) {
-                            const nextContext = contextMap[contextList[entries[i + 1].contextIndex]];
-                            slotEnd = nextContext.getX();
+                        // Only center half and whole rests within their duration span.
+                        // Quarter, 8th, 16th etc. rests should be positioned like notes (no centering).
+                        const restDuration = (_a = tickable.duration) !== null && _a !== void 0 ? _a : "";
+                        if (restDuration === "h" || restDuration === "w") {
+                            const context = contextMap[contextList[contextIndex]];
+                            const glyphWidth = tickable.getGlyphWidth();
+                            const totalTicks = tickable.getVoice().getTotalTicks().value();
+                            // Compute proportional slot within the note area, independent of context X.
+                            const slotStart = (ticksAccum / totalTicks) * noteAreaEnd;
+                            const slotEnd = Math.min(((ticksAccum + tickDuration) / totalTicks) * noteAreaEnd, noteAreaEnd);
+                            // Center the rest within its slot. The formula cancels out context.getX()
+                            // so the rest's absolute position is purely determined by its tick position,
+                            // like whole-bar rests in shiftToIdealDistances.
+                            const centerXShift = (slotStart + slotEnd) / 2 - glyphWidth / 2 - context.getX();
+                            tickable.setCenterAlignment(true);
+                            tickable.setCenterXShift(centerXShift);
                         }
-                        else {
-                            slotEnd = noteAreaEnd;
-                        }
-                        const glyphWidth = tickable.getGlyphWidth();
-                        const centerXShift = (slotEnd - slotStart - glyphWidth) / 2;
-                        tickable.setCenterAlignment(true);
-                        tickable.setCenterXShift(centerXShift);
                     }
+                    ticksAccum += tickDuration;
                 });
             });
         }

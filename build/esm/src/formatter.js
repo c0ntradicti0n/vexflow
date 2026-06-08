@@ -481,24 +481,25 @@ export class Formatter {
                 });
             });
             voiceEntries.forEach((entries) => {
+                let ticksAccum = 0;
                 entries.forEach((entry, i) => {
+                    var _a;
                     const { tickable, contextIndex } = entry;
+                    const tickDuration = tickable.getTicks().value();
                     if (isStaveNote(tickable) && tickable.isRest() && !tickable._alignCenter) {
-                        const context = contextMap[contextList[contextIndex]];
-                        const slotStart = context.getX();
-                        let slotEnd;
-                        if (i + 1 < entries.length) {
-                            const nextContext = contextMap[contextList[entries[i + 1].contextIndex]];
-                            slotEnd = nextContext.getX();
+                        const restDuration = (_a = tickable.duration) !== null && _a !== void 0 ? _a : "";
+                        if (restDuration === "h" || restDuration === "w") {
+                            const context = contextMap[contextList[contextIndex]];
+                            const glyphWidth = tickable.getGlyphWidth();
+                            const totalTicks = tickable.getVoice().getTotalTicks().value();
+                            const slotStart = (ticksAccum / totalTicks) * noteAreaEnd;
+                            const slotEnd = Math.min(((ticksAccum + tickDuration) / totalTicks) * noteAreaEnd, noteAreaEnd);
+                            const centerXShift = (slotStart + slotEnd) / 2 - glyphWidth / 2 - context.getX();
+                            tickable.setCenterAlignment(true);
+                            tickable.setCenterXShift(centerXShift);
                         }
-                        else {
-                            slotEnd = noteAreaEnd;
-                        }
-                        const glyphWidth = tickable.getGlyphWidth();
-                        const centerXShift = (slotEnd - slotStart - glyphWidth) / 2;
-                        tickable.setCenterAlignment(true);
-                        tickable.setCenterXShift(centerXShift);
                     }
+                    ticksAccum += tickDuration;
                 });
             });
         }
