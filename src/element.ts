@@ -91,6 +91,9 @@ export class Element {
   /** Canvas used to measure text. See measureText(): TextMetrics. */
   private static txtCanvas?: HTMLCanvasElement | OffscreenCanvas;
 
+  /** Shared cache for glyph metrics keyed on `${font}|${text}`. */
+  private static glyphMetricsCache: Map<string, { width: number; height: number }> = new Map();
+
   // Note: Canvas is node-canvas.
   // https://www.npmjs.com/package/canvas
   static setTextMeasurementCanvas(canvas: HTMLCanvasElement | OffscreenCanvas /* | Canvas */): void {
@@ -606,32 +609,52 @@ export class Element {
 
   /** Measure the text using the textFont. */
   measureText(): TextMetrics {
-    // TODO: What about SVG.getBBox()?
-    // https://developer.mozilla.org/en-US/docs/Web/API/SVGGraphicsElement/getBBox
+    const font = Font.toCSSString(Font.validate(this.fontInfo));
+    const cacheKey = font + '|' + this.text;
+    const cached = Element.glyphMetricsCache.get(cacheKey);
+    if (cached) {
+      this._width = cached.width;
+      this._height = cached.height;
+      this.metricsValid = true;
+      return this._textMetrics;
+    }
     const context = Element.getTextMeasurementCanvas()?.getContext('2d');
     if (!context) {
       // eslint-disable-next-line no-console
       console.warn('Element: No context for txtCanvas. Returning empty text metrics.');
       return this._textMetrics;
     }
-    context.font = Font.toCSSString(Font.validate(this.fontInfo));
+    context.font = font;
     this._textMetrics = context.measureText(this.text);
     this._height = this._textMetrics.actualBoundingBoxAscent + this._textMetrics.actualBoundingBoxDescent;
     this._width = this._textMetrics.width;
+    Element.glyphMetricsCache.set(cacheKey, { width: this._width, height: this._height });
     this.metricsValid = true;
     return this._textMetrics;
   }
 
   /** Measure the text using the FontInfo related with key. */
   static measureWidth(text: string, key = ''): number {
+    const font = Font.toCSSString(Metrics.getFontInfo(key));
+    return Element.measureWidthCached(text, font);
+  }
+
+  /** Measure text width with shared cache. Keyed on `${font}|${text}`. */
+  static measureWidthCached(text: string, font: string): number {
+    const cacheKey = font + '|' + text;
+    const cached = Element.glyphMetricsCache.get(cacheKey);
+    if (cached) return cached.width;
     const context = Element.getTextMeasurementCanvas()?.getContext('2d');
     if (!context) {
       // eslint-disable-next-line no-console
       console.warn('Element: No context for txtCanvas. Returning empty text metrics.');
       return 0;
     }
-    context.font = Font.toCSSString(Metrics.getFontInfo(key));
-    return context.measureText(text).width;
+    context.font = font;
+    const metrics = context.measureText(text);
+    const height = metrics.actualBoundingBoxAscent + metrics.actualBoundingBoxDescent;
+    Element.glyphMetricsCache.set(cacheKey, { width: metrics.width, height });
+    return metrics.width;
   }
 
   /** Get the text metrics. */

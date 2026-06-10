@@ -29,6 +29,8 @@ export declare class StaveTempo extends StaveModifier {
         glyphFontScale: number;
     };
     constructor(tempo: StaveTempoOptions, x: number, shiftY: number);
+    /** Cached text measurement via shared glyph-width cache. */
+    private measureWidth;
     protected durationToCode: Record<string, string>;
     setTempo(tempo: StaveTempoOptions): this;
     draw(): void;

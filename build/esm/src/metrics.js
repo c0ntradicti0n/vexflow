@@ -20,7 +20,7 @@ export class Metrics {
             };
             this.cacheFont.set(key, font);
         }
-        return structuredClone(font);
+        return Object.assign({}, font);
     }
     static getStyle(key) {
         let style = this.cacheStyle.get(key);
@@ -35,7 +35,7 @@ export class Metrics {
             };
             this.cacheStyle.set(key, style);
         }
-        return structuredClone(style);
+        return Object.assign({}, style);
     }
     static get(key, defaultValue) {
         var _a;

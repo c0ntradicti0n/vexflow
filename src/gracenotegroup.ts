@@ -89,8 +89,13 @@ export class GraceNoteGroup extends Modifier {
     for (let i = 0; i < groupList.length; ++i) {
       const gracenoteGroup = groupList[i].gracenoteGroup;
       formatWidth = gracenoteGroup.getWidth() + groupList[i].spacing;
+      // The grace notes are positioned relative to the main note:
+      //   graceX = tickContext.x - modLeftPx - modRightPx + spacingFromNextModifier
+      // For a single group, spacingFromNextModifier = minNoteheadPadding (=2px).
+      // Without extra padding the grace notes can collide with the preceding
+      // note because modLeftPx pushes them far left.
       gracenoteGroup.setSpacingFromNextModifier(
-        groupShift - Math.min(formatWidth, groupShift) + StaveNote.minNoteheadPadding
+        groupShift - Math.min(formatWidth, groupShift) + StaveNote.minNoteheadPadding + 5
       );
     }
 

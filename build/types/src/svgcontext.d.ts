@@ -13,6 +13,7 @@ export type Attributes = {
 export interface State {
     state: Attributes;
     attributes: Attributes;
+    fontCSSString: string;
 }
 /**
  * SVG rendering context with an API similar to CanvasRenderingContext2D.

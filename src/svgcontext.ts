@@ -51,6 +51,7 @@ const TWO_PI = 2 * Math.PI;
 export interface State {
   state: Attributes;
   attributes: Attributes;
+  fontCSSString: string;
 }
 
 /**
@@ -577,8 +578,9 @@ export class SVGContext extends RenderContext {
 
   save(): this {
     this.stateStack.push({
-      state: structuredClone(this.state),
-      attributes: structuredClone(this.attributes),
+      state: { ...this.state },
+      attributes: { ...this.attributes },
+      fontCSSString: this.fontCSSString,
     });
     return this;
   }
@@ -587,8 +589,9 @@ export class SVGContext extends RenderContext {
     const savedState = this.stateStack.pop();
     if (savedState) {
       const state = savedState;
-      this.state = structuredClone(state.state);
-      this.attributes = structuredClone(state.attributes);
+      this.state = { ...state.state };
+      this.attributes = { ...state.attributes };
+      this.fontCSSString = state.fontCSSString;
     }
     return this;
   }
@@ -621,7 +624,9 @@ export class SVGContext extends RenderContext {
    */
   setFont(f?: string | FontInfo, size?: string | number, weight?: string | number, style?: string): this {
     const fontInfo = Font.validate(f, size, weight, style);
-    this.fontCSSString = Font.toCSSString(fontInfo);
+    const css = Font.toCSSString(fontInfo);
+    if (css === this.fontCSSString) return this;
+    this.fontCSSString = css;
     const fontAttributes = {
       'font-family': fontInfo.family,
       'font-size': fontInfo.size,

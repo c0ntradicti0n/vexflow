@@ -28,7 +28,7 @@ export class Metrics {
       };
       this.cacheFont.set(key, font);
     }
-    return structuredClone(font);
+    return { ...font };
   }
 
   static getStyle(key: string): ElementStyle {
@@ -44,7 +44,7 @@ export class Metrics {
       };
       this.cacheStyle.set(key, style);
     }
-    return structuredClone(style);
+    return { ...style };
   }
 
   /**

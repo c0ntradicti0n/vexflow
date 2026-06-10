@@ -1,5 +1,5 @@
 /*!
- * VexFlow 5.0.0   2026-06-08T21:06:20.539Z   a8a77accb3e468185bf7baff1fc3ebed0afb6744
+ * VexFlow 5.0.0   2026-06-10T08:26:57.408Z   6c1469b80bf366bb6cb744e29630cf9b98e82e0c
  * Copyright (c) 2023-present VexFlow contributors (see https://github.com/vexflow/vexflow/blob/main/AUTHORS.md).
  */
 (function webpackUniversalModuleDefinition(root, factory) {
@@ -30,8 +30,8 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export */ });
 // Gruntfile.js uses string-replace-loader to replace these values during build time.
 const VERSION = '5.0.0';
-const ID = 'a8a77accb3e468185bf7baff1fc3ebed0afb6744';
-const DATE = '2026-06-08T21:06:20.539Z';
+const ID = '6c1469b80bf366bb6cb744e29630cf9b98e82e0c';
+const DATE = '2026-06-10T08:26:57.408Z';
 
 
 /***/ }),
@@ -4800,32 +4800,52 @@ class Element {
     /** Measure the text using the textFont. */
     measureText() {
         var _a;
-        // TODO: What about SVG.getBBox()?
-        // https://developer.mozilla.org/en-US/docs/Web/API/SVGGraphicsElement/getBBox
+        const font = _font__WEBPACK_IMPORTED_MODULE_1__.Font.toCSSString(_font__WEBPACK_IMPORTED_MODULE_1__.Font.validate(this.fontInfo));
+        const cacheKey = font + '|' + this.text;
+        const cached = Element.glyphMetricsCache.get(cacheKey);
+        if (cached) {
+            this._width = cached.width;
+            this._height = cached.height;
+            this.metricsValid = true;
+            return this._textMetrics;
+        }
         const context = (_a = Element.getTextMeasurementCanvas()) === null || _a === void 0 ? void 0 : _a.getContext('2d');
         if (!context) {
             // eslint-disable-next-line no-console
             console.warn('Element: No context for txtCanvas. Returning empty text metrics.');
             return this._textMetrics;
         }
-        context.font = _font__WEBPACK_IMPORTED_MODULE_1__.Font.toCSSString(_font__WEBPACK_IMPORTED_MODULE_1__.Font.validate(this.fontInfo));
+        context.font = font;
         this._textMetrics = context.measureText(this.text);
         this._height = this._textMetrics.actualBoundingBoxAscent + this._textMetrics.actualBoundingBoxDescent;
         this._width = this._textMetrics.width;
+        Element.glyphMetricsCache.set(cacheKey, { width: this._width, height: this._height });
         this.metricsValid = true;
         return this._textMetrics;
     }
     /** Measure the text using the FontInfo related with key. */
     static measureWidth(text, key = '') {
+        const font = _font__WEBPACK_IMPORTED_MODULE_1__.Font.toCSSString(_metrics__WEBPACK_IMPORTED_MODULE_2__.Metrics.getFontInfo(key));
+        return Element.measureWidthCached(text, font);
+    }
+    /** Measure text width with shared cache. Keyed on `${font}|${text}`. */
+    static measureWidthCached(text, font) {
         var _a;
+        const cacheKey = font + '|' + text;
+        const cached = Element.glyphMetricsCache.get(cacheKey);
+        if (cached)
+            return cached.width;
         const context = (_a = Element.getTextMeasurementCanvas()) === null || _a === void 0 ? void 0 : _a.getContext('2d');
         if (!context) {
             // eslint-disable-next-line no-console
             console.warn('Element: No context for txtCanvas. Returning empty text metrics.');
             return 0;
         }
-        context.font = _font__WEBPACK_IMPORTED_MODULE_1__.Font.toCSSString(_metrics__WEBPACK_IMPORTED_MODULE_2__.Metrics.getFontInfo(key));
-        return context.measureText(text).width;
+        context.font = font;
+        const metrics = context.measureText(text);
+        const height = metrics.actualBoundingBoxAscent + metrics.actualBoundingBoxDescent;
+        Element.glyphMetricsCache.set(cacheKey, { width: metrics.width, height });
+        return metrics.width;
     }
     /** Get the text metrics. */
     getTextMetrics() {
@@ -4868,6 +4888,8 @@ class Element {
     }
 }
 Element.ID = 1000;
+/** Shared cache for glyph metrics keyed on `${font}|${text}`. */
+Element.glyphMetricsCache = new Map();
 
 
 /***/ }),
@@ -13506,7 +13528,12 @@ class GraceNoteGroup extends _modifier__WEBPACK_IMPORTED_MODULE_2__.Modifier {
         for (let i = 0; i < groupList.length; ++i) {
             const gracenoteGroup = groupList[i].gracenoteGroup;
             formatWidth = gracenoteGroup.getWidth() + groupList[i].spacing;
-            gracenoteGroup.setSpacingFromNextModifier(groupShift - Math.min(formatWidth, groupShift) + _stavenote__WEBPACK_IMPORTED_MODULE_3__.StaveNote.minNoteheadPadding);
+            // The grace notes are positioned relative to the main note:
+            //   graceX = tickContext.x - modLeftPx - modRightPx + spacingFromNextModifier
+            // For a single group, spacingFromNextModifier = minNoteheadPadding (=2px).
+            // Without extra padding the grace notes can collide with the preceding
+            // note because modLeftPx pushes them far left.
+            gracenoteGroup.setSpacingFromNextModifier(groupShift - Math.min(formatWidth, groupShift) + _stavenote__WEBPACK_IMPORTED_MODULE_3__.StaveNote.minNoteheadPadding + 5);
         }
         if (right)
             state.rightShift += groupShift;
@@ -14459,7 +14486,7 @@ class Metrics {
             };
             this.cacheFont.set(key, font);
         }
-        return structuredClone(font);
+        return Object.assign({}, font);
     }
     static getStyle(key) {
         let style = this.cacheStyle.get(key);
@@ -14474,7 +14501,7 @@ class Metrics {
             };
             this.cacheStyle.set(key, style);
         }
-        return structuredClone(style);
+        return Object.assign({}, style);
     }
     /**
      * Use the provided key to look up a value in CommonMetrics.
@@ -20710,19 +20737,23 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export */ __webpack_require__.d(__webpack_exports__, {
 /* harmony export */   StaveTempo: () => (/* binding */ StaveTempo)
 /* harmony export */ });
-/* harmony import */ var _glyphs__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./glyphs */ "./src/glyphs.ts");
-/* harmony import */ var _note__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./note */ "./src/note.ts");
-/* harmony import */ var _stavemodifier__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ./stavemodifier */ "./src/stavemodifier.ts");
-/* harmony import */ var _typeguard__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ./typeguard */ "./src/typeguard.ts");
+/* harmony import */ var _element__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./element */ "./src/element.ts");
+/* harmony import */ var _font__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./font */ "./src/font.ts");
+/* harmony import */ var _glyphs__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ./glyphs */ "./src/glyphs.ts");
+/* harmony import */ var _note__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ./note */ "./src/note.ts");
+/* harmony import */ var _stavemodifier__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! ./stavemodifier */ "./src/stavemodifier.ts");
+/* harmony import */ var _typeguard__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! ./typeguard */ "./src/typeguard.ts");
 // Copyright (c) 2023-present VexFlow contributors: https://github.com/vexflow/vexflow/graphs/contributors
 // @author: Radosaw Eichler 2012
 
 
 
 
-class StaveTempo extends _stavemodifier__WEBPACK_IMPORTED_MODULE_2__.StaveModifier {
+
+
+class StaveTempo extends _stavemodifier__WEBPACK_IMPORTED_MODULE_4__.StaveModifier {
     static get CATEGORY() {
-        return _typeguard__WEBPACK_IMPORTED_MODULE_3__.Category.StaveTempo;
+        return _typeguard__WEBPACK_IMPORTED_MODULE_5__.Category.StaveTempo;
     }
     constructor(tempo, x, shiftY) {
         super();
@@ -20730,41 +20761,45 @@ class StaveTempo extends _stavemodifier__WEBPACK_IMPORTED_MODULE_2__.StaveModifi
             glyphFontScale: 30,
         };
         this.durationToCode = {
-            '1/4': _glyphs__WEBPACK_IMPORTED_MODULE_0__.Glyphs.metNoteDoubleWholeSquare,
-            long: _glyphs__WEBPACK_IMPORTED_MODULE_0__.Glyphs.metNoteDoubleWholeSquare,
-            '1/2': _glyphs__WEBPACK_IMPORTED_MODULE_0__.Glyphs.metNoteDoubleWhole,
-            breve: _glyphs__WEBPACK_IMPORTED_MODULE_0__.Glyphs.metNoteDoubleWhole,
-            1: _glyphs__WEBPACK_IMPORTED_MODULE_0__.Glyphs.metNoteWhole,
-            whole: _glyphs__WEBPACK_IMPORTED_MODULE_0__.Glyphs.metNoteWhole,
-            w: _glyphs__WEBPACK_IMPORTED_MODULE_0__.Glyphs.metNoteWhole,
-            2: _glyphs__WEBPACK_IMPORTED_MODULE_0__.Glyphs.metNoteHalfUp,
-            half: _glyphs__WEBPACK_IMPORTED_MODULE_0__.Glyphs.metNoteHalfUp,
-            h: _glyphs__WEBPACK_IMPORTED_MODULE_0__.Glyphs.metNoteHalfUp,
-            4: _glyphs__WEBPACK_IMPORTED_MODULE_0__.Glyphs.metNoteQuarterUp,
-            quarter: _glyphs__WEBPACK_IMPORTED_MODULE_0__.Glyphs.metNoteQuarterUp,
-            q: _glyphs__WEBPACK_IMPORTED_MODULE_0__.Glyphs.metNoteQuarterUp,
-            8: _glyphs__WEBPACK_IMPORTED_MODULE_0__.Glyphs.metNote8thUp,
-            eighth: _glyphs__WEBPACK_IMPORTED_MODULE_0__.Glyphs.metNote8thUp,
-            16: _glyphs__WEBPACK_IMPORTED_MODULE_0__.Glyphs.metNote16thUp,
-            '16th': _glyphs__WEBPACK_IMPORTED_MODULE_0__.Glyphs.metNote16thUp,
-            32: _glyphs__WEBPACK_IMPORTED_MODULE_0__.Glyphs.metNote32ndUp,
-            '32nd': _glyphs__WEBPACK_IMPORTED_MODULE_0__.Glyphs.metNote32ndUp,
-            64: _glyphs__WEBPACK_IMPORTED_MODULE_0__.Glyphs.metNote64thUp,
-            '64th': _glyphs__WEBPACK_IMPORTED_MODULE_0__.Glyphs.metNote64thUp,
-            128: _glyphs__WEBPACK_IMPORTED_MODULE_0__.Glyphs.metNote128thUp,
-            '128th': _glyphs__WEBPACK_IMPORTED_MODULE_0__.Glyphs.metNote128thUp,
-            256: _glyphs__WEBPACK_IMPORTED_MODULE_0__.Glyphs.metNote256thUp,
-            '256th': _glyphs__WEBPACK_IMPORTED_MODULE_0__.Glyphs.metNote256thUp,
-            512: _glyphs__WEBPACK_IMPORTED_MODULE_0__.Glyphs.metNote512thUp,
-            '512th': _glyphs__WEBPACK_IMPORTED_MODULE_0__.Glyphs.metNote512thUp,
-            1024: _glyphs__WEBPACK_IMPORTED_MODULE_0__.Glyphs.metNote1024thUp,
-            '1024th': _glyphs__WEBPACK_IMPORTED_MODULE_0__.Glyphs.metNote1024thUp,
+            '1/4': _glyphs__WEBPACK_IMPORTED_MODULE_2__.Glyphs.metNoteDoubleWholeSquare,
+            long: _glyphs__WEBPACK_IMPORTED_MODULE_2__.Glyphs.metNoteDoubleWholeSquare,
+            '1/2': _glyphs__WEBPACK_IMPORTED_MODULE_2__.Glyphs.metNoteDoubleWhole,
+            breve: _glyphs__WEBPACK_IMPORTED_MODULE_2__.Glyphs.metNoteDoubleWhole,
+            1: _glyphs__WEBPACK_IMPORTED_MODULE_2__.Glyphs.metNoteWhole,
+            whole: _glyphs__WEBPACK_IMPORTED_MODULE_2__.Glyphs.metNoteWhole,
+            w: _glyphs__WEBPACK_IMPORTED_MODULE_2__.Glyphs.metNoteWhole,
+            2: _glyphs__WEBPACK_IMPORTED_MODULE_2__.Glyphs.metNoteHalfUp,
+            half: _glyphs__WEBPACK_IMPORTED_MODULE_2__.Glyphs.metNoteHalfUp,
+            h: _glyphs__WEBPACK_IMPORTED_MODULE_2__.Glyphs.metNoteHalfUp,
+            4: _glyphs__WEBPACK_IMPORTED_MODULE_2__.Glyphs.metNoteQuarterUp,
+            quarter: _glyphs__WEBPACK_IMPORTED_MODULE_2__.Glyphs.metNoteQuarterUp,
+            q: _glyphs__WEBPACK_IMPORTED_MODULE_2__.Glyphs.metNoteQuarterUp,
+            8: _glyphs__WEBPACK_IMPORTED_MODULE_2__.Glyphs.metNote8thUp,
+            eighth: _glyphs__WEBPACK_IMPORTED_MODULE_2__.Glyphs.metNote8thUp,
+            16: _glyphs__WEBPACK_IMPORTED_MODULE_2__.Glyphs.metNote16thUp,
+            '16th': _glyphs__WEBPACK_IMPORTED_MODULE_2__.Glyphs.metNote16thUp,
+            32: _glyphs__WEBPACK_IMPORTED_MODULE_2__.Glyphs.metNote32ndUp,
+            '32nd': _glyphs__WEBPACK_IMPORTED_MODULE_2__.Glyphs.metNote32ndUp,
+            64: _glyphs__WEBPACK_IMPORTED_MODULE_2__.Glyphs.metNote64thUp,
+            '64th': _glyphs__WEBPACK_IMPORTED_MODULE_2__.Glyphs.metNote64thUp,
+            128: _glyphs__WEBPACK_IMPORTED_MODULE_2__.Glyphs.metNote128thUp,
+            '128th': _glyphs__WEBPACK_IMPORTED_MODULE_2__.Glyphs.metNote128thUp,
+            256: _glyphs__WEBPACK_IMPORTED_MODULE_2__.Glyphs.metNote256thUp,
+            '256th': _glyphs__WEBPACK_IMPORTED_MODULE_2__.Glyphs.metNote256thUp,
+            512: _glyphs__WEBPACK_IMPORTED_MODULE_2__.Glyphs.metNote512thUp,
+            '512th': _glyphs__WEBPACK_IMPORTED_MODULE_2__.Glyphs.metNote512thUp,
+            1024: _glyphs__WEBPACK_IMPORTED_MODULE_2__.Glyphs.metNote1024thUp,
+            '1024th': _glyphs__WEBPACK_IMPORTED_MODULE_2__.Glyphs.metNote1024thUp,
         };
         this.tempo = tempo;
-        this.position = _stavemodifier__WEBPACK_IMPORTED_MODULE_2__.StaveModifierPosition.ABOVE;
+        this.position = _stavemodifier__WEBPACK_IMPORTED_MODULE_4__.StaveModifierPosition.ABOVE;
         this.x = x;
         this.setXShift(10);
         this.setYShift(shiftY);
+    }
+    /** Cached text measurement via shared glyph-width cache. */
+    measureWidth(text, fontInfo) {
+        return _element__WEBPACK_IMPORTED_MODULE_0__.Element.measureWidthCached(text, _font__WEBPACK_IMPORTED_MODULE_1__.Font.toCSSString(_font__WEBPACK_IMPORTED_MODULE_1__.Font.validate(fontInfo)));
     }
     setTempo(tempo) {
         this.tempo = tempo;
@@ -20783,23 +20818,24 @@ class StaveTempo extends _stavemodifier__WEBPACK_IMPORTED_MODULE_2__.StaveModifi
         if (name) {
             ctx.setFont(this._fontInfo);
             ctx.fillText(name, x, y);
-            x += ctx.measureText(name).width;
+            x += this.measureWidth(name, this._fontInfo);
         }
         if (noteEquation) {
             x = this.drawNoteEquation(ctx, x, y, noteEquation);
         }
         else if (duration && bpm) {
-            ctx.setFont(Object.assign(Object.assign({}, this._fontInfo), { weight: 'normal' }));
+            const normalFont = Object.assign(Object.assign({}, this._fontInfo), { weight: 'normal' });
+            ctx.setFont(normalFont);
             if (name) {
-                x += ctx.measureText(' ').width;
+                x += this.measureWidth(' ', normalFont);
                 ctx.fillText('(', x, y);
-                x += ctx.measureText('(').width;
+                x += this.measureWidth('(', normalFont);
             }
             const scale = this.renderOptions.glyphFontScale / 38;
             const glyphCode = this.durationToCode[duration];
             x += 3 * scale;
             ctx.fillText(glyphCode, x, y);
-            x += ctx.measureText(glyphCode).width;
+            x += this.measureWidth(glyphCode, normalFont);
             for (let i = 0; i < (dots || 0); i++) {
                 x += 6 * scale;
                 ctx.beginPath();
@@ -20859,10 +20895,11 @@ class StaveTempo extends _stavemodifier__WEBPACK_IMPORTED_MODULE_2__.StaveModifi
         // Draw left group
         x = this.drawNoteGroup(ctx, x, y, stemScale, baseSpacing, leftGroup);
         // Draw equals sign
-        ctx.setFont(Object.assign(Object.assign({}, this._fontInfo), { weight: 'bold' }));
+        const boldFont = Object.assign(Object.assign({}, this._fontInfo), { weight: 'bold' });
+        ctx.setFont(boldFont);
         x += 1.5 * baseSpacing;
         ctx.fillText('=', x, y);
-        x += ctx.measureText('=').width + 1.5 * baseSpacing;
+        x += this.measureWidth('=', boldFont) + 1.5 * baseSpacing;
         // Draw right group
         x = this.drawNoteGroup(ctx, x, y, stemScale, baseSpacing, rightGroup);
         return x;
@@ -20875,13 +20912,14 @@ class StaveTempo extends _stavemodifier__WEBPACK_IMPORTED_MODULE_2__.StaveModifi
     drawNoteGroup(ctx, x, y, stemScale, baseSpacing, group) {
         const notes = group.notes;
         const tuplet = group.tuplet;
-        ctx.setFont(Object.assign(Object.assign({}, this._fontInfo), { size: 20 }));
+        const noteHeadFont = Object.assign(Object.assign({}, this._fontInfo), { size: 20 });
+        ctx.setFont(noteHeadFont);
         const notePositions = [];
         const beamSegments = [];
         let currentBeamGroup = [];
         for (let i = 0; i < notes.length; i++) {
             const note = notes[i];
-            const glyphProps = _note__WEBPACK_IMPORTED_MODULE_1__.Note.getGlyphProps(note.duration, 'n');
+            const glyphProps = _note__WEBPACK_IMPORTED_MODULE_3__.Note.getGlyphProps(note.duration, 'n');
             const headGlyph = glyphProps.codeHead;
             if (!headGlyph)
                 continue;
@@ -20889,7 +20927,7 @@ class StaveTempo extends _stavemodifier__WEBPACK_IMPORTED_MODULE_2__.StaveModifi
             const noteX = x;
             // Draw note head
             ctx.fillText(headGlyph, x, y);
-            x += ctx.measureText(headGlyph).width;
+            x += this.measureWidth(headGlyph, noteHeadFont);
             let stemTopY = y;
             // Draw stem
             if (glyphProps.stem) {
@@ -20962,14 +21000,15 @@ class StaveTempo extends _stavemodifier__WEBPACK_IMPORTED_MODULE_2__.StaveModifi
             const bracketY = minY - 1.5 * baseSpacing;
             const bracketStartX = firstPos.x - 0.5 * baseSpacing;
             const bracketEndX = lastPos.stemX + bracketOverhang;
-            ctx.setFont(Object.assign(Object.assign({}, this._fontInfo), { size: (Number(this._fontInfo.size) - 3) || 11, weight: 'bold' }));
+            const tupletFont = Object.assign(Object.assign({}, this._fontInfo), { size: (Number(this._fontInfo.size) - 3) || 11, weight: 'bold' });
+            ctx.setFont(tupletFont);
             if (tuplet.bracket) {
                 const hookHeight = baseSpacing;
                 const numberText = tuplet.showNumber === 'both'
                     ? `${tuplet.actualNotes}:${tuplet.normalNotes}`
                     : `${tuplet.actualNotes}`;
                 const midX = (bracketStartX + bracketEndX) / 2;
-                const numberWidth = ctx.measureText(numberText).width;
+                const numberWidth = this.measureWidth(numberText, tupletFont);
                 const gapHalf = numberWidth / 2 + 2 * stemScale;
                 ctx.beginPath();
                 // Left hook
@@ -20991,7 +21030,7 @@ class StaveTempo extends _stavemodifier__WEBPACK_IMPORTED_MODULE_2__.StaveModifi
             else {
                 const numberText = `${tuplet.actualNotes}`;
                 const midX = (bracketStartX + bracketEndX) / 2;
-                const numberWidth = ctx.measureText(numberText).width;
+                const numberWidth = this.measureWidth(numberText, tupletFont);
                 ctx.fillText(numberText, midX - numberWidth / 2, bracketY - 1 * stemScale);
             }
         }
@@ -22748,8 +22787,9 @@ class SVGContext extends _rendercontext__WEBPACK_IMPORTED_MODULE_3__.RenderConte
     }
     save() {
         this.stateStack.push({
-            state: structuredClone(this.state),
-            attributes: structuredClone(this.attributes),
+            state: Object.assign({}, this.state),
+            attributes: Object.assign({}, this.attributes),
+            fontCSSString: this.fontCSSString,
         });
         return this;
     }
@@ -22757,8 +22797,9 @@ class SVGContext extends _rendercontext__WEBPACK_IMPORTED_MODULE_3__.RenderConte
         const savedState = this.stateStack.pop();
         if (savedState) {
             const state = savedState;
-            this.state = structuredClone(state.state);
-            this.attributes = structuredClone(state.attributes);
+            this.state = Object.assign({}, state.state);
+            this.attributes = Object.assign({}, state.attributes);
+            this.fontCSSString = state.fontCSSString;
         }
         return this;
     }
@@ -22786,7 +22827,10 @@ class SVGContext extends _rendercontext__WEBPACK_IMPORTED_MODULE_3__.RenderConte
      */
     setFont(f, size, weight, style) {
         const fontInfo = _font__WEBPACK_IMPORTED_MODULE_1__.Font.validate(f, size, weight, style);
-        this.fontCSSString = _font__WEBPACK_IMPORTED_MODULE_1__.Font.toCSSString(fontInfo);
+        const css = _font__WEBPACK_IMPORTED_MODULE_1__.Font.toCSSString(fontInfo);
+        if (css === this.fontCSSString)
+            return this;
+        this.fontCSSString = css;
         const fontAttributes = {
             'font-family': fontInfo.family,
             'font-size': fontInfo.size,

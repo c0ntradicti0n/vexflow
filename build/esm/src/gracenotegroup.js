@@ -54,7 +54,7 @@ export class GraceNoteGroup extends Modifier {
         for (let i = 0; i < groupList.length; ++i) {
             const gracenoteGroup = groupList[i].gracenoteGroup;
             formatWidth = gracenoteGroup.getWidth() + groupList[i].spacing;
-            gracenoteGroup.setSpacingFromNextModifier(groupShift - Math.min(formatWidth, groupShift) + StaveNote.minNoteheadPadding);
+            gracenoteGroup.setSpacingFromNextModifier(groupShift - Math.min(formatWidth, groupShift) + StaveNote.minNoteheadPadding + 5);
         }
         if (right)
             state.rightShift += groupShift;

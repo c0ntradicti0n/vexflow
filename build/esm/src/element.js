@@ -338,27 +338,48 @@ export class Element {
     }
     measureText() {
         var _a;
+        const font = Font.toCSSString(Font.validate(this.fontInfo));
+        const cacheKey = font + '|' + this.text;
+        const cached = Element.glyphMetricsCache.get(cacheKey);
+        if (cached) {
+            this._width = cached.width;
+            this._height = cached.height;
+            this.metricsValid = true;
+            return this._textMetrics;
+        }
         const context = (_a = Element.getTextMeasurementCanvas()) === null || _a === void 0 ? void 0 : _a.getContext('2d');
         if (!context) {
             console.warn('Element: No context for txtCanvas. Returning empty text metrics.');
             return this._textMetrics;
         }
-        context.font = Font.toCSSString(Font.validate(this.fontInfo));
+        context.font = font;
         this._textMetrics = context.measureText(this.text);
         this._height = this._textMetrics.actualBoundingBoxAscent + this._textMetrics.actualBoundingBoxDescent;
         this._width = this._textMetrics.width;
+        Element.glyphMetricsCache.set(cacheKey, { width: this._width, height: this._height });
         this.metricsValid = true;
         return this._textMetrics;
     }
     static measureWidth(text, key = '') {
+        const font = Font.toCSSString(Metrics.getFontInfo(key));
+        return Element.measureWidthCached(text, font);
+    }
+    static measureWidthCached(text, font) {
         var _a;
+        const cacheKey = font + '|' + text;
+        const cached = Element.glyphMetricsCache.get(cacheKey);
+        if (cached)
+            return cached.width;
         const context = (_a = Element.getTextMeasurementCanvas()) === null || _a === void 0 ? void 0 : _a.getContext('2d');
         if (!context) {
             console.warn('Element: No context for txtCanvas. Returning empty text metrics.');
             return 0;
         }
-        context.font = Font.toCSSString(Metrics.getFontInfo(key));
-        return context.measureText(text).width;
+        context.font = font;
+        const metrics = context.measureText(text);
+        const height = metrics.actualBoundingBoxAscent + metrics.actualBoundingBoxDescent;
+        Element.glyphMetricsCache.set(cacheKey, { width: metrics.width, height });
+        return metrics.width;
     }
     getTextMetrics() {
         return this.textMetrics;
@@ -399,3 +420,4 @@ export class Element {
     }
 }
 Element.ID = 1000;
+Element.glyphMetricsCache = new Map();

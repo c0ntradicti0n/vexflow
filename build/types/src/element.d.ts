@@ -72,6 +72,8 @@ export declare class Element {
     protected static newID(): string;
     /** Canvas used to measure text. See measureText(): TextMetrics. */
     private static txtCanvas?;
+    /** Shared cache for glyph metrics keyed on `${font}|${text}`. */
+    private static glyphMetricsCache;
     static setTextMeasurementCanvas(canvas: HTMLCanvasElement | OffscreenCanvas): void;
     static getTextMeasurementCanvas(): HTMLCanvasElement | OffscreenCanvas | undefined;
     private context?;
@@ -262,6 +264,8 @@ export declare class Element {
     measureText(): TextMetrics;
     /** Measure the text using the FontInfo related with key. */
     static measureWidth(text: string, key?: string): number;
+    /** Measure text width with shared cache. Keyed on `${font}|${text}`. */
+    static measureWidthCached(text: string, font: string): number;
     /** Get the text metrics. */
     getTextMetrics(): TextMetrics;
     get textMetrics(): TextMetrics;
