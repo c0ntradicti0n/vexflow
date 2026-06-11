@@ -51,6 +51,7 @@ export class StaveTempo extends StaveModifier {
     this.x = x;
     this.setXShift(10);
     this.setYShift(shiftY);
+    this.width = this.estimateWidth();
   }
 
   /** Cached text measurement via shared glyph-width cache. */
@@ -92,7 +93,44 @@ export class StaveTempo extends StaveModifier {
 
   setTempo(tempo: StaveTempoOptions): this {
     this.tempo = tempo;
+    this.width = this.estimateWidth();
     return this;
+  }
+
+  /** Estimate rendered width before draw(), so format() accounts for this modifier. */
+  private estimateWidth(): number {
+    const { name, duration, dots, bpm, noteEquation } = this.tempo;
+    const normalFont: FontInfo = { ...this._fontInfo, weight: 'normal' };
+    let w: number = this.xShift;
+
+    if (name) {
+      w += this.measureWidth(name, this._fontInfo);
+    }
+
+    if (noteEquation) {
+      // For complex note equations, use a conservative estimate based on note count.
+      let noteCount: number = 0;
+      for (const item of noteEquation) {
+        noteCount++;
+        if (item.dots) noteCount += item.dots;
+      }
+      w += noteCount * 12 + 20; // ~12px per note glyph + spacing + equals sign
+    } else if (duration && bpm) {
+      if (name) {
+        w += this.measureWidth(' (', normalFont);
+      }
+      const glyphCode: string = this.durationToCode[duration];
+      if (glyphCode) {
+        const scale: number = this.renderOptions.glyphFontScale / 38;
+        w += 3 * scale + this.measureWidth(glyphCode, normalFont);
+        if (dots) {
+          w += dots * 6 * scale;
+        }
+      }
+      w += this.measureWidth(' = ' + bpm + (name ? ')' : ''), normalFont);
+    }
+
+    return w;
   }
 
   draw(): void {
@@ -105,6 +143,7 @@ export class StaveTempo extends StaveModifier {
     const startX = this.x + shiftX;
     let x = startX;
     const y = stave.getYForTopText(1) + this.yShift;
+
 
     ctx.openGroup('stavetempo');
 
@@ -142,7 +181,10 @@ export class StaveTempo extends StaveModifier {
 
       ctx.openGroup('bpm');
       ctx.setFont({ ...this._fontInfo, weight: 'normal' });
-      ctx.fillText(' = ' + bpm + (name ? ')' : ''), x + 3 * scale, y);
+      x += 3 * scale;
+      const bpmText: string = ' = ' + bpm + (name ? ')' : '');
+      ctx.fillText(bpmText, x, y);
+      x += this.measureWidth(bpmText, normalFont);
       ctx.closeGroup();
     }
 
@@ -217,14 +259,7 @@ export class StaveTempo extends StaveModifier {
    * Ported from VF4's drawNoteGroup — renders note heads, stems, beams, and brackets
    * using direct canvas operations instead of pre-combined metronome glyphs.
    */
-  drawNoteGroup(
-    ctx: RenderContext,
-    x: number,
-    y: number,
-    stemScale: number,
-    baseSpacing: number,
-    group: any
-  ): number {
+  drawNoteGroup(ctx: RenderContext, x: number, y: number, stemScale: number, baseSpacing: number, group: any): number {
     const notes = group.notes;
     const tuplet = group.tuplet;
 
@@ -311,12 +346,7 @@ export class StaveTempo extends StaveModifier {
 
       for (let b = 0; b < maxBeamCount; b++) {
         const beamY = firstStem.y_top + b * (beamThickness + 1 * stemScale);
-        ctx.fillRect(
-          firstStem.stemX - stemScale,
-          beamY,
-          lastStem.stemX - firstStem.stemX + stemScale,
-          beamThickness
-        );
+        ctx.fillRect(firstStem.stemX - stemScale, beamY, lastStem.stemX - firstStem.stemX + stemScale, beamThickness);
       }
     }
 
@@ -335,14 +365,13 @@ export class StaveTempo extends StaveModifier {
       const bracketStartX = firstPos.x - 0.5 * baseSpacing;
       const bracketEndX = lastPos.stemX + bracketOverhang;
 
-      const tupletFont = { ...this._fontInfo, size: (Number(this._fontInfo.size) - 3) || 11, weight: 'bold' as const };
+      const tupletFont = { ...this._fontInfo, size: Number(this._fontInfo.size) - 3 || 11, weight: 'bold' as const };
       ctx.setFont(tupletFont);
 
       if (tuplet.bracket) {
         const hookHeight = baseSpacing;
-        const numberText = tuplet.showNumber === 'both'
-          ? `${tuplet.actualNotes}:${tuplet.normalNotes}`
-          : `${tuplet.actualNotes}`;
+        const numberText =
+          tuplet.showNumber === 'both' ? `${tuplet.actualNotes}:${tuplet.normalNotes}` : `${tuplet.actualNotes}`;
 
         const midX = (bracketStartX + bracketEndX) / 2;
         const numberWidth = this.measureWidth(numberText, tupletFont);

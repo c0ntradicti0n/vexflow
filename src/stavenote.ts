@@ -394,10 +394,8 @@ export class StaveNote extends StemmableNote {
     // Skip when noteU and noteM are at exact unison (same line) — the unison
     // takes priority over stem/nearby collisions with the lower voice.
     const noteU_M_unison: boolean = noteU.minLine === noteM.maxLine;
-    const noteU_M_overlap: boolean =
-      noteU.minLine <= noteM.maxLine + 0.5 && !noteU_M_unison;
-    const noteM_L_overlap: boolean =
-      noteM.minLine <= noteL.maxLine && noteM.minLine !== noteL.maxLine;
+    const noteU_M_overlap: boolean = noteU.minLine <= noteM.maxLine + 0.5 && !noteU_M_unison;
+    const noteM_L_overlap: boolean = noteM.minLine <= noteL.maxLine && noteM.minLine !== noteL.maxLine;
     if (noteU_M_overlap || (noteM_L_overlap && !noteU_M_unison)) {
       // shift middle note right
       xShift = voiceXShift + 2;

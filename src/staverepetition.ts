@@ -145,15 +145,15 @@ export class Repetition extends StaveModifier {
       case Repetition.type.DS:
       case Repetition.type.DS_AL_FINE:
       case Repetition.type.FINE:
-        textX = -(totalWidth) - textOffsetX;
+        textX = -totalWidth - textOffsetX;
         break;
       case Repetition.type.DC_AL_CODA:
       case Repetition.type.DS_AL_CODA:
-        textX = -(totalWidth) - textOffsetX;
+        textX = -totalWidth - textOffsetX;
         break;
       default:
         // TO_CODA and other right-side types
-        textX = -(totalWidth) - textOffsetX;
+        textX = -totalWidth - textOffsetX;
         break;
     }
 

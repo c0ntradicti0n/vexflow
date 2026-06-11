@@ -825,8 +825,11 @@ export class Formatter {
         //   cxs = jw/2 - ctxX - pad/2 + endPaddingMax/2 - gw/2
         context.getCenterAlignedTickables().forEach((tickable: Tickable) => {
           tickable.setCenterXShift(
-            justifyWidth / 2 - context.getX() - leftPadding / 2
-            + configMaxPadding / 2 - (tickable as any).getGlyphWidth() / 2
+            justifyWidth / 2 -
+              context.getX() -
+              leftPadding / 2 +
+              configMaxPadding / 2 -
+              (tickable as any).getGlyphWidth() / 2
           );
         });
       });
@@ -900,7 +903,8 @@ export class Formatter {
     // Use the stave that was passed through formatToStave/format (it has
     // proper noteStartX/noteEndX), not tickable.getStave() which may return
     // a different instance.
-    const centeringStave = stave || (voicesParam && voicesParam.length > 0 ? voicesParam[0].getTickables()[0]?.getStave() : undefined);
+    const centeringStave =
+      stave || (voicesParam && voicesParam.length > 0 ? voicesParam[0].getTickables()[0]?.getStave() : undefined);
     if (centeringStave) {
       const stavePadding = Metrics.get('Stave.padding', 0);
       const noteAreaEnd = centeringStave.getNoteEndX() - centeringStave.getNoteStartX() - stavePadding;
@@ -927,8 +931,8 @@ export class Formatter {
           if (isStaveNote(tickable) && tickable.isRest() && !(tickable as any)._alignCenter) {
             // Only center half and whole rests within their duration span.
             // Quarter, 8th, 16th etc. rests should be positioned like notes (no centering).
-            const restDuration: string = (tickable as any).duration ?? "";
-            if (restDuration === "h" || restDuration === "w") {
+            const restDuration: string = (tickable as any).duration ?? '';
+            if (restDuration === 'h' || restDuration === 'w') {
               const context = contextMap[contextList[contextIndex]];
               const glyphWidth = tickable.getGlyphWidth();
               const totalTicks = tickable.getVoice().getTotalTicks().value();
