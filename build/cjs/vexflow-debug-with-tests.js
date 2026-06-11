@@ -1,5 +1,5 @@
 /*!
- * VexFlow 5.0.0   2026-06-10T08:26:57.408Z   6c1469b80bf366bb6cb744e29630cf9b98e82e0c
+ * VexFlow 5.0.0   2026-06-11T09:04:30.886Z   97d9de4d0037540da9538a2f4592b36af7ab44ac
  * Copyright (c) 2023-present VexFlow contributors (see https://github.com/vexflow/vexflow/blob/main/AUTHORS.md).
  */
 (function webpackUniversalModuleDefinition(root, factory) {
@@ -30,8 +30,8 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export */ });
 // Gruntfile.js uses string-replace-loader to replace these values during build time.
 const VERSION = '5.0.0';
-const ID = '6c1469b80bf366bb6cb744e29630cf9b98e82e0c';
-const DATE = '2026-06-10T08:26:57.408Z';
+const ID = '97d9de4d0037540da9538a2f4592b36af7ab44ac';
+const DATE = '2026-06-11T09:04:30.886Z';
 
 
 /***/ }),
@@ -6570,8 +6570,11 @@ class Formatter {
                 //   neX - nsx = jw + pad + endPaddingMax
                 //   cxs = jw/2 - ctxX - pad/2 + endPaddingMax/2 - gw/2
                 context.getCenterAlignedTickables().forEach((tickable) => {
-                    tickable.setCenterXShift(justifyWidth / 2 - context.getX() - leftPadding / 2
-                        + configMaxPadding / 2 - tickable.getGlyphWidth() / 2);
+                    tickable.setCenterXShift(justifyWidth / 2 -
+                        context.getX() -
+                        leftPadding / 2 +
+                        configMaxPadding / 2 -
+                        tickable.getGlyphWidth() / 2);
                 });
             });
             return lastContext.getX() - firstContext.getX();
@@ -6663,8 +6666,8 @@ class Formatter {
                     if ((0,_typeguard__WEBPACK_IMPORTED_MODULE_8__.isStaveNote)(tickable) && tickable.isRest() && !tickable._alignCenter) {
                         // Only center half and whole rests within their duration span.
                         // Quarter, 8th, 16th etc. rests should be positioned like notes (no centering).
-                        const restDuration = (_a = tickable.duration) !== null && _a !== void 0 ? _a : "";
-                        if (restDuration === "h" || restDuration === "w") {
+                        const restDuration = (_a = tickable.duration) !== null && _a !== void 0 ? _a : '';
+                        if (restDuration === 'h' || restDuration === 'w') {
                             const context = contextMap[contextList[contextIndex]];
                             const glyphWidth = tickable.getGlyphWidth();
                             const totalTicks = tickable.getVoice().getTotalTicks().value();
@@ -20620,15 +20623,15 @@ class Repetition extends _stavemodifier__WEBPACK_IMPORTED_MODULE_2__.StaveModifi
             case Repetition.type.DS:
             case Repetition.type.DS_AL_FINE:
             case Repetition.type.FINE:
-                textX = -(totalWidth) - textOffsetX;
+                textX = -totalWidth - textOffsetX;
                 break;
             case Repetition.type.DC_AL_CODA:
             case Repetition.type.DS_AL_CODA:
-                textX = -(totalWidth) - textOffsetX;
+                textX = -totalWidth - textOffsetX;
                 break;
             default:
                 // TO_CODA and other right-side types
-                textX = -(totalWidth) - textOffsetX;
+                textX = -totalWidth - textOffsetX;
                 break;
         }
         const y = stave.getYForTopText(stave.getNumLines()) + _metrics__WEBPACK_IMPORTED_MODULE_1__.Metrics.get('Repetition.text.offsetY');
@@ -20796,6 +20799,7 @@ class StaveTempo extends _stavemodifier__WEBPACK_IMPORTED_MODULE_4__.StaveModifi
         this.x = x;
         this.setXShift(10);
         this.setYShift(shiftY);
+        this.width = this.estimateWidth();
     }
     /** Cached text measurement via shared glyph-width cache. */
     measureWidth(text, fontInfo) {
@@ -20803,7 +20807,42 @@ class StaveTempo extends _stavemodifier__WEBPACK_IMPORTED_MODULE_4__.StaveModifi
     }
     setTempo(tempo) {
         this.tempo = tempo;
+        this.width = this.estimateWidth();
         return this;
+    }
+    /** Estimate rendered width before draw(), so format() accounts for this modifier. */
+    estimateWidth() {
+        const { name, duration, dots, bpm, noteEquation } = this.tempo;
+        const normalFont = Object.assign(Object.assign({}, this._fontInfo), { weight: 'normal' });
+        let w = this.xShift;
+        if (name) {
+            w += this.measureWidth(name, this._fontInfo);
+        }
+        if (noteEquation) {
+            // For complex note equations, use a conservative estimate based on note count.
+            let noteCount = 0;
+            for (const item of noteEquation) {
+                noteCount++;
+                if (item.dots)
+                    noteCount += item.dots;
+            }
+            w += noteCount * 12 + 20; // ~12px per note glyph + spacing + equals sign
+        }
+        else if (duration && bpm) {
+            if (name) {
+                w += this.measureWidth(' (', normalFont);
+            }
+            const glyphCode = this.durationToCode[duration];
+            if (glyphCode) {
+                const scale = this.renderOptions.glyphFontScale / 38;
+                w += 3 * scale + this.measureWidth(glyphCode, normalFont);
+                if (dots) {
+                    w += dots * 6 * scale;
+                }
+            }
+            w += this.measureWidth(' = ' + bpm + (name ? ')' : ''), normalFont);
+        }
+        return w;
     }
     draw() {
         const stave = this.checkStave();
@@ -20844,7 +20883,10 @@ class StaveTempo extends _stavemodifier__WEBPACK_IMPORTED_MODULE_4__.StaveModifi
             }
             ctx.openGroup('bpm');
             ctx.setFont(Object.assign(Object.assign({}, this._fontInfo), { weight: 'normal' }));
-            ctx.fillText(' = ' + bpm + (name ? ')' : ''), x + 3 * scale, y);
+            x += 3 * scale;
+            const bpmText = ' = ' + bpm + (name ? ')' : '');
+            ctx.fillText(bpmText, x, y);
+            x += this.measureWidth(bpmText, normalFont);
             ctx.closeGroup();
         }
         this.width = x - startX;
@@ -21000,13 +21042,11 @@ class StaveTempo extends _stavemodifier__WEBPACK_IMPORTED_MODULE_4__.StaveModifi
             const bracketY = minY - 1.5 * baseSpacing;
             const bracketStartX = firstPos.x - 0.5 * baseSpacing;
             const bracketEndX = lastPos.stemX + bracketOverhang;
-            const tupletFont = Object.assign(Object.assign({}, this._fontInfo), { size: (Number(this._fontInfo.size) - 3) || 11, weight: 'bold' });
+            const tupletFont = Object.assign(Object.assign({}, this._fontInfo), { size: Number(this._fontInfo.size) - 3 || 11, weight: 'bold' });
             ctx.setFont(tupletFont);
             if (tuplet.bracket) {
                 const hookHeight = baseSpacing;
-                const numberText = tuplet.showNumber === 'both'
-                    ? `${tuplet.actualNotes}:${tuplet.normalNotes}`
-                    : `${tuplet.actualNotes}`;
+                const numberText = tuplet.showNumber === 'both' ? `${tuplet.actualNotes}:${tuplet.normalNotes}` : `${tuplet.actualNotes}`;
                 const midX = (bracketStartX + bracketEndX) / 2;
                 const numberWidth = this.measureWidth(numberText, tupletFont);
                 const gapHalf = numberWidth / 2 + 2 * stemScale;

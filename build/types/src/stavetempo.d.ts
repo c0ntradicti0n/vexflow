@@ -33,6 +33,8 @@ export declare class StaveTempo extends StaveModifier {
     private measureWidth;
     protected durationToCode: Record<string, string>;
     setTempo(tempo: StaveTempoOptions): this;
+    /** Estimate rendered width before draw(), so format() accounts for this modifier. */
+    private estimateWidth;
     draw(): void;
     drawNoteEquation(ctx: RenderContext, x: number, y: number, noteEquation: NoteEquationItem[]): number;
     /**

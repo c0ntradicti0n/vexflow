@@ -101,14 +101,14 @@ export class Repetition extends StaveModifier {
             case Repetition.type.DS:
             case Repetition.type.DS_AL_FINE:
             case Repetition.type.FINE:
-                textX = -(totalWidth) - textOffsetX;
+                textX = -totalWidth - textOffsetX;
                 break;
             case Repetition.type.DC_AL_CODA:
             case Repetition.type.DS_AL_CODA:
-                textX = -(totalWidth) - textOffsetX;
+                textX = -totalWidth - textOffsetX;
                 break;
             default:
-                textX = -(totalWidth) - textOffsetX;
+                textX = -totalWidth - textOffsetX;
                 break;
         }
         const y = stave.getYForTopText(stave.getNumLines()) + Metrics.get('Repetition.text.offsetY');

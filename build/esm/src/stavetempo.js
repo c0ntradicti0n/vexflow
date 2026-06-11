@@ -48,13 +48,47 @@ export class StaveTempo extends StaveModifier {
         this.x = x;
         this.setXShift(10);
         this.setYShift(shiftY);
+        this.width = this.estimateWidth();
     }
     measureWidth(text, fontInfo) {
         return Element.measureWidthCached(text, Font.toCSSString(Font.validate(fontInfo)));
     }
     setTempo(tempo) {
         this.tempo = tempo;
+        this.width = this.estimateWidth();
         return this;
+    }
+    estimateWidth() {
+        const { name, duration, dots, bpm, noteEquation } = this.tempo;
+        const normalFont = Object.assign(Object.assign({}, this._fontInfo), { weight: 'normal' });
+        let w = this.xShift;
+        if (name) {
+            w += this.measureWidth(name, this._fontInfo);
+        }
+        if (noteEquation) {
+            let noteCount = 0;
+            for (const item of noteEquation) {
+                noteCount++;
+                if (item.dots)
+                    noteCount += item.dots;
+            }
+            w += noteCount * 12 + 20;
+        }
+        else if (duration && bpm) {
+            if (name) {
+                w += this.measureWidth(' (', normalFont);
+            }
+            const glyphCode = this.durationToCode[duration];
+            if (glyphCode) {
+                const scale = this.renderOptions.glyphFontScale / 38;
+                w += 3 * scale + this.measureWidth(glyphCode, normalFont);
+                if (dots) {
+                    w += dots * 6 * scale;
+                }
+            }
+            w += this.measureWidth(' = ' + bpm + (name ? ')' : ''), normalFont);
+        }
+        return w;
     }
     draw() {
         const stave = this.checkStave();
@@ -95,7 +129,10 @@ export class StaveTempo extends StaveModifier {
             }
             ctx.openGroup('bpm');
             ctx.setFont(Object.assign(Object.assign({}, this._fontInfo), { weight: 'normal' }));
-            ctx.fillText(' = ' + bpm + (name ? ')' : ''), x + 3 * scale, y);
+            x += 3 * scale;
+            const bpmText = ' = ' + bpm + (name ? ')' : '');
+            ctx.fillText(bpmText, x, y);
+            x += this.measureWidth(bpmText, normalFont);
             ctx.closeGroup();
         }
         this.width = x - startX;
@@ -231,13 +268,11 @@ export class StaveTempo extends StaveModifier {
             const bracketY = minY - 1.5 * baseSpacing;
             const bracketStartX = firstPos.x - 0.5 * baseSpacing;
             const bracketEndX = lastPos.stemX + bracketOverhang;
-            const tupletFont = Object.assign(Object.assign({}, this._fontInfo), { size: (Number(this._fontInfo.size) - 3) || 11, weight: 'bold' });
+            const tupletFont = Object.assign(Object.assign({}, this._fontInfo), { size: Number(this._fontInfo.size) - 3 || 11, weight: 'bold' });
             ctx.setFont(tupletFont);
             if (tuplet.bracket) {
                 const hookHeight = baseSpacing;
-                const numberText = tuplet.showNumber === 'both'
-                    ? `${tuplet.actualNotes}:${tuplet.normalNotes}`
-                    : `${tuplet.actualNotes}`;
+                const numberText = tuplet.showNumber === 'both' ? `${tuplet.actualNotes}:${tuplet.normalNotes}` : `${tuplet.actualNotes}`;
                 const midX = (bracketStartX + bracketEndX) / 2;
                 const numberWidth = this.measureWidth(numberText, tupletFont);
                 const gapHalf = numberWidth / 2 + 2 * stemScale;

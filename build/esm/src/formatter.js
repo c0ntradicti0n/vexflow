@@ -410,8 +410,11 @@ export class Formatter {
                     context.setX(contextX + spaceAccum);
                 }
                 context.getCenterAlignedTickables().forEach((tickable) => {
-                    tickable.setCenterXShift(justifyWidth / 2 - context.getX() - leftPadding / 2
-                        + configMaxPadding / 2 - tickable.getGlyphWidth() / 2);
+                    tickable.setCenterXShift(justifyWidth / 2 -
+                        context.getX() -
+                        leftPadding / 2 +
+                        configMaxPadding / 2 -
+                        tickable.getGlyphWidth() / 2);
                 });
             });
             return lastContext.getX() - firstContext.getX();
@@ -487,8 +490,8 @@ export class Formatter {
                     const { tickable, contextIndex } = entry;
                     const tickDuration = tickable.getTicks().value();
                     if (isStaveNote(tickable) && tickable.isRest() && !tickable._alignCenter) {
-                        const restDuration = (_a = tickable.duration) !== null && _a !== void 0 ? _a : "";
-                        if (restDuration === "h" || restDuration === "w") {
+                        const restDuration = (_a = tickable.duration) !== null && _a !== void 0 ? _a : '';
+                        if (restDuration === 'h' || restDuration === 'w') {
                             const context = contextMap[contextList[contextIndex]];
                             const glyphWidth = tickable.getGlyphWidth();
                             const totalTicks = tickable.getVoice().getTotalTicks().value();
