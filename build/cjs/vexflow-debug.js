@@ -1,5 +1,5 @@
 /*!
- * VexFlow 5.0.0   2026-06-12T12:37:27.615Z   81423bb0972ebbeba4c99bcf79aa21c93c4aded0
+ * VexFlow 5.0.0   2026-06-12T14:29:00.005Z   6a213f9fbf79b9f1fc0cbf18786dba1cd676368e
  * Copyright (c) 2023-present VexFlow contributors (see https://github.com/vexflow/vexflow/blob/main/AUTHORS.md).
  */
 (function webpackUniversalModuleDefinition(root, factory) {
@@ -30,8 +30,8 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export */ });
 // Gruntfile.js uses string-replace-loader to replace these values during build time.
 const VERSION = '5.0.0';
-const ID = '81423bb0972ebbeba4c99bcf79aa21c93c4aded0';
-const DATE = '2026-06-12T12:37:27.615Z';
+const ID = '6a213f9fbf79b9f1fc0cbf18786dba1cd676368e';
+const DATE = '2026-06-12T14:29:00.005Z';
 
 
 /***/ }),
@@ -20320,13 +20320,16 @@ class StaveNote extends _stemmablenote__WEBPACK_IMPORTED_MODULE_7__.StemmableNot
         ctx.save();
         this.applyStyle(ctx, style);
         // Draw ledger lines below the staff:
-        for (let line = 6; line <= highestLine; ++line) {
+        // For rests, only draw the nearest ledger line to the rest position.
+        const belowStart = this.isRest() ? Math.max(6, Math.floor(highestLine)) : 6;
+        for (let line = belowStart; line <= highestLine; ++line) {
             const normal = nonDisplacedX !== undefined && line <= highestNonDisplacedLine;
             const displaced = highestDisplacedLine !== undefined && line <= highestDisplacedLine;
             drawLedgerLine(stave.getYForNote(line), normal, displaced);
         }
         // Draw ledger lines above the staff:
-        for (let line = 0; line >= lowestLine; --line) {
+        const aboveStart = this.isRest() ? Math.min(0, Math.ceil(lowestLine)) : 0;
+        for (let line = aboveStart; line >= lowestLine; --line) {
             const normal = nonDisplacedX !== undefined && line >= lowestNonDisplacedLine;
             const displaced = lowestDisplacedLine !== undefined && line >= lowestDisplacedLine;
             drawLedgerLine(stave.getYForNote(line), normal, displaced);

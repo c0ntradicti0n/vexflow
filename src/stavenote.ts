@@ -1115,14 +1115,17 @@ export class StaveNote extends StemmableNote {
     this.applyStyle(ctx, style);
 
     // Draw ledger lines below the staff:
-    for (let line = 6; line <= highestLine; ++line) {
+    // For rests, only draw the nearest ledger line to the rest position.
+    const belowStart: number = this.isRest() ? Math.max(6, Math.floor(highestLine)) : 6;
+    for (let line = belowStart; line <= highestLine; ++line) {
       const normal = nonDisplacedX !== undefined && line <= highestNonDisplacedLine;
       const displaced = highestDisplacedLine !== undefined && line <= highestDisplacedLine;
       drawLedgerLine(stave.getYForNote(line), normal, displaced);
     }
 
     // Draw ledger lines above the staff:
-    for (let line = 0; line >= lowestLine; --line) {
+    const aboveStart: number = this.isRest() ? Math.min(0, Math.ceil(lowestLine)) : 0;
+    for (let line = aboveStart; line >= lowestLine; --line) {
       const normal = nonDisplacedX !== undefined && line >= lowestNonDisplacedLine;
       const displaced = lowestDisplacedLine !== undefined && line >= lowestDisplacedLine;
       drawLedgerLine(stave.getYForNote(line), normal, displaced);
