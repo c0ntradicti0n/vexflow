@@ -302,6 +302,9 @@ export class Font {
    * @param url The absolute or relative URL to the woff2/otf file. It can also be a data URI.
    * @param descriptors See: https://developer.mozilla.org/en-US/docs/Web/API/FontFace/FontFace#descriptors
    */
+  /** Registry of font data loaded via Font.load(), keyed by font name. */
+  static loadedFontData: Map<string, string> = new Map();
+
   static async load(fontName: string, url?: string, descriptors?: Record<string, string>): Promise<FontFace> {
     if (typeof FontFace === 'undefined') {
       return Promise.reject(new Error('FontFace API is not available in this environment. Cannot load fonts.'));
@@ -314,6 +317,11 @@ export class Font {
         return Promise.reject(new Error(`Font ${fontName} not found in Font.FILES`));
       }
       url = Font.HOST_URL + files[fontName];
+    }
+
+    // Register font data for SVG export (only if url is a data URI — bundled fonts).
+    if (url.startsWith('data:')) {
+      Font.loadedFontData.set(fontName, url);
     }
 
     const fontFace = new FontFace(fontName, `url(${url})`, descriptors);
@@ -331,6 +339,11 @@ export class Font {
     }
     fontFaceSet?.add(fontFace);
     return fontFaceLoadPromise;
+  }
+
+  /** Get the base64 data URI for a font loaded via Font.load(). Returns undefined if font was loaded from CDN. */
+  static getFontData(fontName: string): string | undefined {
+    return Font.loadedFontData.get(fontName);
   }
 
   static getURLForFont(fontName: string): string | undefined {
