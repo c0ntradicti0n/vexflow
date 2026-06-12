@@ -91,6 +91,10 @@ export declare class Font {
      * @param url The absolute or relative URL to the woff2/otf file. It can also be a data URI.
      * @param descriptors See: https://developer.mozilla.org/en-US/docs/Web/API/FontFace/FontFace#descriptors
      */
+    /** Registry of font data loaded via Font.load(), keyed by font name. */
+    static loadedFontData: Map<string, string>;
     static load(fontName: string, url?: string, descriptors?: Record<string, string>): Promise<FontFace>;
+    /** Get the base64 data URI for a font loaded via Font.load(). Returns undefined if font was loaded from CDN. */
+    static getFontData(fontName: string): string | undefined;
     static getURLForFont(fontName: string): string | undefined;
 }

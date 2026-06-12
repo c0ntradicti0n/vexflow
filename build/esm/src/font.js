@@ -175,6 +175,9 @@ export class Font {
                 }
                 url = Font.HOST_URL + files[fontName];
             }
+            if (url.startsWith('data:')) {
+                Font.loadedFontData.set(fontName, url);
+            }
             const fontFace = new FontFace(fontName, `url(${url})`, descriptors);
             const fontFaceLoadPromise = fontFace.load();
             let fontFaceSet;
@@ -187,6 +190,9 @@ export class Font {
             fontFaceSet === null || fontFaceSet === void 0 ? void 0 : fontFaceSet.add(fontFace);
             return fontFaceLoadPromise;
         });
+    }
+    static getFontData(fontName) {
+        return Font.loadedFontData.get(fontName);
     }
     static getURLForFont(fontName) {
         const files = Font.FILES;
@@ -235,3 +241,4 @@ Font.FILES = {
     Sebastian: 'sebastian/sebastian.woff2',
     'Sebastian Text': 'sebastiantext/sebastiantext.woff2',
 };
+Font.loadedFontData = new Map();

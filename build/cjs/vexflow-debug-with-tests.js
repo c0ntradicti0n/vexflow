@@ -1,5 +1,5 @@
 /*!
- * VexFlow 5.0.0   2026-06-11T09:04:30.886Z   97d9de4d0037540da9538a2f4592b36af7ab44ac
+ * VexFlow 5.0.0   2026-06-12T12:37:27.615Z   81423bb0972ebbeba4c99bcf79aa21c93c4aded0
  * Copyright (c) 2023-present VexFlow contributors (see https://github.com/vexflow/vexflow/blob/main/AUTHORS.md).
  */
 (function webpackUniversalModuleDefinition(root, factory) {
@@ -30,8 +30,8 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export */ });
 // Gruntfile.js uses string-replace-loader to replace these values during build time.
 const VERSION = '5.0.0';
-const ID = '97d9de4d0037540da9538a2f4592b36af7ab44ac';
-const DATE = '2026-06-11T09:04:30.886Z';
+const ID = '81423bb0972ebbeba4c99bcf79aa21c93c4aded0';
+const DATE = '2026-06-12T12:37:27.615Z';
 
 
 /***/ }),
@@ -5737,13 +5737,6 @@ class Font {
             return style.toLowerCase() === FontStyle.ITALIC;
         }
     }
-    /**
-     * This method is asynchronous, so you should use await or .then() to wait for the fonts to load before proceeding.
-     *
-     * @param fontName
-     * @param url The absolute or relative URL to the woff2/otf file. It can also be a data URI.
-     * @param descriptors See: https://developer.mozilla.org/en-US/docs/Web/API/FontFace/FontFace#descriptors
-     */
     static load(fontName, url, descriptors) {
         return __awaiter(this, void 0, void 0, function* () {
             if (typeof FontFace === 'undefined') {
@@ -5756,6 +5749,10 @@ class Font {
                     return Promise.reject(new Error(`Font ${fontName} not found in Font.FILES`));
                 }
                 url = Font.HOST_URL + files[fontName];
+            }
+            // Register font data for SVG export (only if url is a data URI — bundled fonts).
+            if (url.startsWith('data:')) {
+                Font.loadedFontData.set(fontName, url);
             }
             const fontFace = new FontFace(fontName, `url(${url})`, descriptors);
             const fontFaceLoadPromise = fontFace.load();
@@ -5773,6 +5770,10 @@ class Font {
             fontFaceSet === null || fontFaceSet === void 0 ? void 0 : fontFaceSet.add(fontFace);
             return fontFaceLoadPromise;
         });
+    }
+    /** Get the base64 data URI for a font loaded via Font.load(). Returns undefined if font was loaded from CDN. */
+    static getFontData(fontName) {
+        return Font.loadedFontData.get(fontName);
     }
     static getURLForFont(fontName) {
         const files = Font.FILES;
@@ -5837,6 +5838,15 @@ Font.FILES = {
     Sebastian: 'sebastian/sebastian.woff2',
     'Sebastian Text': 'sebastiantext/sebastiantext.woff2',
 };
+/**
+ * This method is asynchronous, so you should use await or .then() to wait for the fonts to load before proceeding.
+ *
+ * @param fontName
+ * @param url The absolute or relative URL to the woff2/otf file. It can also be a data URI.
+ * @param descriptors See: https://developer.mozilla.org/en-US/docs/Web/API/FontFace/FontFace#descriptors
+ */
+/** Registry of font data loaded via Font.load(), keyed by font name. */
+Font.loadedFontData = new Map();
 
 
 /***/ }),
@@ -20284,8 +20294,6 @@ class StaveNote extends _stemmablenote__WEBPACK_IMPORTED_MODULE_7__.StemmableNot
         const ctx = this.checkContext();
         const width = this.getGlyphWidth() + strokePx * 2;
         const doubleWidth = 2 * (this.getGlyphWidth() + strokePx) - _stem__WEBPACK_IMPORTED_MODULE_6__.Stem.WIDTH / 2;
-        if (this.isRest())
-            return;
         if (!ctx) {
             throw new _util__WEBPACK_IMPORTED_MODULE_10__.RuntimeError('NoCanvasContext', "Can't draw without a canvas context.");
         }
