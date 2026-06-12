@@ -1,5 +1,5 @@
 /*!
- * VexFlow 5.0.0   2026-06-12T14:29:00.005Z   6a213f9fbf79b9f1fc0cbf18786dba1cd676368e
+ * VexFlow 5.0.0   2026-06-12T17:39:59.910Z   e8f48212b6e0309500bea38ec82256d524b1487b
  * Copyright (c) 2023-present VexFlow contributors (see https://github.com/vexflow/vexflow/blob/main/AUTHORS.md).
  */
 (function webpackUniversalModuleDefinition(root, factory) {
@@ -30,8 +30,8 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export */ });
 // Gruntfile.js uses string-replace-loader to replace these values during build time.
 const VERSION = '5.0.0';
-const ID = '6a213f9fbf79b9f1fc0cbf18786dba1cd676368e';
-const DATE = '2026-06-12T14:29:00.005Z';
+const ID = 'e8f48212b6e0309500bea38ec82256d524b1487b';
+const DATE = '2026-06-12T17:39:59.910Z';
 
 
 /***/ }),
@@ -19415,7 +19415,14 @@ function L(...args) {
 }
 const isInnerNoteIndex = (note, index) => index === (note.getStemDirection() === _stem__WEBPACK_IMPORTED_MODULE_6__.Stem.UP ? note.keyProps.length - 1 : 0);
 // Helper methods for rest positioning in ModifierContext.
+function isDefaultRestPosition(line) {
+    return line === 3 || line === 4;
+}
 function shiftRestVertical(rest, note, dir) {
+    // Don't shift rests with explicitly positioned non-default lines
+    // (e.g. rests with display-step/display-octave from MusicXML).
+    if (!isDefaultRestPosition(rest.line))
+        return;
     const delta = dir;
     rest.line += delta;
     rest.maxLine += delta;
@@ -19424,6 +19431,8 @@ function shiftRestVertical(rest, note, dir) {
 }
 // Called from formatNotes :: center a rest between two notes
 function centerRest(rest, noteU, noteL) {
+    if (!isDefaultRestPosition(rest.line))
+        return;
     const delta = rest.line - (0,_util__WEBPACK_IMPORTED_MODULE_10__.midLine)(noteU.minLine, noteL.maxLine);
     rest.note.setKeyLine(0, rest.note.getKeyLine(0) - delta);
     rest.line -= delta;
@@ -20234,12 +20243,12 @@ class StaveNote extends _stemmablenote__WEBPACK_IMPORTED_MODULE_7__.StemmableNot
         let yBottom = -Infinity;
         let nonDisplacedX;
         let displacedX;
-        let highestLine = this.checkStave().getNumLines();
-        let lowestLine = 1;
+        let highestLine = -Infinity;
+        let lowestLine = +Infinity;
         let highestDisplacedLine;
         let lowestDisplacedLine;
-        let highestNonDisplacedLine = highestLine;
-        let lowestNonDisplacedLine = lowestLine;
+        let highestNonDisplacedLine = -Infinity;
+        let lowestNonDisplacedLine = +Infinity;
         this._noteHeads.forEach((notehead) => {
             const line = notehead.getLine();
             const y = notehead.getY();
@@ -20299,7 +20308,10 @@ class StaveNote extends _stemmablenote__WEBPACK_IMPORTED_MODULE_7__.StemmableNot
         }
         const { highestLine, lowestLine, highestDisplacedLine, highestNonDisplacedLine, lowestDisplacedLine, lowestNonDisplacedLine, displacedX, nonDisplacedX, } = this.getNoteHeadBounds();
         // Early out if there are no ledger lines to draw.
-        if (highestLine < 6 && lowestLine > 0)
+        // For rests, also draw ledgers when the rest is just outside the staff (e.g. line 5.5).
+        const needsLedgerBelow = highestLine >= 6 || (this.isRest() && highestLine > 5);
+        const needsLedgerAbove = lowestLine <= 0 || (this.isRest() && lowestLine < 1);
+        if (!needsLedgerBelow && !needsLedgerAbove)
             return;
         const minX = Math.min(displacedX !== null && displacedX !== void 0 ? displacedX : 0, nonDisplacedX !== null && nonDisplacedX !== void 0 ? nonDisplacedX : 0);
         const drawLedgerLine = (y, normal, displaced) => {
@@ -20320,19 +20332,25 @@ class StaveNote extends _stemmablenote__WEBPACK_IMPORTED_MODULE_7__.StemmableNot
         ctx.save();
         this.applyStyle(ctx, style);
         // Draw ledger lines below the staff:
-        // For rests, only draw the nearest ledger line to the rest position.
-        const belowStart = this.isRest() ? Math.max(6, Math.floor(highestLine)) : 6;
-        for (let line = belowStart; line <= highestLine; ++line) {
-            const normal = nonDisplacedX !== undefined && line <= highestNonDisplacedLine;
-            const displaced = highestDisplacedLine !== undefined && line <= highestDisplacedLine;
-            drawLedgerLine(stave.getYForNote(line), normal, displaced);
+        // For rests, draw at most 2 ledgers starting from the first line above staff.
+        if (needsLedgerBelow) {
+            const belowStart = this.isRest() ? Math.max(6, Math.floor(highestLine) - 1) : 6;
+            const belowEnd = this.isRest() ? Math.max(6, highestLine) : highestLine;
+            for (let line = belowStart; line <= belowEnd; ++line) {
+                const normal = nonDisplacedX !== undefined && line <= highestNonDisplacedLine;
+                const displaced = highestDisplacedLine !== undefined && line <= highestDisplacedLine;
+                drawLedgerLine(stave.getYForNote(line), normal, displaced);
+            }
         }
         // Draw ledger lines above the staff:
-        const aboveStart = this.isRest() ? Math.min(0, Math.ceil(lowestLine)) : 0;
-        for (let line = aboveStart; line >= lowestLine; --line) {
-            const normal = nonDisplacedX !== undefined && line >= lowestNonDisplacedLine;
-            const displaced = lowestDisplacedLine !== undefined && line >= lowestDisplacedLine;
-            drawLedgerLine(stave.getYForNote(line), normal, displaced);
+        if (needsLedgerAbove) {
+            const aboveStart = this.isRest() ? Math.min(0, Math.ceil(lowestLine)) : 0;
+            const aboveEnd = this.isRest() ? Math.min(0, lowestLine) : lowestLine;
+            for (let line = aboveStart; line >= aboveEnd; --line) {
+                const normal = nonDisplacedX !== undefined && line >= lowestNonDisplacedLine;
+                const displaced = lowestDisplacedLine !== undefined && line >= lowestDisplacedLine;
+                drawLedgerLine(stave.getYForNote(line), normal, displaced);
+            }
         }
         ctx.restore();
     }
@@ -20470,7 +20488,7 @@ class StaveNote extends _stemmablenote__WEBPACK_IMPORTED_MODULE_7__.StemmableNot
                 noteHead.setStave(this.stave);
         });
         const { highestLine, lowestLine } = this.getNoteHeadBounds();
-        const ledgerLinesDrawn = highestLine >= 6 || lowestLine <= 0;
+        const ledgerLinesDrawn = highestLine >= 6 || lowestLine <= 0 || (this.isRest() && (highestLine > 5 || lowestLine < 1));
         if (ledgerLinesDrawn) {
             ctx.openGroup('ledgers', this.getAttribute('id') + 'ledgers');
         }
