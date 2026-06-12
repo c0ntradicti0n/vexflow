@@ -1077,7 +1077,6 @@ export class StaveNote extends StemmableNote {
     const width = this.getGlyphWidth() + strokePx * 2;
     const doubleWidth = 2 * (this.getGlyphWidth() + strokePx) - Stem.WIDTH / 2;
 
-    if (this.isRest()) return;
     if (!ctx) {
       throw new RuntimeError('NoCanvasContext', "Can't draw without a canvas context.");
     }

@@ -144,7 +144,6 @@ export class StaveTempo extends StaveModifier {
     let x = startX;
     const y = stave.getYForTopText(1) + this.yShift;
 
-
     ctx.openGroup('stavetempo');
 
     if (name) {
