@@ -185,7 +185,7 @@ export class Articulation extends Modifier {
 
   private _userYShift: number = 0;
 
-  setYShift(y: number): this {
+  override setYShift(y: number): this {
     this._userYShift = y;
     return super.setYShift(y);
   }
