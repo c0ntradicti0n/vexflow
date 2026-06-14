@@ -94,8 +94,11 @@ export class GraceNoteGroup extends Modifier {
       // For a single group, spacingFromNextModifier = minNoteheadPadding (=2px).
       // Without extra padding the grace notes can collide with the preceding
       // note because modLeftPx pushes them far left.
+      // Use instance spacing (set via (group as any).spacing) as extra padding
+      // so callers like OSMD can control grace-to-main-note distance.
+      const extraSpacing: number = (gracenoteGroup as any).spacing ?? 0;
       gracenoteGroup.setSpacingFromNextModifier(
-        groupShift - Math.min(formatWidth, groupShift) + StaveNote.minNoteheadPadding + 5
+        groupShift - Math.min(formatWidth, groupShift) + StaveNote.minNoteheadPadding + 5 + extraSpacing
       );
     }
 
