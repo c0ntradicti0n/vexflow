@@ -40,4 +40,5 @@ npm-debug.log
 .settings/
 
 pnpm-lock.yaml
+/build
 /.idea
