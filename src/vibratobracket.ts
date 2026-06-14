@@ -19,7 +19,7 @@ export class VibratoBracket extends Element {
   /** To enable logging for this class. Set `VexFlow.VibratoBracket.DEBUG` to `true`. */
   static DEBUG: boolean = false;
 
-  static get CATEGORY(): string {
+  static override get CATEGORY(): string {
     return Category.VibratoBracket;
   }
 
@@ -58,7 +58,7 @@ export class VibratoBracket extends Element {
   }
 
   /** Draw the vibrato bracket on the rendering context. */
-  draw(): void {
+  override draw(): void {
     const ctx = this.checkContext();
     this.setRendered();
 

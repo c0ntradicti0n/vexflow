@@ -2,6 +2,7 @@
 
 import { ElementStyle } from './element';
 import { FontInfo } from './font';
+import { structuredClone } from './util';
 
 export class Metrics {
   protected static cacheStyle = new Map<string, ElementStyle>();
@@ -86,6 +87,7 @@ export class Metrics {
 
 // eslint-disable-next-line
 export const MetricsDefaults: Record<string, any> = {
+  pointerRect: false,
   fontFamily: 'Bravura,Academico',
   fontSize: 30,
   fontScale: 1.0,
@@ -183,6 +185,10 @@ export const MetricsDefaults: Record<string, any> = {
     fontSize: 10,
   },
 
+  StaveNote: {
+    pointerRect: true,
+  },
+
   StaveSection: {
     fontSize: 10,
     fontWeight: 'bold',
@@ -267,8 +273,19 @@ export const MetricsDefaults: Record<string, any> = {
   },
 
   Tuplet: {
+    pointerRect: true,
     yOffset: 0,
     textYOffset: 2,
+    bracket: {
+      padding: 5,
+      lineWidth: 1,
+      legLength: 10,
+    },
+    suffix: {
+      fontScale: 1 / 2,
+      extraSpacing: 1,
+      suffixOffsetY: -3,
+    },
   },
 
   Volta: {

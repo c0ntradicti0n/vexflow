@@ -39,7 +39,7 @@ export class NoteHead extends Note {
   /** To enable logging for this class. Set `VexFlow.NoteHead.DEBUG` to `true`. */
   static DEBUG: boolean = false;
 
-  static get CATEGORY(): string {
+  static override get CATEGORY(): string {
     return Category.NoteHead;
   }
 
@@ -99,7 +99,7 @@ export class NoteHead extends Note {
     };
   }
   /** Get the width of the notehead. */
-  getWidth(): number {
+  override getWidth(): number {
     return this.width;
   }
 
@@ -120,7 +120,7 @@ export class NoteHead extends Note {
   }
 
   /** Get the canvas `x` coordinate position of the notehead. */
-  getAbsoluteX(): number {
+  override getAbsoluteX(): number {
     // If the note has not been preformatted, then get the static x value
     // Otherwise, it's been formatted and we should use it's x value relative
     // to its tick context
@@ -134,7 +134,7 @@ export class NoteHead extends Note {
   }
 
   /** Set notehead to a provided `stave`. */
-  setStave(stave: Stave): this {
+  override setStave(stave: Stave): this {
     const line = this.getLine();
 
     this.stave = stave;
@@ -146,7 +146,7 @@ export class NoteHead extends Note {
   }
 
   /** Pre-render formatting. */
-  preFormat(): this {
+  override preFormat(): this {
     if (this.preFormatted) return this;
 
     this.preFormatted = true;
@@ -154,10 +154,11 @@ export class NoteHead extends Note {
   }
 
   /** Draw the notehead. */
-  draw(): void {
+  override draw(): void {
     const ctx = this.checkContext();
     this.setRendered();
-    ctx.openGroup('notehead', this.getAttribute('id'));
+    const clsAttribute = this.getAttribute('class');
+    ctx.openGroup('notehead' + (clsAttribute ? ' ' + clsAttribute : ''), this.getAttribute('id'));
 
     L("Drawing note head '", this.noteType, this.duration, "' at", this.x, this.y);
     this.x = this.getAbsoluteX();
@@ -170,6 +171,7 @@ export class NoteHead extends Note {
     this.renderText(ctx, 0, 0);
     this.yShift = savedYShift;
     (this.parent as StaveNote)?.drawModifiers(this);
+    this.drawPointerRect();
     ctx.closeGroup();
   }
 }

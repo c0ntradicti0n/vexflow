@@ -53,7 +53,7 @@ const SORT_ORDER_END_MODIFIERS = {
 };
 
 export class Stave extends Element {
-  static get CATEGORY(): string {
+  static override get CATEGORY(): string {
     return Category.Stave;
   }
 
@@ -188,7 +188,7 @@ export class Stave extends Element {
     return this.getYForLine(this.getNumLines() - 1) + (this.getStyle().lineWidth ?? 1);
   }
 
-  setX(x: number): this {
+  override setX(x: number): this {
     const shift = x - this.x;
     this.formatted = false;
     this.x = x;
@@ -201,7 +201,7 @@ export class Stave extends Element {
     return this;
   }
 
-  setWidth(width: number): this {
+  override setWidth(width: number): this {
     this.formatted = false;
     this.width = width;
     this.endX = this.x + width;
@@ -303,7 +303,7 @@ export class Stave extends Element {
     return this.options.spacingBetweenLinesPx;
   }
 
-  getBoundingBox(): BoundingBox {
+  override getBoundingBox(): BoundingBox {
     return new BoundingBox(this.x, this.y, this.width, this.getBottomY() - this.y);
   }
 
@@ -476,7 +476,7 @@ export class Stave extends Element {
    *
    * Example:
    * `stave.addKeySignature('Db');`
-   * @param keySpec new key specification `[A-G][b|#]?`
+   * @param keySpec new key specification `[A-G][b|#]?` or `[flats|sharps]_[0-14]?`
    * @param cancelKeySpec
    * @param position
    * @returns
@@ -687,11 +687,12 @@ export class Stave extends Element {
   /**
    * All drawing functions below need the context to be set.
    */
-  draw(): void {
+  override draw(): void {
     const ctx = this.checkContext();
     this.setRendered();
 
-    ctx.openGroup('stave', this.getAttribute('id'));
+    const clsAttribute = this.getAttribute('class');
+    ctx.openGroup('stave' + (clsAttribute ? ' ' + clsAttribute : ''), this.getAttribute('id'));
     if (!this.formatted) this.format();
 
     const numLines = this.options.numLines;
@@ -714,6 +715,7 @@ export class Stave extends Element {
       }
     }
 
+    this.drawPointerRect();
     ctx.closeGroup();
 
     // Draw the modifiers (bar lines, coda, segno, repeat brackets, etc.)

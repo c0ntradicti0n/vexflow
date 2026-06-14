@@ -169,7 +169,7 @@ export class Articulation extends Modifier {
   static DEBUG: boolean = false;
 
   /** Articulations category string. */
-  static get CATEGORY(): string {
+  static override get CATEGORY(): string {
     return Category.Articulation;
   }
 
@@ -326,7 +326,7 @@ export class Articulation extends Modifier {
     }
   }
 
-  protected reset(): void {
+  protected override reset(): void {
     this.articulation = Tables.articulationCodes(this.type);
     // Use type as glyph code, if not defined as articulation code
     if (!this.articulation) {
@@ -346,7 +346,7 @@ export class Articulation extends Modifier {
   }
 
   /** Render articulation in position next to note. */
-  draw(): void {
+  override draw(): void {
     const ctx = this.checkContext();
     const note = this.checkAttachedNote();
     this.setRendered();

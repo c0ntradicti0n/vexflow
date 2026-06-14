@@ -41,7 +41,7 @@ export class Annotation extends Modifier {
   static DEBUG: boolean = false;
 
   /** Annotations category string. */
-  static get CATEGORY(): string {
+  static override get CATEGORY(): string {
     return Category.Annotation;
   }
 
@@ -217,14 +217,15 @@ export class Annotation extends Modifier {
   }
 
   /** Render text beside the note. */
-  draw(): void {
+  override draw(): void {
     const ctx = this.checkContext();
     const note = this.checkAttachedNote();
     const stemDirection = note.hasStem() ? note.getStemDirection() : Stem.UP;
     const start = note.getModifierStartXY(ModifierPosition.ABOVE, this.index);
 
     this.setRendered();
-    ctx.openGroup('annotation', this.getAttribute('id'));
+    const clsAttribute = this.getAttribute('class');
+    ctx.openGroup('annotation' + (clsAttribute ? ' ' + clsAttribute : ''), this.getAttribute('id'));
 
     const textWidth = this.getWidth();
     const textHeight = Font.convertSizeToPixelValue(this.fontInfo.size);
@@ -283,6 +284,7 @@ export class Annotation extends Modifier {
     this.x = x;
     this.y = y;
     this.renderText(ctx, 0, 0);
+    this.drawPointerRect();
     ctx.closeGroup();
   }
 }

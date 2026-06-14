@@ -19,7 +19,7 @@ export enum BarlineType {
 }
 
 export class Barline extends StaveModifier {
-  static get CATEGORY(): string {
+  static override get CATEGORY(): string {
     return Category.Barline;
   }
 
@@ -139,12 +139,13 @@ export class Barline extends StaveModifier {
   }
 
   // Draw barlines
-  draw(): void {
+  override draw(): void {
     const stave = this.checkStave();
     const ctx = stave.checkContext();
     this.setRendered();
 
-    ctx.openGroup('stavebarline', this.getAttribute('id'));
+    const clsAttribute = this.getAttribute('class');
+    ctx.openGroup('stavebarline' + (clsAttribute ? ' ' + clsAttribute : ''), this.getAttribute('id'));
     switch (this.type) {
       case BarlineType.SINGLE:
         this.drawVerticalBar(stave, this.x, false);
@@ -178,6 +179,7 @@ export class Barline extends StaveModifier {
         // Default is NONE, so nothing to draw
         break;
     }
+    this.drawPointerRect();
     ctx.closeGroup();
   }
 

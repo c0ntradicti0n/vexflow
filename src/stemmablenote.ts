@@ -13,7 +13,7 @@ import { Category } from './typeguard';
 import { RuntimeError } from './util';
 
 export abstract class StemmableNote extends Note {
-  static get CATEGORY(): string {
+  static override get CATEGORY(): string {
     return Category.StemmableNote;
   }
 
@@ -113,6 +113,15 @@ export abstract class StemmableNote extends Note {
       case '128':
         length = beamIsUndefined ? 55 : 45;
         break;
+      case '256':
+        length = beamIsUndefined ? 60 : 55;
+        break;
+      case '512':
+        length = beamIsUndefined ? 65 : 60;
+        break;
+      case '1024':
+        length = beamIsUndefined ? 70 : 65;
+        break;
       default:
         break;
     }
@@ -120,7 +129,7 @@ export abstract class StemmableNote extends Note {
   }
 
   // Get/set the direction of the stem
-  getStemDirection(): number {
+  override getStemDirection(): number {
     if (!this.stemDirection) throw new RuntimeError('NoStem', 'No stem attached to this note.');
     return this.stemDirection;
   }
@@ -191,13 +200,13 @@ export abstract class StemmableNote extends Note {
   }
 
   // Get the top and bottom `y` values of the stem.
-  getStemExtents(): { topY: number; baseY: number } {
+  override getStemExtents(): { topY: number; baseY: number } {
     if (!this.stem) throw new RuntimeError('NoStem', 'No stem attached to this note.');
     return this.stem.getExtents();
   }
 
   /** Gets the `y` value for the top modifiers at a specific `textLine`. */
-  getYForTopText(textLine: number): number {
+  override getYForTopText(textLine: number): number {
     const stave = this.checkStave();
     if (this.hasStem()) {
       const extents = this.getStemExtents();
@@ -230,7 +239,7 @@ export abstract class StemmableNote extends Note {
   }
 
   /** Post formats the note. */
-  postFormat(): this {
+  override postFormat(): this {
     this.beam?.postFormat();
     this.postFormatted = true;
     return this;

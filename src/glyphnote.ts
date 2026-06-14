@@ -11,7 +11,7 @@ export interface GlyphNoteOptions {
 }
 
 export class GlyphNote extends Note {
-  static get CATEGORY(): string {
+  static override get CATEGORY(): string {
     return Category.GlyphNote;
   }
 
@@ -35,7 +35,7 @@ export class GlyphNote extends Note {
     return this;
   }
 
-  preFormat(): this {
+  override preFormat(): this {
     if (!this.preFormatted && this.modifierContext) {
       this.modifierContext.preFormat();
     }
@@ -52,16 +52,18 @@ export class GlyphNote extends Note {
     }
   }
 
-  draw(): void {
+  override draw(): void {
     const stave = this.checkStave();
     const ctx = stave.checkContext();
     this.setRendered();
-    ctx.openGroup('glyphNote', this.getAttribute('id'));
+    const clsAttribute = this.getAttribute('class');
+    ctx.openGroup('glyphNote' + (clsAttribute ? ' ' + clsAttribute : ''), this.getAttribute('id'));
 
     this.x = this.isCenterAligned() ? this.getAbsoluteX() - this.getWidth() / 2 : this.getAbsoluteX();
     this.y = stave.getYForLine(this.options.line);
     this.renderText(ctx, 0, 0);
     this.drawModifiers();
+    this.drawPointerRect();
     ctx.closeGroup();
   }
 }

@@ -45,7 +45,7 @@ export type PartialBeamDirection = typeof BEAM_LEFT | typeof BEAM_RIGHT | typeof
 
 /** `Beams` span over a set of `StemmableNotes`. */
 export class Beam extends Element {
-  static get CATEGORY(): string {
+  static override get CATEGORY(): string {
     return Category.Beam;
   }
 
@@ -71,7 +71,7 @@ export class Beam extends Element {
   private readonly _stemDirection: number;
   private readonly _ticks: number;
 
-  protected yShift: number = 0;
+  protected override yShift: number = 0;
   private breakOnIndexes: number[];
   private _beamCount: number;
   // note that this is never set and is a private property.  Remove?
@@ -920,7 +920,7 @@ export class Beam extends Element {
 
   // Render the beam lines
   protected drawBeamLines(ctx: RenderContext): void {
-    const validBeamDurations = ['4', '8', '16', '32', '64'];
+    const validBeamDurations = ['4', '8', '16', '32', '64', '128', '256', '512', '1024'];
 
     const firstNote = this.notes[0];
     let beamY = this.getBeamYToDraw();
@@ -992,7 +992,7 @@ export class Beam extends Element {
   }
 
   /** Render the beam to the canvas context */
-  draw(): void {
+  override draw(): void {
     const ctx = this.checkContext();
     this.setRendered();
     if (this.unbeamable) return;
@@ -1001,9 +1001,11 @@ export class Beam extends Element {
       this.postFormat();
     }
 
-    ctx.openGroup('beam', this.getAttribute('id'));
+    const clsAttribute = this.getAttribute('class');
+    ctx.openGroup('beam' + (clsAttribute ? ' ' + clsAttribute : ''), this.getAttribute('id'));
     this.drawStems(ctx);
     this.drawBeamLines(ctx);
+    this.drawPointerRect();
     ctx.closeGroup();
   }
 }

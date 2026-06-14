@@ -36,7 +36,7 @@ export class Stem extends Element {
   /** To enable logging for this class. Set `VexFlow.Stem.DEBUG` to `true`. */
   static DEBUG: boolean = false;
 
-  static get CATEGORY(): string {
+  static override get CATEGORY(): string {
     return Category.Stem;
   }
 
@@ -136,13 +136,13 @@ export class Stem extends Element {
   }
 
   // Gets the entire height for the stem
-  getHeight(): number {
+  override getHeight(): number {
     const yOffset = this.stemDirection === Stem.UP ? this.stemUpYOffset : this.stemDownYOffset;
     const unsignedHeight = this.yBottom - this.yTop + (Stem.HEIGHT - yOffset + this.stemExtension); // parentheses just for grouping.
     return unsignedHeight * this.stemDirection;
   }
 
-  getBoundingBox(): BoundingBox {
+  override getBoundingBox(): BoundingBox {
     throw new RuntimeError('NotImplemented', 'getBoundingBox() not implemented.');
   }
 
@@ -180,7 +180,7 @@ export class Stem extends Element {
   }
 
   // Render the stem onto the canvas
-  draw(): void {
+  override draw(): void {
     this.setRendered();
     if (this.hide) return;
     const ctx = this.checkContext();
@@ -210,7 +210,8 @@ export class Stem extends Element {
     const stemletYOffset = this.isStemlet ? stemHeight - this.stemletHeight * this.stemDirection : 0;
 
     // Draw the stem
-    ctx.openGroup('stem', this.getAttribute('id'));
+    const clsAttribute = this.getAttribute('class');
+    ctx.openGroup('stem' + (clsAttribute ? ' ' + clsAttribute : ''), this.getAttribute('id'));
     ctx.beginPath();
     ctx.setLineWidth(Stem.WIDTH);
     ctx.moveTo(stemX, stemY - stemletYOffset + yBaseOffset);

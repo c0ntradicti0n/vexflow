@@ -31,7 +31,7 @@ export class Ornament extends Modifier {
   static DEBUG: boolean = false;
 
   /** Ornaments category string. */
-  static get CATEGORY(): string {
+  static override get CATEGORY(): string {
     return Category.Ornament;
   }
   static get minPadding(): number {
@@ -182,7 +182,7 @@ export class Ornament extends Modifier {
   }
 
   /** Set note attached to ornament. */
-  setNote(note: Note): this {
+  override setNote(note: Note): this {
     super.setNote(note);
     // articulations above/below the line can be stacked.
     if (Ornament.ornamentArticulation.indexOf(this.type) >= 0) {
@@ -218,14 +218,15 @@ export class Ornament extends Modifier {
   }
 
   /** Render ornament in position next to note. */
-  draw(): void {
+  override draw(): void {
     const ctx = this.checkContext();
     const note = this.checkAttachedNote() as StemmableNote;
     this.setRendered();
 
     const stave = note.checkStave();
 
-    ctx.openGroup('ornament', this.getAttribute('id'));
+    const clsAttribute = this.getAttribute('class');
+    ctx.openGroup('ornament' + (clsAttribute ? ' ' + clsAttribute : ''), this.getAttribute('id'));
 
     // Get initial coordinates for the modifier position
     const start = note.getModifierStartXY(this.position, this.index);
@@ -294,6 +295,7 @@ export class Ornament extends Modifier {
         glyphY + this.yShift - this.accidentalUpper.getTextMetrics().actualBoundingBoxDescent
       );
     }
+    this.drawPointerRect();
     ctx.closeGroup();
   }
 }

@@ -23,7 +23,7 @@ export class Clef extends StaveModifier {
   /** To enable logging for this class, set `VexFlow.Clef.DEBUG` to `true`. */
   static DEBUG: boolean = false;
 
-  static get CATEGORY(): string {
+  static override get CATEGORY(): string {
     return Category.Clef;
   }
 
@@ -142,21 +142,23 @@ export class Clef extends StaveModifier {
   }
 
   /** Set associated stave. */
-  setStave(stave: Stave): this {
+  override setStave(stave: Stave): this {
     this.stave = stave;
     return this;
   }
 
   /** Render clef. */
-  draw(): void {
+  override draw(): void {
     const stave = this.checkStave();
     const ctx = stave.checkContext();
     this.setRendered();
 
-    ctx.openGroup('clef', this.getAttribute('id'));
+    const clsAttribute = this.getAttribute('class');
+    ctx.openGroup('clef' + (clsAttribute ? ' ' + clsAttribute : ''), this.getAttribute('id'));
 
     this.y = stave.getYForLine(this.line);
     this.renderText(ctx, 0, 0);
+    this.drawPointerRect();
     ctx.closeGroup();
   }
 }

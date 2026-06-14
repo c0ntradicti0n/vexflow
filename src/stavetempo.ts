@@ -34,7 +34,7 @@ export interface StaveTempoOptions {
 }
 
 export class StaveTempo extends StaveModifier {
-  static get CATEGORY(): string {
+  static override get CATEGORY(): string {
     return Category.StaveTempo;
   }
   protected tempo: StaveTempoOptions;
@@ -108,13 +108,12 @@ export class StaveTempo extends StaveModifier {
     }
 
     if (noteEquation) {
-      // For complex note equations, use a conservative estimate based on note count.
       let noteCount: number = 0;
       for (const item of noteEquation) {
         noteCount++;
         if (item.dots) noteCount += item.dots;
       }
-      w += noteCount * 12 + 20; // ~12px per note glyph + spacing + equals sign
+      w += noteCount * 12 + 20;
     } else if (duration && bpm) {
       if (name) {
         w += this.measureWidth(' (', normalFont);
@@ -133,7 +132,7 @@ export class StaveTempo extends StaveModifier {
     return w;
   }
 
-  draw(): void {
+  override draw(): void {
     const stave = this.checkStave();
     const shiftX = stave.getModifierXShift(this.getPosition());
     const ctx = stave.checkContext();

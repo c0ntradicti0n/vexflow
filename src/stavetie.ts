@@ -19,7 +19,7 @@ export interface TieNotes {
 }
 
 export class StaveTie extends Element {
-  static get CATEGORY(): string {
+  static override get CATEGORY(): string {
     return Category.StaveTie;
   }
 
@@ -153,7 +153,8 @@ export class StaveTie extends Element {
     const firstIndexes = this.notes.firstIndexes!;
 
     const lastIndexes = this.notes.lastIndexes!;
-    ctx.openGroup('stavetie', this.getAttribute('id'));
+    const clsAttribute = this.getAttribute('class');
+    ctx.openGroup('stavetie' + (clsAttribute ? ' ' + clsAttribute : ''), this.getAttribute('id'));
     for (let i = 0; i < firstIndexes.length; ++i) {
       const cpX = (params.lastX + lastXShift + (params.firstX + firstXShift)) / 2;
       // firstY and lastY are specified in pixels.
@@ -174,6 +175,7 @@ export class StaveTie extends Element {
       ctx.closePath();
       ctx.fill();
     }
+    this.drawPointerRect();
     ctx.closeGroup();
   }
 
@@ -276,7 +278,7 @@ export class StaveTie extends Element {
     }
   }
 
-  draw(): boolean {
+  override draw(): boolean {
     this.checkContext();
     this.setRendered();
     this.synchronizeIndexes();
