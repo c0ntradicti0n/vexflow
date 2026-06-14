@@ -52,6 +52,9 @@ export class StaveSection extends StaveModifier {
       ctx.rect(x, y - height + headroom, width, height);
       ctx.stroke();
     }
-    this.renderText(ctx, this.padding, y - this.yShift - this.padding);
+    // Text baseline at: rect_bottom - padding - actualBoundingBoxDescent
+    // = (y + headroom) - padding + headroom = y + 2*headroom - padding.
+    // renderText adds this.yShift to yPos, so subtract it here.
+    this.renderText(ctx, this.padding, y + 2 * headroom - this.padding - this.yShift);
   }
 }
