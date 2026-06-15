@@ -863,9 +863,9 @@ export class Formatter {
     };
     const minDistance = calcMinDistance(targetWidth, distances);
 
-    // right justify to either the configured padding, or the min distance between notes, whichever is greatest.
-    // This * 2 keeps the existing formatting unless there is 'a lot' of extra whitespace, which won't break
-    // existing visual regression tests.
+    // End padding reflects the softmax of the last note's duration.
+    // Longer last notes (quarter, half) get more end space than shorter notes (8th, 16th).
+    // configMinPadding is the absolute floor.
     const paddingMaxCalc = (curTargetWidth: number) => {
       let lastTickablePadding = 0;
       const lastTickable = lastContext && lastContext.getMaxTickable();
@@ -880,7 +880,7 @@ export class Formatter {
         lastTickablePadding =
           voice.softmax(lastContext.getMaxTicks().value()) * curTargetWidth - (tickWidth + leftPadding);
       }
-      return configMaxPadding * 2 < lastTickablePadding ? lastTickablePadding : configMaxPadding;
+      return Math.max(configMinPadding, lastTickablePadding);
     };
     let paddingMax = paddingMaxCalc(targetWidth);
     let paddingMin = paddingMax - (configMaxPadding - configMinPadding);
