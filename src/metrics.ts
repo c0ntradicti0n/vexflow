@@ -169,9 +169,9 @@ export const MetricsDefaults: Record<string, any> = {
   Stave: {
     strokeStyle: '#999999',
     fontSize: 8,
-    padding: 12,
-    endPaddingMax: 5,
-    endPaddingMin: 5,
+    padding: 8,
+    endPaddingMax: 3,
+    endPaddingMin: 3,
     unalignedNotePadding: 10,
   },
 
