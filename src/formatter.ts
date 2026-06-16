@@ -887,12 +887,28 @@ export class Formatter {
         const tickWidth = lastTickable.getWidth();
         lastTickablePadding =
           voice.softmax(lastContext.getMaxTicks().value()) * curTargetWidth - (tickWidth + leftPadding);
+
+        // When the softmax-based padding would be negative (narrow measure),
+        // use a duration-proportional minimum to prevent barline collision
+        // while preserving proportional differentiation between durations.
+        if (lastTickablePadding < configMinPadding) {
+          const durationFraction =
+            lastContext.getMaxTicks().value() / voice.getTotalTicks().value();
+          const proportionalMin = configMaxPadding * durationFraction;
+          return Math.max(proportionalMin, lastTickablePadding);
+        }
       }
       return Math.max(configMinPadding, lastTickablePadding);
     };
     let paddingMax = paddingMaxCalc(targetWidth);
     let paddingMin = paddingMax - (configMaxPadding - configMinPadding);
-    const maxX = adjustedJustifyWidth - paddingMin;
+    // Reserve end space proportional to average per-note spacing.
+    // In narrow measures where paddingMin < 0, the formatter would
+    // otherwise push the last note flush against the barline.
+    const avgPerNoteSpace = adjustedJustifyWidth / contextList.length;
+    const endReserve = Math.max(configMinPadding,
+      Math.min(avgPerNoteSpace * 0.35, configMaxPadding * 3));
+    const maxX = adjustedJustifyWidth - Math.max(endReserve, Math.max(0, paddingMin));
 
     let iterations = maxIterations;
     // Adjust justification width until the right margin is as close as possible to the calculated padding,
