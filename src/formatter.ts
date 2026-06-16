@@ -452,6 +452,7 @@ export class Formatter {
 
     // Go through each tick context and calculate total width,
     // and also accumulate values used in padding hints
+    let isFirstContext: boolean = true;
     contextList.forEach((tick) => {
       const context = contextMap[tick];
       context.preFormat();
@@ -467,7 +468,7 @@ export class Formatter {
         widths.push(t.getMetrics().width);
         durations.push(t.getTicks().value());
       });
-      const width = context.getWidth();
+      const width: number = context.getWidth();
       this.minTotalWidth += width;
     });
 
@@ -675,6 +676,7 @@ export class Formatter {
     let totalTicks = 0;
 
     // Pass 1: Give each note maximum width requested by context.
+    let isFirstContext = true;
     contextList.forEach((tick) => {
       const context = contextMap[tick];
 
@@ -689,7 +691,13 @@ export class Formatter {
       totalTicks += maxTicks;
 
       const metrics = context.getMetrics();
-      x = x + shift + metrics.totalLeftPx;
+      if (isFirstContext) {
+        const minPad: number = Metrics.get('Stave.padding');
+        x = Math.max(metrics.modLeftPx - minPad, 0) + metrics.leftDisplacedHeadPx;
+        isFirstContext = false;
+      } else {
+        x = x + shift + metrics.totalLeftPx;
+      }
       context.setX(x);
 
       // Calculate shift for the next tick.
