@@ -175,8 +175,9 @@ export class PedalMarking extends Element {
       // Each note triggers the opposite pedal action
       isPedalDepressed = !isPedalDepressed;
 
-      // Get the initial coordinates for the note
-      const x = note.getAbsoluteX();
+      // Get the initial coordinates for the note.
+      // Strip centerXShift so pedals start at the beat position, not the centered rest position.
+      const x = note.getAbsoluteX() - (note.isCenterAligned() ? note.getCenterXShift() : 0);
       const y = note.checkStave().getYForBottomText(this.line + 3);
 
       // Throw if current note is positioned before the previous note
@@ -251,7 +252,7 @@ export class PedalMarking extends Element {
     this.notes.forEach((note) => {
       isPedalDepressed = !isPedalDepressed;
       const stave = note.checkStave();
-      const x = note.getAbsoluteX();
+      const x = note.getAbsoluteX() - (note.isCenterAligned() ? note.getCenterXShift() : 0);
       const y = stave.getYForBottomText(this.line + 3);
 
       if (isPedalDepressed) {
