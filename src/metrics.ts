@@ -160,9 +160,11 @@ export const MetricsDefaults: Record<string, any> = {
     },
     coda: {
       offsetY: 25,
+      fontSize: 20,
     },
     segno: {
       offsetY: 10,
+      fontSize: 20,
     },
   },
 

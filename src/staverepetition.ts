@@ -102,6 +102,7 @@ export class Repetition extends StaveModifier {
   drawCodaFixed(stave: Stave, x: number): this {
     const y = stave.getYForTopText(stave.getNumLines());
     this.text = Glyphs.coda;
+    this.setFont(Metrics.getFontInfo('Repetition.coda'));
     this.renderText(stave.checkContext(), x, y + Metrics.get('Repetition.coda.offsetY'));
     return this;
   }
@@ -109,6 +110,7 @@ export class Repetition extends StaveModifier {
   drawSegnoFixed(stave: Stave, x: number): this {
     const y = stave.getYForTopText(stave.getNumLines());
     this.text = Glyphs.segno;
+    this.setFont(Metrics.getFontInfo('Repetition.segno'));
     this.renderText(stave.checkContext(), x, y + Metrics.get('Repetition.segno.offsetY'));
     return this;
   }
