@@ -433,6 +433,8 @@ export class Tables {
   static readonly noteHeadStemYOffsets: Record<string, { up: number; down: number }> = {
     [Glyphs.noteheadXBlack]: { up: 0.444, down: -0.44 },
     [Glyphs.noteheadXHalf]: { up: 0.412, down: -0.412 },
+    [Glyphs.noteheadSlashVerticalEnds]: { up: 1.0, down: -1.0 },
+    [Glyphs.noteheadSlashWhiteHalf]: { up: 1.0, down: -1.0 },
   };
 
   // HACK:
