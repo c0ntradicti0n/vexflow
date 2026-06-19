@@ -1109,6 +1109,12 @@ export class StaveNote extends StemmableNote {
 
   // Draw the ledger lines between the stave and the highest/lowest keys
   drawLedgerLines(): void {
+    // Only half/whole rests need ledger lines (they sit on/hang from a line).
+    // Shorter rests (quarter, 8th, etc.) are standalone glyphs.
+    const d = this.duration;
+    if (this.isRest() && d !== 'w' && d !== '1' && d !== 'h' && d !== '2') {
+      return;
+    }
     const stave = this.checkStave();
     const {
       renderOptions: { strokePx },
