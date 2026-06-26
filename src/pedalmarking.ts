@@ -44,7 +44,6 @@ export class PedalMarking extends Element {
   protected endStave: Stave | null;
   protected endStaveAddedWidth: number;
   protected startMargin: number;
-  protected endMargin: number;
   public EndsStave: boolean;
 
   /** Glyph data */
@@ -240,7 +239,6 @@ export class PedalMarking extends Element {
         ctx.stroke();
         ctx.closePath();
         }
-      }
 
       // Store previous coordinates
       prevX = x + xShift;
