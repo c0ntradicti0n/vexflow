@@ -231,10 +231,10 @@ export class PedalMarking extends Element {
         // NOTE: this.EndsStave is NOT used here because OSMD calls setEndStave()
         // unconditionally (for stave reference), always setting EndsStave=true.
         const bracketEndX: number = noteNdx + 1 < voiceNotes ? x : noteEndX - 5;
-        if (this.type === PedalMarking.type.BRACKET_OPEN_END || this.type === PedalMarking.type.BRACKET_OPEN_BOTH) {
-          // Open end: no end bracket (continuation to next system).
+        if (this.type === PedalMarking.type.BRACKET_OPEN_BOTH) {
+          // Both ends open: suppress entirely (intermediate system continuation).
         } else if (this.type === PedalMarking.type.BRACKET_OPEN_BEGIN) {
-          // Open begin: no start bracket. Draw end corner only.
+          // Open begin: draw end bracket only — no line across new system.
           ctx.beginPath();
           ctx.moveTo(x - 5, y);
           ctx.lineTo(x, y);
