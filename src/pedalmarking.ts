@@ -197,7 +197,9 @@ export class PedalMarking extends Element {
         // Adjustment for release+depress
         xShift = prevNoteIsSame ? 5 : 0;
 
-        if (this.type === PedalMarking.type.MIXED && !prevNoteIsSame) {
+        if (this.type === PedalMarking.type.BRACKET_OPEN_BEGIN || this.type === PedalMarking.type.BRACKET_OPEN_BOTH) {
+          // Open begin: no start bracket (continuation from previous system).
+        } else if (this.type === PedalMarking.type.MIXED && !prevNoteIsSame) {
           // For MIXED style, start with text instead of bracket
           textWidth = ctx.measureText(this.depressText).width;
           ctx.fillText(this.depressText, x, y);
@@ -229,14 +231,26 @@ export class PedalMarking extends Element {
         // NOTE: this.EndsStave is NOT used here because OSMD calls setEndStave()
         // unconditionally (for stave reference), always setting EndsStave=true.
         const bracketEndX: number = noteNdx + 1 < voiceNotes ? x : noteEndX - 5;
-        // Draw end bracket
-        ctx.beginPath();
-        ctx.moveTo(prevX, prevY);
-        ctx.lineTo(nextNoteIsSame ? x - 5 : bracketEndX, y);
-        // No shift if next note is the same
-        ctx.lineTo(nextNoteIsSame ? x : bracketEndX, y - this.renderOptions.bracketHeight);
-        ctx.stroke();
-        ctx.closePath();
+        if (this.type === PedalMarking.type.BRACKET_OPEN_END || this.type === PedalMarking.type.BRACKET_OPEN_BOTH) {
+          // Open end: no end bracket (continuation to next system).
+        } else if (this.type === PedalMarking.type.BRACKET_OPEN_BEGIN) {
+          // Open begin: no start bracket. Draw end corner only.
+          ctx.beginPath();
+          ctx.moveTo(x - 5, y);
+          ctx.lineTo(x, y);
+          ctx.lineTo(x, y - this.renderOptions.bracketHeight);
+          ctx.stroke();
+          ctx.closePath();
+        } else {
+          // Draw end bracket
+          ctx.beginPath();
+          ctx.moveTo(prevX, prevY);
+          ctx.lineTo(nextNoteIsSame ? x - 5 : bracketEndX, y);
+          // No shift if next note is the same
+          ctx.lineTo(nextNoteIsSame ? x : bracketEndX, y - this.renderOptions.bracketHeight);
+          ctx.stroke();
+          ctx.closePath();
+        }
       }
 
       // Store previous coordinates
