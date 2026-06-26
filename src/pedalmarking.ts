@@ -223,12 +223,18 @@ export class PedalMarking extends Element {
             : // If this is the last note is the voice, use the x position of the next stave
               (note.getStave()?.getX() ?? 0) + (note.getStave()?.getWidth() ?? 0);
 
+        // For bracket/mixed pedals, the bracket corner should land at the release note's
+        // own x position (not the next note's, which is correct for TEXT pedals).
+        // If the release note is the last in its voice, extend to stave end (noteEndX).
+        // NOTE: this.EndsStave is NOT used here because OSMD calls setEndStave()
+        // unconditionally (for stave reference), always setting EndsStave=true.
+        const bracketEndX: number = noteNdx + 1 < voiceNotes ? x : noteEndX - 5;
         // Draw end bracket
         ctx.beginPath();
         ctx.moveTo(prevX, prevY);
-        ctx.lineTo(nextNoteIsSame ? x - 5 : noteEndX - 5, y);
+        ctx.lineTo(nextNoteIsSame ? x - 5 : bracketEndX, y);
         // No shift if next note is the same
-        ctx.lineTo(nextNoteIsSame ? x : noteEndX - 5, y - this.renderOptions.bracketHeight);
+        ctx.lineTo(nextNoteIsSame ? x : bracketEndX, y - this.renderOptions.bracketHeight);
         ctx.stroke();
         ctx.closePath();
       }
