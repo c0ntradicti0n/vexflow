@@ -197,7 +197,9 @@ export class PedalMarking extends Element {
         // Adjustment for release+depress
         xShift = prevNoteIsSame ? 5 : 0;
 
-        if (this.type === PedalMarking.type.MIXED && !prevNoteIsSame) {
+        if (this.type === PedalMarking.type.BRACKET_OPEN_BEGIN || this.type === PedalMarking.type.BRACKET_OPEN_BOTH) {
+          // Open begin: no start bracket (continuation from previous system).
+        } else if (this.type === PedalMarking.type.MIXED && !prevNoteIsSame) {
           // For MIXED style, start with text instead of bracket
           textWidth = ctx.measureText(this.depressText).width;
           ctx.fillText(this.depressText, x, y);
@@ -229,16 +231,25 @@ export class PedalMarking extends Element {
         // NOTE: this.EndsStave is NOT used here because OSMD calls setEndStave()
         // unconditionally (for stave reference), always setting EndsStave=true.
         const bracketEndX: number = noteNdx + 1 < voiceNotes ? x : noteEndX - 5;
-        // Draw end bracket — same for all bracket types (BRACKET, BRACKET_OPEN_*).
-        // Open begin/end variants indicate system-break continuations but VF5 draws
-        // them identically to a regular BRACKET (full horizontal connecting line).
-        ctx.beginPath();
-        ctx.moveTo(prevX, prevY);
-        ctx.lineTo(nextNoteIsSame ? x - 5 : bracketEndX, y);
-        // No shift if next note is the same
-        ctx.lineTo(nextNoteIsSame ? x : bracketEndX, y - this.renderOptions.bracketHeight);
-        ctx.stroke();
-        ctx.closePath();
+        if (this.type === PedalMarking.type.BRACKET_OPEN_END || this.type === PedalMarking.type.BRACKET_OPEN_BOTH) {
+          // Open end: horizontal line only — no vertical drop (avoids implying a pedal
+          // lift at the system boundary; the pedal continues to the next system).
+          ctx.beginPath();
+          ctx.moveTo(prevX, prevY);
+          ctx.lineTo(bracketEndX, y);
+          ctx.stroke();
+          ctx.closePath();
+        } else {
+          // For BRACKET, MIXED, and BRACKET_OPEN_BEGIN: full bracket with end corner.
+          // OPEN_BEGIN has no start bracket (suppressed above) but draws the full
+          // horizontal line and end vertical drop so the M15 stop is still visible.
+          ctx.beginPath();
+          ctx.moveTo(prevX, prevY);
+          ctx.lineTo(nextNoteIsSame ? x - 5 : bracketEndX, y);
+          ctx.lineTo(nextNoteIsSame ? x : bracketEndX, y - this.renderOptions.bracketHeight);
+          ctx.stroke();
+          ctx.closePath();
+        }
         }
 
       // Store previous coordinates
