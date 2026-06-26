@@ -630,6 +630,9 @@ export class Stave extends Element {
     if (x > this.startX) {
       this.startX = x;
     }
+    // Add right-padding after the last begin modifier (typically time signature)
+    // to provide more space before the first note.
+    this.startX += 10;
     x = this.x + this.width;
 
     const widths = {
