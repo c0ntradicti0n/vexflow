@@ -129,7 +129,7 @@ export class PedalMarking extends Element {
   setType(type: string | number): this {
     type = typeof type === 'string' ? PedalMarking.typeString[type] : type;
 
-    if (type >= PedalMarking.type.TEXT && type <= PedalMarking.type.MIXED) {
+    if (type >= PedalMarking.type.TEXT && type <= PedalMarking.type.BRACKET_OPEN_BOTH) {
       this.type = type;
     }
     return this;
@@ -290,10 +290,10 @@ export class PedalMarking extends Element {
     ctx.setFont(this.font);
     L('Rendering Pedal Marking');
 
-    if (this.type === PedalMarking.type.BRACKET || this.type === PedalMarking.type.MIXED) {
+    if (this.type !== PedalMarking.type.TEXT) {
       ctx.setLineWidth(this.renderOptions.bracketLineWidth);
       this.drawBracketed();
-    } else if (this.type === PedalMarking.type.TEXT) {
+    } else {
       this.drawText();
     }
   }
