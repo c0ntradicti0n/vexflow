@@ -229,7 +229,6 @@ export class PedalMarking extends Element {
         // NOTE: this.EndsStave is NOT used here because OSMD calls setEndStave()
         // unconditionally (for stave reference), always setting EndsStave=true.
         const bracketEndX: number = noteNdx + 1 < voiceNotes ? x : noteEndX - 5;
-        const bracketEndX: number = noteNdx + 1 < voiceNotes ? x : noteEndX - 5;
         // Draw end bracket
         ctx.beginPath();
         ctx.moveTo(prevX, prevY);
