@@ -70,16 +70,28 @@ const isInnerNoteIndex = (note: StaveNote, index: number) =>
 
 // Helper methods for rest positioning in ModifierContext.
 
-function isDefaultRestPosition(line: number): boolean {
-  return line === 3 || line === 4;
+function isDefaultRestPosition(line: number, clef: string): boolean {
+  const center = Tables.getStaffCenterLine(clef);
+  return line === center || line === center + 1;
 }
 
-function shiftRestVertical(rest: StaveNoteFormatSettings, note: StaveNoteFormatSettings, dir: number) {
-  // Don't shift rests with explicitly positioned non-default lines
-  // (e.g. rests with display-step/display-octave from MusicXML).
-  if (!isDefaultRestPosition(rest.line)) return;
+function shiftRestVertical(rest: StaveNoteFormatSettings, note: StaveNoteFormatSettings, _dir: number) {
+  const clef: string = rest.note.getClef();
 
-  const delta = dir;
+  const staffCenter: number = Tables.getStaffCenterLine(clef);
+  const CLAMP: number = 3; // max staff-spaces beyond staff edge
+  // Direction: if note's pitch line is above rest, shift rest away from it.
+  const noteLine: number = note.note.getKeyLine(0);
+  // Reverse direction when _dir points toward the note (same side), so rest moves away.
+  const dir: number = (noteLine - rest.line) * _dir > 0 ? -_dir : _dir;
+  const shift: number = dir * 2; // 2-line shift for clear visual separation
+  const newLine: number = rest.line + shift;
+  const clampedLine: number = Math.max(
+    staffCenter - 2 - CLAMP,
+    Math.min(staffCenter + 2 + CLAMP, newLine)
+  );
+  const delta: number = clampedLine - rest.line;
+  if (delta === 0) return;
 
   rest.line += delta;
   rest.maxLine += delta;
@@ -89,9 +101,18 @@ function shiftRestVertical(rest: StaveNoteFormatSettings, note: StaveNoteFormatS
 
 // Called from formatNotes :: center a rest between two notes
 function centerRest(rest: StaveNoteFormatSettings, noteU: StaveNoteFormatSettings, noteL: StaveNoteFormatSettings) {
-  if (!isDefaultRestPosition(rest.line)) return;
+  const clef: string = rest.note.getClef();
 
-  const delta = rest.line - midLine(noteU.minLine, noteL.maxLine);
+  const staffCenter: number = Tables.getStaffCenterLine(clef);
+  const CLAMP: number = 3;
+  const targetLine: number = midLine(noteU.minLine, noteL.maxLine);
+  const clampedLine: number = Math.max(
+    staffCenter - 2 - CLAMP,
+    Math.min(staffCenter + 2 + CLAMP, targetLine)
+  );
+  const delta: number = rest.line - clampedLine;
+  if (delta === 0) return;
+
   rest.note.setKeyLine(0, rest.note.getKeyLine(0) - delta);
   rest.line -= delta;
   rest.maxLine -= delta;
@@ -172,6 +193,12 @@ export class StaveNote extends StemmableNote {
         minL =
           line -
           Math.ceil(notes[i]._noteHeads[0].getTextMetrics().actualBoundingBoxDescent / Tables.STAVE_LINE_DISTANCE);
+        // Fallback for pre-format pass when text metrics haven't been measured yet.
+        // SMuFL rest glyphs span ~2-3 staff lines; use a safe minimum of 2.5 lines.
+        if (maxL - minL < 2) {
+          maxL = line + 2;
+          minL = line - 1;
+        }
       } else {
         maxL =
           stemDirection === 1 ? props[props.length - 1].keyProps.line + stemMax : props[props.length - 1].keyProps.line;
@@ -244,7 +271,10 @@ export class StaveNote extends StemmableNote {
     if (voices === 2) {
       const lineSpacing =
         noteU.note.hasStem() && noteL.note.hasStem() && noteU.stemDirection === noteL.stemDirection ? 0.0 : 0.5;
+      // Two rests at same position: shift lower one down before hiding,
+      // so the voices have distinct Y positions even with one hidden.
       if (noteL.isrest && noteU.isrest && noteU.note.duration === noteL.note.duration) {
+        shiftRestVertical(noteL, noteU, -1);
         noteL.note.renderOptions.draw = false;
       } else if (noteU.minLine <= noteL.maxLine + lineSpacing) {
         if (noteU.isrest) {
@@ -442,6 +472,10 @@ export class StaveNote extends StemmableNote {
   protected readonly clef: string;
   protected readonly octaveShift?: number;
 
+  getClef(): string {
+    return this.clef;
+  }
+
   protected displaced: boolean;
   protected dotShiftY: number;
   protected useDefaultHeadX: boolean;
@@ -631,12 +665,14 @@ export class StaveNote extends StemmableNote {
         throw new RuntimeError('BadArguments', `Invalid key for note properties: ${key}`);
       }
 
-      // Override line placement for default rests
+      // Override line placement for default rests — clef-aware,
+      // so bass, subbass, etc. get their staff center (line 2) instead of 3.
       if (props.key === 'R') {
+        const center: number = Tables.getStaffCenterLine(this.clef);
         if (this.duration === '1' || this.duration === 'w') {
-          props.line = 4;
+          props.line = center + 1;
         } else {
-          props.line = 3;
+          props.line = center;
         }
       }
 
