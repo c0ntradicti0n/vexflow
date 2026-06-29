@@ -82,32 +82,39 @@ function shiftRestVertical(rest: StaveNoteFormatSettings, note: StaveNoteFormatS
   const clef: string = rest.note.getClef();
 
   const staffCenter: number = Tables.getStaffCenterLine(clef);
-  const CLAMP: number = 5; // staff-spaces beyond staff edge — wide enough for
-  // ledger-line notes (e.g., line -3.5) to shift one full step and clear a
-  // nearby note, but bounded to prevent drift across repeated format passes.
-  // Use note's full extent (including stem) to find a clear direction.
-  const shiftAmount: number = 2;
-  const restUp: number = rest.line + shiftAmount;
-  const restDown: number = rest.line - shiftAmount;
-  const clearanceUp: number = restUp - note.maxLine;
-  const clearanceDown: number = note.minLine - restDown;
-  // Prefer voice-appropriate direction (_dir) when both sides clear;
-  // otherwise pick the side with actual clearance (or closest to it).
-  const bothClear: boolean = clearanceUp > 0 && clearanceDown > 0;
-  const dir: number = bothClear ? _dir : (clearanceUp >= clearanceDown ? 1 : -1);
-  const shift: number = dir * shiftAmount;
-  const newLine: number = rest.line + shift;
-  const clampedLine: number = Math.max(
-    staffCenter - 2 - CLAMP,
-    Math.min(staffCenter + 2 + CLAMP, newLine)
-  );
-  const delta: number = clampedLine - rest.line;
-  if (delta === 0) return;
+  const CLAMP: number = 7;
+  const clampMin: number = staffCenter - 2 - CLAMP;
+  const clampMax: number = staffCenter + 2 + CLAMP;
 
-  rest.line += delta;
-  rest.maxLine += delta;
-  rest.minLine += delta;
-  rest.note.setKeyLine(0, rest.note.getKeyLine(0) + delta);
+  // Conservative rest glyph extent: ~2 lines above, 1 line below center
+  const restHalfAbove: number = 2;
+  const restHalfBelow: number = 1;
+
+  // Check if the rest's glyph at `line` overlaps the note's extent.
+  function overlaps(line: number): boolean {
+    return (line + restHalfAbove) >= note.minLine && (line - restHalfBelow) <= note.maxLine;
+  }
+
+  // If already clear at current position, nothing to do.
+  if (!overlaps(rest.line)) return;
+
+  // Search for nearest free line in the preferred direction first.
+  for (let dir = _dir; dir !== 0; dir = dir === _dir ? -_dir : 0) {
+    let candidate: number = rest.line + dir;
+    while (candidate >= clampMin && candidate <= clampMax) {
+      if (!overlaps(candidate)) {
+        const delta: number = candidate - rest.line;
+        rest.line += delta;
+        rest.maxLine += delta;
+        rest.minLine += delta;
+        rest.note.setKeyLine(0, rest.note.getKeyLine(0) + delta);
+        return;
+      }
+      candidate += dir;
+    }
+    // Preferred direction exhausted within CLAMP bounds; try opposite.
+  }
+  // No free position found in either direction within CLAMP bounds.
 }
 
 // Called from formatNotes :: center a rest between two notes
@@ -282,6 +289,12 @@ export class StaveNote extends StemmableNote {
     if (voices === 2) {
       const lineSpacing =
         noteU.note.hasStem() && noteL.note.hasStem() && noteU.stemDirection === noteL.stemDirection ? 0.0 : 0.5;
+      // Rest shifts in its voice's own stem direction to maintain vertical order
+      // (stem-up voice = lower area, rest goes further up → above the other
+      // voice's notes; stem-down voice = upper area, rest goes further down →
+      // below the other voice's notes).
+      const noteUDir: number = noteU.stemDirection!;
+      const noteLDir: number = noteL.stemDirection!;
       // Two rests at same position: shift lower one down before hiding,
       // so the voices have distinct Y positions even with one hidden.
       if (noteL.isrest && noteU.isrest && noteU.note.duration === noteL.note.duration) {
@@ -295,11 +308,9 @@ export class StaveNote extends StemmableNote {
         (noteL.isrest ? noteL.line : noteL.maxLine) + lineSpacing
       ) {
         if (noteU.isrest) {
-          // shift rest up
-          shiftRestVertical(noteU, noteL, 1);
+          shiftRestVertical(noteU, noteL, noteUDir);
         } else if (noteL.isrest) {
-          // shift rest down
-          shiftRestVertical(noteL, noteU, -1);
+          shiftRestVertical(noteL, noteU, noteLDir);
         } else {
           //Instead of shifting notes, remove the appropriate flag
           //If we are sharing a line, switch one notes stem direction.
@@ -382,6 +393,14 @@ export class StaveNote extends StemmableNote {
             noteL.note.setStemDirection(noteL.stemDirection);
           }
         }
+      } else if (noteL.isrest && noteL.line < noteU.minLine) {
+        // Rest is below the note — wrong side when the rest belongs to the
+        // upper voice (stem down, noteLDir=1 → rest should go UP).
+        shiftRestVertical(noteL, noteU, noteLDir);
+      } else if (noteU.isrest && noteU.line > noteL.maxLine) {
+        // Rest is above the note — wrong side for a lower-voice rest
+        // (stem up, noteUDir=-1 → rest should go DOWN).
+        shiftRestVertical(noteU, noteL, noteUDir);
       }
 
       // format complete
@@ -1217,10 +1236,11 @@ export class StaveNote extends StemmableNote {
     this.applyStyle(ctx, style);
 
     // Draw ledger lines below the staff:
-    // For rests, draw at most 2 ledgers starting from the first line above staff.
+    // For rests, draw 1 ledger at the rest's own position (whole rest hangs from
+    // it, half rest sits on it).
     if (needsLedgerBelow) {
-      const belowStart: number = this.isRest() ? Math.max(6, Math.floor(highestLine) - 1) : 6;
-      const belowEnd: number = this.isRest() ? Math.max(6, highestLine) : highestLine;
+      const belowStart: number = this.isRest() ? Math.max(6, Math.floor(highestLine)) : 6;
+      const belowEnd: number = this.isRest() ? belowStart : highestLine;
       for (let line = belowStart; line <= belowEnd; ++line) {
         const normal = nonDisplacedX !== undefined && line <= highestNonDisplacedLine;
         const displaced = highestDisplacedLine !== undefined && line <= highestDisplacedLine;
@@ -1231,7 +1251,7 @@ export class StaveNote extends StemmableNote {
     // Draw ledger lines above the staff:
     if (needsLedgerAbove) {
       const aboveStart: number = this.isRest() ? Math.min(0, Math.ceil(lowestLine)) : 0;
-      const aboveEnd: number = this.isRest() ? Math.min(0, lowestLine) : lowestLine;
+      const aboveEnd: number = this.isRest() ? aboveStart : lowestLine;
       for (let line = aboveStart; line >= aboveEnd; --line) {
         const normal = nonDisplacedX !== undefined && line >= lowestNonDisplacedLine;
         const displaced = lowestDisplacedLine !== undefined && line >= lowestDisplacedLine;
