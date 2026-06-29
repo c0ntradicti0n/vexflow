@@ -80,11 +80,17 @@ function shiftRestVertical(rest: StaveNoteFormatSettings, note: StaveNoteFormatS
 
   const staffCenter: number = Tables.getStaffCenterLine(clef);
   const CLAMP: number = 3; // max staff-spaces beyond staff edge
-  // Direction: if note's pitch line is above rest, shift rest away from it.
-  const noteLine: number = note.note.getKeyLine(0);
-  // Reverse direction when _dir points toward the note (same side), so rest moves away.
-  const dir: number = (noteLine - rest.line) * _dir > 0 ? -_dir : _dir;
-  const shift: number = dir * 2; // 2-line shift for clear visual separation
+  // Use note's full extent (including stem) to find a clear direction.
+  const shiftAmount: number = 2;
+  const restUp: number = rest.line + shiftAmount;
+  const restDown: number = rest.line - shiftAmount;
+  const clearanceUp: number = restUp - note.maxLine;
+  const clearanceDown: number = note.minLine - restDown;
+  // Prefer voice-appropriate direction (_dir) when both sides clear;
+  // otherwise pick the side with actual clearance (or closest to it).
+  const bothClear: boolean = clearanceUp > 0 && clearanceDown > 0;
+  const dir: number = bothClear ? _dir : (clearanceUp >= clearanceDown ? 1 : -1);
+  const shift: number = dir * shiftAmount;
   const newLine: number = rest.line + shift;
   const clampedLine: number = Math.max(
     staffCenter - 2 - CLAMP,

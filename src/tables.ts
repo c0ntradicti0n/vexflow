@@ -452,6 +452,15 @@ export class Tables {
   }
 
   /**
+   * Get the VF line coordinate of the center staff line for the given clef.
+   * Treble-family (lineShift <= 5): staff occupies VF lines 1-5, center = 3.
+   * Bass-family   (lineShift >= 6): staff occupies VF lines 0-4, center = 2.
+   */
+  static getStaffCenterLine(clef: string): number {
+    return Tables.clefProperties(clef).lineShift >= 6 ? 2 : 3;
+  }
+
+  /**
    * @param keyOctaveGlyph a string in the format "key/octave" (e.g., "c/5") or "key/octave/custom-note-head-code" (e.g., "g/5/t3").
    * @param clef
    * @param params a struct with one option, `octaveShift` for clef ottavation (0 = default; 1 = 8va; -1 = 8vb, etc.).
