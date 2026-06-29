@@ -326,10 +326,10 @@ export class Formatter {
 
         // If activated rests not on default can be rendered as specified.
         const line = currTickable.getLineForRest();
-        // Use VF's original hardcoded default (3) for AlignRestsToNotes so
-        // clef-aware defaults (bass line 2) are NOT preemptively moved before
-        // StaveNote.format handles multi-voice collision via shiftRestVertical.
-        if (line !== 3) {
+        // Use clef-aware default so bass (center 2) and treble (center 3)
+        // rests are aligned by AlignRestsToNotes. The original hardcoded (3)
+        // skipped bass-family clefs entirely, leaving them unaligned.
+        if (line !== Tables.getStaffCenterLine(currTickable.getClef())) {
           return;
         }
 

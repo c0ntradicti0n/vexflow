@@ -451,13 +451,8 @@ export class Tables {
     return clefs[clef];
   }
 
-  /**
-   * Get the VF line coordinate of the center staff line for the given clef.
-   * Treble-family (lineShift <= 5): staff occupies VF lines 1-5, center = 3.
-   * Bass-family   (lineShift >= 6): staff occupies VF lines 0-4, center = 2.
-   */
   static getStaffCenterLine(clef: string): number {
-    return Tables.clefProperties(clef).lineShift >= 6 ? 2 : 3;
+    return 3;
   }
 
   /**
