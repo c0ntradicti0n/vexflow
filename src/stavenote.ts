@@ -76,6 +76,9 @@ function isDefaultRestPosition(line: number, clef: string): boolean {
 }
 
 function shiftRestVertical(rest: StaveNoteFormatSettings, note: StaveNoteFormatSettings, _dir: number) {
+  // OSMD sets shiftRestVerticalDisabled on re-render to freeze rest positions
+  // from the first render (see VexFlowMusicSheetCalculator.ts).
+  if ((rest.note as any).shiftRestVerticalDisabled) return;
   const clef: string = rest.note.getClef();
 
   const staffCenter: number = Tables.getStaffCenterLine(clef);
@@ -284,7 +287,13 @@ export class StaveNote extends StemmableNote {
       if (noteL.isrest && noteU.isrest && noteU.note.duration === noteL.note.duration) {
         shiftRestVertical(noteL, noteU, -1);
         noteL.note.renderOptions.draw = false;
-      } else if (noteU.minLine <= noteL.maxLine + lineSpacing) {
+      } else if (
+        // Use noteLine (not conservative glyph/minLine) for rests so that
+        // the check doesn't re-trigger after a single shift — whole rests
+        // at the staff edge (line 4) shouldn't cascade to line 8+.
+        (noteU.isrest ? noteU.line : noteU.minLine) <=
+        (noteL.isrest ? noteL.line : noteL.maxLine) + lineSpacing
+      ) {
         if (noteU.isrest) {
           // shift rest up
           shiftRestVertical(noteU, noteL, 1);
