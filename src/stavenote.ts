@@ -79,7 +79,9 @@ function shiftRestVertical(rest: StaveNoteFormatSettings, note: StaveNoteFormatS
   const clef: string = rest.note.getClef();
 
   const staffCenter: number = Tables.getStaffCenterLine(clef);
-  const CLAMP: number = 3; // max staff-spaces beyond staff edge
+  const CLAMP: number = 5; // staff-spaces beyond staff edge — wide enough for
+  // ledger-line notes (e.g., line -3.5) to shift one full step and clear a
+  // nearby note, but bounded to prevent drift across repeated format passes.
   // Use note's full extent (including stem) to find a clear direction.
   const shiftAmount: number = 2;
   const restUp: number = rest.line + shiftAmount;
