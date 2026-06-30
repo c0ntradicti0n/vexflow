@@ -86,8 +86,10 @@ function shiftRestVertical(rest: StaveNoteFormatSettings, note: StaveNoteFormatS
   const clampMin: number = staffCenter - 2 - CLAMP;
   const clampMax: number = staffCenter + 2 + CLAMP;
 
-  // Conservative rest glyph extent: ~2 lines above, 1 line below center
-  const restHalfAbove: number = 2;
+  // Rest glyph extent: ~1 line above/below center (accounts for glyph thickness + margin).
+  // A half-rest bar is ~0.5 lines; a whole-rest bar ~0.3 lines; a quarter-rest diamond ~1 line.
+  // 1 provides enough margin without excessive distancing.
+  const restHalfAbove: number = 1;
   const restHalfBelow: number = 1;
 
   // Check if the rest's glyph at `line` overlaps the note's extent.
@@ -154,7 +156,9 @@ export class StaveNote extends StemmableNote {
 
   /** Format notes inside a ModifierContext. */
   static format(notes: StaveNote[], state: ModifierContextState): boolean {
-    if (!notes || notes.length < 2) return false;
+    if (!notes || notes.length < 2) {
+      return false;
+    }
 
     // Split notes by stave to avoid cross-staff collision adjustments.
     const notesByStave = new Map<string, StaveNote[]>();
@@ -213,7 +217,7 @@ export class StaveNote extends StemmableNote {
           Math.ceil(notes[i]._noteHeads[0].getTextMetrics().actualBoundingBoxDescent / Tables.STAVE_LINE_DISTANCE);
         // Fallback for pre-format pass when text metrics haven't been measured yet.
         // SMuFL rest glyphs span ~2-3 staff lines; use a safe minimum of 2.5 lines.
-        if (maxL - minL < 2) {
+        if (maxL - minL < 3) {
           maxL = line + 2;
           minL = line - 1;
         }
@@ -222,6 +226,10 @@ export class StaveNote extends StemmableNote {
           stemDirection === 1 ? props[props.length - 1].keyProps.line + stemMax : props[props.length - 1].keyProps.line;
 
         minL = stemDirection === 1 ? props[0].keyProps.line : props[0].keyProps.line - stemMax;
+        // Include notehead glyph extent above/below the note's line so that rests
+        // near the notehead (but outside the stem) are detected as colliding.
+        if (stemDirection === -1) maxL += 1; // notehead ascent above line
+        else minL -= 1; // notehead descent below line
       }
 
       notesList.push({
@@ -301,11 +309,12 @@ export class StaveNote extends StemmableNote {
         shiftRestVertical(noteL, noteU, -1);
         noteL.note.renderOptions.draw = false;
       } else if (
-        // Use noteLine (not conservative glyph/minLine) for rests so that
-        // the check doesn't re-trigger after a single shift — whole rests
-        // at the staff edge (line 4) shouldn't cascade to line 8+.
-        (noteU.isrest ? noteU.line : noteU.minLine) <=
-        (noteL.isrest ? noteL.line : noteL.maxLine) + lineSpacing
+        // Use conservative extents (minLine/maxLine) for both notes and rests.
+        // For rests, the glyph extends ~2 lines above center (maxLine) and
+        // ~2 lines below center (minLine). Using just the center line (line)
+        // misses overlaps where a note's notehead or stem tip is close.
+        (noteU.isrest ? noteU.minLine : noteU.minLine) <=
+        (noteL.isrest ? noteL.maxLine : noteL.maxLine) + lineSpacing
       ) {
         if (noteU.isrest) {
           shiftRestVertical(noteU, noteL, noteUDir);
@@ -743,6 +752,23 @@ export class StaveNote extends StemmableNote {
 
   // Get the `BoundingBox` for the entire note
   override getBoundingBox(): BoundingBox {
+    // For rests, compute bounds from noteheads only to avoid spanning full measure
+    // width (alignCenter extends the initial box to the measure start). For notes,
+    // include the tick context x to capture stems/beams properly.
+    if (this.isRest() && this._noteHeads.length > 0) {
+      let minX = Infinity; let minY = Infinity; let maxX = -Infinity; let maxY = -Infinity;
+      this._noteHeads.forEach((nh) => {
+        const bb = nh.getBoundingBox();
+        minX = Math.min(minX, bb.getX());
+        minY = Math.min(minY, bb.getY());
+        maxX = Math.max(maxX, bb.getX() + bb.getW());
+        maxY = Math.max(maxY, bb.getY() + bb.getH());
+      });
+      // Contract by 1px to avoid sub-pixel edge touches with adjacent elements
+      // (invisible pointer rect used for mouse hit detection).
+      const INSET = 1;
+      return new BoundingBox(minX + INSET, minY + INSET, Math.max(0, maxX - minX - 2 * INSET), Math.max(0, maxY - minY - 2 * INSET));
+    }
     const boundingBox = new BoundingBox(this.getAbsoluteX() - this.paddingRight, this.ys[0], 0, 0);
     this._noteHeads.forEach((notehead) => {
       boundingBox.mergeWith(notehead.getBoundingBox());

@@ -147,6 +147,7 @@ export class ModifierContext {
 
     // The ordering below determines when different members are formatted and rendered.
     StaveNote.format(members[Category.StaveNote] as StaveNote[], state);
+    StaveNote.format(members[Category.GraceNote] as StaveNote[], state); // cue-sized notes (VF.GraceNote)
     Parenthesis.format(members[Category.Parenthesis] as Parenthesis[], state);
     Dot.format(members[Category.Dot] as Dot[], state);
     FretHandFinger.format(members[Category.FretHandFinger] as FretHandFinger[], state);
@@ -173,5 +174,6 @@ export class ModifierContext {
 
     // If post-formatting is required for an element, add more lines below.
     StaveNote.postFormat(this.getMembers(Category.StaveNote) as Note[]);
+    StaveNote.postFormat(this.getMembers(Category.GraceNote) as Note[]); // cue-sized notes (VF.GraceNote)
   }
 }
