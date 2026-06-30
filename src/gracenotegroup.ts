@@ -86,24 +86,35 @@ export class GraceNoteGroup extends Modifier {
       groupShift = Math.max(formatWidth, groupShift);
     }
 
+    // OSMD-controlled grace-to-target gap. This is reserved by enlarging the
+    // modifier shift below (pushing the target note right), NOT by shifting the
+    // grace block toward the target, so it never crowds the target note.
+    const extraSpacing: number = (groupList[0].gracenoteGroup as any).spacing ?? 0;
     for (let i = 0; i < groupList.length; ++i) {
       const gracenoteGroup = groupList[i].gracenoteGroup;
       formatWidth = gracenoteGroup.getWidth() + groupList[i].spacing;
-      // The grace notes are positioned relative to the main note:
+      // The grace notes are positioned relative to the target note:
       //   graceX = tickContext.x - modLeftPx - modRightPx + spacingFromNextModifier
-      // For a single group, spacingFromNextModifier = minNoteheadPadding (=2px).
-      // Without extra padding the grace notes can collide with the preceding
-      // note because modLeftPx pushes them far left.
-      // Use instance spacing (set via (group as any).spacing) as extra padding
-      // so callers like OSMD can control grace-to-main-note distance.
-      const extraSpacing: number = (gracenoteGroup as any).spacing ?? 0;
+      // The grace block's left edge ends up at (noteStartX - padding + S), so S
+      // (below) must stay a small positive value to keep the block from bleeding
+      // left into stave-start modifiers (clef/key/time). extraSpacing is added to
+      // the reserved shift instead, where it widens the gap to the target note.
+      // Grace notes' own RIGHT-side modifiers (string numbers) inflate groupShift
+      // and shift the grace block left toward stave-start modifiers. They sit in
+      // the gap toward the target note, so shift the block back right by their
+      // width to keep the leftmost grace (and its fingering) clear of clef/key/time.
+      let rightModWidth: number = 0;
+      for (const gn of gracenoteGroup.getGraceNotes()) {
+        const mc = (gn as any).getModifierContext?.();
+        if (mc) { rightModWidth = Math.max(rightModWidth, mc.getState().rightShift); }
+      }
       gracenoteGroup.setSpacingFromNextModifier(
-        groupShift - Math.min(formatWidth, groupShift) + StaveNote.minNoteheadPadding + 5 + extraSpacing
+        groupShift - Math.min(formatWidth, groupShift) + StaveNote.minNoteheadPadding + 5 + rightModWidth
       );
     }
 
-    if (right) state.rightShift += groupShift;
-    if (left) state.leftShift += groupShift;
+    if (right) state.rightShift += groupShift + extraSpacing;
+    if (left) state.leftShift += groupShift + extraSpacing;
     return true;
   }
 
@@ -201,6 +212,15 @@ export class GraceNoteGroup extends Modifier {
 
       this.slur.renderOptions.cp2 = 12;
       this.slur.renderOptions.yShift = (isStavenote ? 7 : 5) + this.renderOptions.slurYShift;
+      // The slur runs from the grace notes (left) to the target note. StaveTie
+      // anchors firstX at the target's getTieRightX(), i.e. past its notehead by
+      // glyph width plus its right modifiers (string numbers etc.). For a grace
+      // slur the endpoint must sit at the target notehead, otherwise it drifts
+      // right and the drift grows with the target's right modifiers. Pull firstX
+      // back to the target's notehead.
+      if (isStaveNote(note)) {
+        this.slur.renderOptions.firstXShift = (note as StaveNote).getAbsoluteX() - (note as StaveNote).getTieRightX();
+      }
       this.slur.setContext(ctx).drawWithStyle();
     }
   }
