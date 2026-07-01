@@ -961,6 +961,38 @@ export class Formatter {
       });
     }
 
+    // Post-format collision check: ensure left modifiers (clefs, etc.)
+    // that extend beyond tick.getX() - totalLeftPx don't visually overlap
+    // the previous tick's notehead glyphs. The formatter positions ticks
+    // edge-to-edge, but clef glyphs widen the left margin beyond what the
+    // note width accounts for, causing overlap with the prior tick's
+    // content (notehead, stem, rest glyph).
+    if (this.tickContexts) {
+      const { list, map } = this.tickContexts;
+      for (let i = 1; i < list.length; i++) {
+        const prev = map[list[i - 1]];
+        const curr = map[list[i]];
+        const prevMetrics = prev.getMetrics();
+        const currMetrics = curr.getMetrics();
+
+        // Right edge of previous tick: notehead + right modifiers.
+        const prevRight = prev.getX() + prevMetrics.notePx + prevMetrics.totalRightPx;
+
+        // Left edge of current tick's modifiers (e.g., clef).
+        // alignSubNotesWithNote places clef at:
+        //   tickContext.getX() - modLeftPx - modRightPx + 5
+        const currLeft = curr.getX() - currMetrics.modLeftPx - currMetrics.modRightPx + 5;
+
+        const MIN_CLEARANCE = 2;
+        if (currLeft < prevRight - MIN_CLEARANCE) {
+          const shift = (prevRight - MIN_CLEARANCE) - currLeft;
+          for (let j = i; j < list.length; j++) {
+            map[list[j]].setX(map[list[j]].getX() + shift);
+          }
+        }
+      }
+    }
+
     return this.evaluate();
   }
 
