@@ -66,7 +66,7 @@ export class NoteSubGroup extends Modifier {
     if (this.preFormatted) return;
 
     this.formatter.joinVoices([this.voice]).format([this.voice], 0);
-    this.setWidth(this.formatter.getMinTotalWidth() + 10);
+    this.setWidth(this.formatter.getMinTotalWidth());
     this.preFormatted = true;
   }
 
