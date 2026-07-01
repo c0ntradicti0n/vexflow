@@ -50,7 +50,7 @@ export class NoteSubGroup extends Modifier {
       subNote.setIgnoreTicks(false);
     });
     this.width = 0;
-    this.setSpacingFromNextModifier(5);
+    this.setSpacingFromNextModifier(0);
 
     this.formatter = new Formatter();
     this.voice = new Voice({
@@ -77,6 +77,10 @@ export class NoteSubGroup extends Modifier {
 
   override getWidth(): number {
     return this.width;
+  }
+
+  getSubNotes(): Note[] {
+    return this.subNotes;
   }
 
   override draw(): void {

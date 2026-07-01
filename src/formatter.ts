@@ -961,12 +961,9 @@ export class Formatter {
       });
     }
 
-    // Post-format collision check: ensure left modifiers (clefs, etc.)
-    // that extend beyond tick.getX() - totalLeftPx don't visually overlap
-    // the previous tick's notehead glyphs. The formatter positions ticks
-    // edge-to-edge, but clef glyphs widen the left margin beyond what the
-    // note width accounts for, causing overlap with the prior tick's
-    // content (notehead, stem, rest glyph).
+    // Post-format centering + collision check.
+    // Center in-measure clefs between prev note's right edge and curr note,
+    // then ensure no visual overlap with prev tick's content.
     if (this.tickContexts) {
       const { list, map } = this.tickContexts;
       for (let i = 1; i < list.length; i++) {
@@ -980,12 +977,40 @@ export class Formatter {
 
         // Left edge of current tick's modifiers (e.g., clef).
         // alignSubNotesWithNote places clef at:
-        //   tickContext.getX() - modLeftPx - modRightPx + 5
-        const currLeft = curr.getX() - currMetrics.modLeftPx - currMetrics.modRightPx + 5;
+        //   tickContext.getX() - modLeftPx - modRightPx + spacingFromNextModifier
+        let spacing = 0;
 
+        // Centering: if tick has a NoteSubGroup with ClefNote, compute balanced spacing.
+        if (currMetrics.modLeftPx > 0) {
+          const tickables = curr.getTickables();
+          for (const tickable of tickables) {
+            const mods = tickable.getModifiers();
+            if (!mods) continue;
+            for (const modifier of mods) {
+              if (modifier.getCategory() === 'NoteSubGroup') {
+                spacing = modifier.getSpacingFromNextModifier();
+                const subNotes = (modifier as any).getSubNotes?.() as any[] ?? [];
+                if (subNotes.some((sn: any) => sn.getCategory() === 'ClefNote')) {
+                  const G = curr.getX() - prevRight;
+                  const clefWidth = currMetrics.modLeftPx;
+                  const desiredSpacing = (clefWidth - G) / 2;
+                  if (desiredSpacing !== spacing) {
+                    modifier.setSpacingFromNextModifier(desiredSpacing);
+                    spacing = desiredSpacing;
+                  }
+                }
+                break;
+              }
+            }
+          }
+        }
+
+        const currLeft = curr.getX() - currMetrics.modLeftPx - currMetrics.modRightPx + spacing;
+
+        const gap = currLeft - prevRight;
         const MIN_CLEARANCE = 2;
-        if (currLeft < prevRight - MIN_CLEARANCE) {
-          const shift = (prevRight - MIN_CLEARANCE) - currLeft;
+        if (gap < -MIN_CLEARANCE) {
+          const shift = -gap - MIN_CLEARANCE;
           for (let j = i; j < list.length; j++) {
             map[list[j]].setX(map[list[j]].getX() + shift);
           }
