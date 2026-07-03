@@ -30,8 +30,8 @@ export class Repetition extends StaveModifier {
 
   protected symbolType: number;
 
-  protected override xShift: number;
-  protected override yShift: number;
+  protected override xShift: number = 0;
+  protected override yShift: number = 0;
 
   constructor(type: number, x: number, yShift: number) {
     super();

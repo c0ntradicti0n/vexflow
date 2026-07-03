@@ -455,7 +455,6 @@ export class Formatter {
 
     // Go through each tick context and calculate total width,
     // and also accumulate values used in padding hints
-    let isFirstContext: boolean = true;
     contextList.forEach((tick) => {
       const context = contextMap[tick];
       context.preFormat();
@@ -513,7 +512,6 @@ export class Formatter {
     if (!voices || !voices.length) {
       throw new RuntimeError('BadArgument', 'No voices to format');
     }
-    const totalTicks = voices[0].getTotalTicks();
     const resolutionMultiplier = voices.reduce((accumulator, voice) => {
       // if (!voice.getTotalTicks().equals(totalTicks)) {
       //   throw new RuntimeError('TickMismatch', 'Voices should have same total note duration in ticks.');
@@ -806,7 +804,6 @@ export class Formatter {
 
     function shiftToIdealDistances(idealDistances: Distance[]): number {
       // Distribute ticks to the contexts based on the calculated distance error.
-      const centerX = adjustedJustifyWidth / 2;
       let spaceAccum = 0;
 
       contextList.forEach((tick, index) => {
@@ -934,9 +931,6 @@ export class Formatter {
     const centeringStave =
       stave || (voicesParam && voicesParam.length > 0 ? voicesParam[0].getTickables()[0]?.getStave() : undefined);
     if (centeringStave) {
-      const stavePadding = Metrics.get('Stave.padding', 0);
-      const noteAreaEnd = centeringStave.getNoteEndX() - centeringStave.getNoteStartX() - stavePadding;
-
       // Collect tickables by voice with their context indices
       const voiceEntries: Map<number, Array<{ tickable: Tickable; contextIndex: number }>> = new Map();
       contextList.forEach((tick, index) => {
@@ -954,7 +948,7 @@ export class Formatter {
       voiceEntries.forEach((entries) => {
         let ticksAccum = 0;
         entries.forEach((entry, i) => {
-          const { tickable, contextIndex } = entry;
+          const { tickable } = entry;
           const tickDuration = tickable.getTicks().value();
           ticksAccum += tickDuration;
         });
@@ -1004,6 +998,14 @@ export class Formatter {
             }
           }
         }
+
+        // Only resolve collisions caused by a left modifier (e.g. an in-measure
+        // clef). Note-to-note spacing is already handled by the justifier above;
+        // shifting for it here uses notePx (notehead+stem) as prevRight, which
+        // overlaps tightly-justified neighbours and pushes the tail past the
+        // barline (right-edge overflow). Gate on modLeftPx so plain notes are
+        // never disturbed.
+        if (currMetrics.modLeftPx <= 0) { continue; }
 
         const currLeft = curr.getX() - currMetrics.modLeftPx - currMetrics.modRightPx + spacing;
 
@@ -1216,6 +1218,18 @@ export class Formatter {
 
     // Only postFormat if a stave was supplied for y value formatting
     if (opts.stave) this.postFormat();
+
+    if ((globalThis as any).__DUMP_TC__) {
+      const arr = this.tickContexts?.array ?? [];
+      // eslint-disable-next-line no-console
+      console.log('[TC]', 'nCtx=' + arr.length, 'jw=' + (justifyWidth ?? 0).toFixed(1));
+      for (const c of arr) {
+        const tk = (c as any).tickables ?? [];
+        const kinds = tk.map((t: any) => (t.getCategory?.() || '?') + (t.isRest?.() ? 'R' : ''));
+        // eslint-disable-next-line no-console
+        console.log('  tick=' + (c as any).tickID, 'x=' + c.getX().toFixed(1), 'w=' + (c as any).getWidth?.().toFixed?.(1), kinds.join(','));
+      }
+    }
 
     return this;
   }

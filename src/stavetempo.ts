@@ -138,7 +138,7 @@ export class StaveTempo extends StaveModifier {
     const ctx = stave.checkContext();
     this.setRendered();
 
-    const { name, duration, dots, bpm, duration2, dots2, parenthesis, noteEquation } = this.tempo;
+    const { name, duration, dots, bpm, noteEquation } = this.tempo;
     const startX = this.x + shiftX;
     let x = startX;
     const y = stave.getYForTopText(1) + this.yShift;

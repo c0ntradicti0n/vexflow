@@ -70,11 +70,6 @@ const isInnerNoteIndex = (note: StaveNote, index: number) =>
 
 // Helper methods for rest positioning in ModifierContext.
 
-function isDefaultRestPosition(line: number, clef: string): boolean {
-  const center = Tables.getStaffCenterLine(clef);
-  return line === center || line === center + 1;
-}
-
 function shiftRestVertical(rest: StaveNoteFormatSettings, note: StaveNoteFormatSettings, _dir: number) {
   // OSMD sets shiftRestVerticalDisabled on re-render to freeze rest positions
   // from the first render (see VexFlowMusicSheetCalculator.ts).

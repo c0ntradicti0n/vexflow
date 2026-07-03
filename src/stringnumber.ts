@@ -132,7 +132,7 @@ export class StringNumber extends Modifier {
   protected stringNumber: string;
   protected xOffset: number;
   protected yOffset: number;
-  protected override textLine: number;
+  protected override textLine: number = 0;
   protected stemOffset: number;
   protected dashed: boolean;
   protected leg: number;
