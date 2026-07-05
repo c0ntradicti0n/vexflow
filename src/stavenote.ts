@@ -1077,8 +1077,11 @@ export class StaveNote extends StemmableNote {
     let width =
       this.getGlyphWidth() + this.leftDisplacedHeadPx + this.rightDisplacedHeadPx + noteHeadPadding + this.paddingRight;
 
-    // For upward flagged notes, the width of the flag needs to be added
-    if (this.shouldDrawFlag() && this.stemDirection === Stem.UP) {
+    // For flagged notes, the width of the flag needs to be added.
+    // Both stem-up and stem-down flags can extend past the notehead's
+    // right edge; the prior stem-direction check missed the stem-down case,
+    // causing 16th-note flags to overflow past the barline.
+    if (this.shouldDrawFlag()) {
       width += this.getGlyphWidth();
       // TODO: Add flag width as a separate metric
     }

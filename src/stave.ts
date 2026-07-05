@@ -205,9 +205,6 @@ export class Stave extends Element {
     this.formatted = false;
     this.width = width;
     this.endX = this.x + width;
-
-    // reset the x position of the end barline (TODO(0xfe): This makes no sense)
-    // this.modifiers[1].setX(this.endX);
     return this;
   }
 

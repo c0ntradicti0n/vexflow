@@ -19,6 +19,7 @@ import { isNote, isStaveNote } from './typeguard';
 import { defined, log, midLine, RuntimeError, sumArray } from './util';
 import { Voice } from './voice';
 
+
 interface Distance {
   maxNegativeShiftPx: number;
   expectedDistance: number;
@@ -660,6 +661,7 @@ export class Formatter {
 
     const { list: contextList, map: contextMap } = contexts;
 
+
     // Reset loss history for evaluator.
     this.lossHistory = [];
 
@@ -701,8 +703,10 @@ export class Formatter {
       }
       context.setX(x);
 
-      // Calculate shift for the next tick.
+      // Calculate shift for the next tick (= notePx + totalRightPx + padding*2).
       shift = width - metrics.totalLeftPx;
+
+      // (excessTl removal caused regressions in M10/M32 — kept for future tuning)
     });
 
     // Use softmax based on all notes across all staves. (options.globalSoftmax)
@@ -747,16 +751,19 @@ export class Formatter {
             });
 
             if (matchingVoices.length > 0) {
-              // Found matching voices, get largest duration
-              let maxTicks = 0;
+              // Using maxTicks (longest duration) lets a whole-note-only voice
+              // dominate with softmax=1.0, consuming the full adjusted width and
+              // cramming all remaining notes. Shortest tick keeps spacing aligned
+              // to the finest rhythmic grid present.
+              let minTicks = Infinity;
               let maxNegativeShiftPx = Infinity;
               let expectedDistance = 0;
 
               matchingVoices.forEach((v) => {
                 const ticks = backVoices[v].getTicks().value();
-                if (ticks > maxTicks) {
+                if (ticks < minTicks) {
                   backTickable = backVoices[v];
-                  maxTicks = ticks;
+                  minTicks = ticks;
                 }
 
                 // Calculate the limits of the shift based on modifiers, etc.
@@ -784,9 +791,23 @@ export class Formatter {
               // distance is scaled down by the softmax for the voice.
               if (globalSoftmax) {
                 const t = totalTicks;
-                expectedDistance = (softmaxFactor ** (maxTicks / t) / expTicksUsed) * adjustedJustifyWidth;
+                expectedDistance = (softmaxFactor ** (minTicks / t) / expTicksUsed) * adjustedJustifyWidth;
               } else if (typeof backTickable !== 'undefined') {
-                expectedDistance = backTickable.getVoice().softmax(maxTicks) * adjustedJustifyWidth;
+                expectedDistance = backTickable.getVoice().softmax(minTicks) * adjustedJustifyWidth;
+                // A rest owns no visual onset, so the softmax slot after it is
+                // wasted space that crams the following notes (e.g. a ghost 16th
+                // rest at a half-note boundary gets ~2x the per-tick width of the
+                // real notes after it). Scale a rest's outgoing distance down to
+                // its linear tick share so short rests don't over-space.
+                if (isNote(backTickable) && backTickable.isRest()) {
+                  // A rest owns no visual onset.  Use a fraction of its linear
+                  // tick share so the voice's first real note gets the space it
+                  // needs instead of being crammed by the rest's softmax slot.
+                  const voice: Voice | undefined = backTickable.getVoice();
+                  const voiceTotalTicks: number = voice ? voice.getTotalTicks().value() : totalTicks;
+                  const linear = (minTicks / voiceTotalTicks) * adjustedJustifyWidth;
+                  expectedDistance = Math.min(expectedDistance, linear * 0.6);
+                }
               }
               return {
                 expectedDistance,
@@ -811,7 +832,13 @@ export class Formatter {
         if (index > 0) {
           const contextX = context.getX();
           const ideal = idealDistances[index];
-          const errorPx = defined(ideal.fromTickable).getX() + ideal.expectedDistance - (contextX + spaceAccum);
+          const ft = defined(ideal.fromTickable);
+          // Subtract this context's own modifier width from contextX so the
+          // flat's totalLeftPx doesn't create a false error signal that
+          // over-pulls the context leftward (the modifier is local offset
+          // between context edge and notehead, not a global spacing shift).
+          const ctxNoteX = contextX - context.getMetrics().totalLeftPx;
+          const errorPx = ft.getX() + ideal.expectedDistance - (ctxNoteX + spaceAccum);
 
           let negativeShiftPx = 0;
           if (errorPx > 0) {
@@ -846,11 +873,14 @@ export class Formatter {
       return lastContext.getX() - firstContext.getX();
     }
 
-    const adjustedJustifyWidth =
+    let adjustedJustifyWidth =
       justifyWidth -
       lastContext.getMetrics().notePx -
       lastContext.getMetrics().totalRightPx -
       firstContext.getMetrics().totalLeftPx;
+
+
+
     const configMinPadding = Metrics.get('Stave.endPaddingMin');
     const configMaxPadding = Metrics.get('Stave.endPaddingMax');
     const leftPadding = Metrics.get('Stave.padding');
