@@ -229,24 +229,21 @@ export class Stave extends Element {
    * @param  {Number} index The index from which to determine the shift
    * @return {Number}       The amount of pixels shifted
    */
-  getModifierXShift(index: number = 0): number {
-    if (typeof index !== 'number') {
-      throw new RuntimeError('InvalidIndex', 'Must be of number type');
-    }
-
+  getModifierXShift(position: StaveModifierPosition = StaveModifierPosition.ABOVE): number {
     if (!this.formatted) this.format();
 
     if (this.getModifiers(StaveModifierPosition.BEGIN).length === 1) {
       return 0;
     }
 
-    // for right position modifiers zero shift seems correct, see 'Volta + Modifier Measure Test'
-    if (this.modifiers[index].getPosition() === StaveModifierPosition.RIGHT) {
+    // Look up the modifier at the requested position to check for RIGHT position.
+    const mod: StaveModifier | undefined = this.modifiers.find(m => m.getPosition() === position);
+    if (mod && mod.getPosition() === StaveModifierPosition.RIGHT) {
       return 0;
     }
 
-    let startX = this.startX - this.x;
-    const begBarline = this.modifiers[0] as Barline;
+    let startX: number = this.startX - this.x;
+    const begBarline: Barline = this.modifiers[0] as Barline;
     if (begBarline.getType() === BarlineType.REPEAT_BEGIN && startX > begBarline.getWidth()) {
       startX -= begBarline.getWidth();
     }
