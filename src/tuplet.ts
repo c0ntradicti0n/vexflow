@@ -53,6 +53,7 @@ import { Element } from './element';
 import { Formatter } from './formatter';
 import { Glyphs } from './glyphs';
 import { Metrics } from './metrics';
+import { Modifier } from './modifier';
 import { Note } from './note';
 import { Stem } from './stem';
 import { StemmableNote } from './stemmablenote';
@@ -268,13 +269,17 @@ export class Tuplet extends Element {
     if (this.options.location === Tuplet.LOCATION_TOP) {
       yPosition = firstNote.checkStave().getYForLine(0) - 1.5 * Tables.STAVE_LINE_DISTANCE;
 
-      // check modifiers above note to see if they will collide with tuplet beam
+      // check modifiers above note to see if they will collide with tuplet beam.
+      // Only the note's OWN modifiers may lift the tuplet: a ModifierContext is
+      // shared by every note at the same tick + stave, so its cumulative
+      // topTextLine can be inflated by foreign-voice accents/annotations.
       for (let i = 0; i < this.notes.length; ++i) {
         const note = this.notes[i];
         let modLines = 0;
-        const mc = note.getModifierContext();
-        if (mc) {
-          modLines = Math.max(modLines, mc.getState().topTextLine);
+        for (const modifier of note.getModifiers()) {
+          if (modifier.getPosition() === Modifier.Position.ABOVE) {
+            modLines = Math.max(modLines, modifier.getTextLine());
+          }
         }
         const modY = note.getYForTopText(modLines) - 2 * Tables.STAVE_LINE_DISTANCE;
         if (note.hasStem() || note.isRest()) {
@@ -290,11 +295,13 @@ export class Tuplet extends Element {
       }
     } else {
       let lineCheck = 4; // tuplet default on line 4
-      // check modifiers below note to see if they will collide with tuplet beam
+      // check modifiers below note to see if they will collide with tuplet beam.
+      // Own modifiers only, see above.
       this.notes.forEach((nn) => {
-        const mc = nn.getModifierContext();
-        if (mc) {
-          lineCheck = Math.max(lineCheck, mc.getState().textLine + 1);
+        for (const modifier of nn.getModifiers()) {
+          if (modifier.getPosition() === Modifier.Position.BELOW) {
+            lineCheck = Math.max(lineCheck, modifier.getTextLine() + 1);
+          }
         }
       });
       yPosition = firstNote.checkStave().getYForLine(lineCheck) + 2 * Tables.STAVE_LINE_DISTANCE;

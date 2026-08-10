@@ -157,6 +157,11 @@ export class Modifier extends Element {
     return this;
   }
 
+  /** Get the `textLine` (reserved space above/below the stave). */
+  getTextLine(): number {
+    return this.textLine;
+  }
+
   /** Shift modifier down `y` pixels. Negative values shift up. */
   override setYShift(y: number): this {
     this.yShift = y;
