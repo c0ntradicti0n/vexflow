@@ -141,6 +141,10 @@ export class Formatter {
   protected voices: Voice[];
   protected lossHistory: number[];
   protected durationStats: Record<string, { mean: number; count: number; total: number }>;
+  // Real stave per tickable, captured BEFORE preFormat() overwrites it via
+  // voice.setStave(stave). Used to group same-tick notes by stave in the
+  // cross-voice collision pass (getStave() is unreliable after formatting).
+  protected tickableStaves: WeakMap<Tickable, any> = new WeakMap();
 
   /**
    * Helper function to layout "notes" one after the other without
@@ -1207,7 +1211,91 @@ export class Formatter {
       this.tickContexts.map[tick].postFormat();
     });
 
+    this.resolveCrossVoiceCollisions();
+
     return this;
+  }
+
+  /**
+   * Shift apart same-tick noteheads that collide across different voices on
+   * the same staff line (e.g. F3 in voice 1 and F#3 in voice 2 at the same
+   * tick). VexFlow's StaveNote.format() two-voice collision only runs within
+   * a single ModifierContext; cross-voice tickables have separate contexts,
+   * so the collision was never resolved and both noteheads rendered on top
+   * of each other, making the two pitches indistinguishable.
+   * True unisons (same line, same pitch) still share a notehead.
+   */
+  protected resolveCrossVoiceCollisions(): void {
+    const contexts = this.tickContexts;
+    if (!contexts) {
+      return;
+    }
+    contexts.list.forEach((tick: number): void => {
+      const tickables: Tickable[] = contexts.map[tick].getTickables();
+      if (tickables.length < 2) {
+        return;
+      }
+      const byStave: Map<any, Tickable[]> = new Map();
+      for (const t of tickables) {
+        const stave: any = this.tickableStaves.get(t) ?? (t as any).getStave?.();
+        if (!stave) {
+          continue;
+        }
+        const arr: Tickable[] | undefined = byStave.get(stave);
+        if (arr) {
+          arr.push(t);
+        } else {
+          byStave.set(stave, [t]);
+        }
+      }
+      for (const group of byStave.values()) {
+        if (group.length < 2) {
+          continue;
+        }
+        this.resolveStaveNoteheadCollisions(group);
+      }
+    });
+  }
+
+  protected resolveStaveNoteheadCollisions(notes: Tickable[]): void {
+    for (let i = 0; i < notes.length; i++) {
+      for (let j = i + 1; j < notes.length; j++) {
+        const a: any = notes[i] as any;
+        const b: any = notes[j] as any;
+        if (a.isRest?.() || b.isRest?.()) {
+          continue;
+        }
+        // Same-voice pairs already go through StaveNote.format() via a shared
+        // ModifierContext; only resolve the cross-voice cases here.
+        if (a.getVoice?.() === b.getVoice?.()) {
+          continue;
+        }
+        if (a.getCategory?.() === 'GhostNote' || b.getCategory?.() === 'GhostNote') {
+          continue;
+        }
+        if (typeof a.getKeyProps !== 'function' || typeof b.getKeyProps !== 'function') {
+          continue;
+        }
+        const lineA: number = a.getKeyProps()[0]?.line;
+        const lineB: number = b.getKeyProps()[0]?.line;
+        if (lineA === undefined || lineB === undefined) {
+          continue;
+        }
+        if (Math.abs(lineA - lineB) > 1) {
+          continue;
+        }
+        // True unison: same line, same key, same accidental signature → the
+        // noteheads may share a position.
+        if (lineA === lineB && sameSoundingPitch(a, b)) {
+          continue;
+        }
+        const shift: number = Math.max(a.getVoiceShiftWidth?.() ?? 0, b.getVoiceShiftWidth?.() ?? 0) + 2;
+        const target: any = collisionShiftTarget(a, b);
+        if (target && target.getXShift() < shift) {
+          target.setXShift(shift);
+        }
+      }
+    }
   }
 
   /**
@@ -1244,6 +1332,15 @@ export class Formatter {
 
     this.alignRests(voices, opts.alignRests);
     this.createTickContexts(voices);
+    // Capture each tickable's real stave before preFormat() assigns
+    // opts.stave to every voice. Cross-staff grouping in
+    // resolveCrossVoiceCollisions() relies on it.
+    this.tickableStaves = new WeakMap();
+    this.tickContexts.list.forEach((tick: number) => {
+      this.tickContexts.map[tick].getTickables().forEach((t: Tickable) => {
+        this.tickableStaves.set(t, (t as any).getStave?.());
+      });
+    });
     this.preFormat(justifyWidth, opts.context, voices, opts.stave);
 
     // Only postFormat if a stave was supplied for y value formatting
@@ -1277,3 +1374,39 @@ export class Formatter {
     return this.tickContexts?.map[tick];
   }
 }
+
+/**
+ * Concatenated values of all Accidental modifiers on a note. Empty for notes
+ * with no accidental (or one in the key signature). Used to tell a true
+ * unison (same line + same accidental) from two different pitches that share
+ * a staff line (e.g. F3 vs F#3).
+ */
+function accidentalSignature(note: any): string {
+  return (note.getModifiers?.() ?? [])
+    .filter((m: any) => m.getCategory?.() === 'Accidental')
+    .map((m: any) => m.type ?? '')
+    .sort()
+    .join(',');
+}
+
+/** Two notes sound the same if they share key and accidental signature. */
+function sameSoundingPitch(a: any, b: any): boolean {
+  return a.getKeys().join(',') === b.getKeys().join(',') && accidentalSignature(a) === accidentalSignature(b);
+}
+
+/**
+ * Decide which of two colliding cross-voice notes gets shifted right.
+ * Mirrors StaveNote.format(): with opposite stems the stem-down (lower) note
+ * moves right; otherwise the lower note on the staff moves right.
+ */
+function collisionShiftTarget(a: any, b: any): any {
+  const da: number | undefined = a.getStemDirection?.();
+  const db: number | undefined = b.getStemDirection?.();
+  if (da !== undefined && db !== undefined && da !== db) {
+    return da === -1 ? a : b;
+  }
+  const la: number = a.getKeyProps?.()[0]?.line ?? 0;
+  const lb: number = b.getKeyProps?.()[0]?.line ?? 0;
+  return la >= lb ? a : b;
+}
+
