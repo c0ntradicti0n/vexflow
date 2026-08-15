@@ -568,6 +568,11 @@ export class Beam extends Element {
     return firstY + (x - firstX) * slope;
   }
 
+  /** Current y-shift applied to the whole beamline (protected field accessor). */
+  getYShift(): number {
+    return this.yShift;
+  }
+
   /** Calculate the best possible slope for the provided notes. */
   calculateSlope(): void {
     const {

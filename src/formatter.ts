@@ -1212,6 +1212,7 @@ export class Formatter {
     });
 
     this.resolveCrossVoiceCollisions();
+    this.resolveBeamNoteCollisions();
 
     return this;
   }
@@ -1296,6 +1297,169 @@ export class Formatter {
         }
       }
     }
+  }
+
+  /**
+   * Beamline clearance above/below a foreign notehead center (px). Composed of:
+   * notehead ink half-height (~4.5) + half beam width (~3.75) + gap (2). The
+   * beamline is the beam's vertical center; its edge must clear the notehead body.
+   */
+  private static readonly BEAM_CLEAR_NOTEHEAD_OFFSET = 24;
+
+  /**
+   * Issue 123: VexFlow places a beam's beamline at a fixed stem height above/below
+   * the beam's own notes, unaware of other voices' noteheads in the same staff and
+   * x-range. When the beamline passes through a foreign notehead (polyphonic beam
+   * over a monophonic 16th-triplet accompaniment), extend the beam's stems so the
+   * beamline clears the notehead body.
+   *
+   * Runs here — in the Formatter postFormat pass — so the elevation happens in the
+   * core layout algorithm, not as a post-hook at draw time. Doing it at format time
+   * also lets the note's bounding box (and therefore a slur starting on the beam
+   * note) reflect the elevated stem, so the slur clears the beam too.
+   */
+  protected resolveBeamNoteCollisions(): void {
+    const contexts = this.tickContexts;
+    if (!contexts) {
+      return;
+    }
+    // All tickables (all voices) in the formatted column, for foreign-notehead lookup.
+    const allTickables: Tickable[] = [];
+    contexts.list.forEach((tick: number): void => {
+      contexts.map[tick].getTickables().forEach((t: Tickable) => allTickables.push(t));
+    });
+    if (allTickables.length < 2) {
+      return;
+    }
+    // Unique beams across all notes (a beam spans multiple tickables).
+    const beams = new Map<Beam, StemmableNote[]>();
+    for (const t of allTickables) {
+      const beam: Beam | undefined = (t as any).getBeam?.();
+      if (!beam) {
+        continue;
+      }
+      const arr: StemmableNote[] | undefined = beams.get(beam);
+      if (arr) {
+        arr.push(t as StemmableNote);
+      } else {
+        beams.set(beam, [t as StemmableNote]);
+      }
+    }
+    for (const [beam, notes] of beams) {
+      this.resolveBeamNoteCollision(beam, notes, allTickables);
+    }
+  }
+
+  protected resolveBeamNoteCollision(beam: Beam, notes: StemmableNote[], allTickables: Tickable[]): void {
+    if (notes.length < 2) {
+      return;
+    }
+    const first: any = notes[0];
+    const stemDir: number = first.getStemDirection?.() ?? 0;
+    if (stemDir === 0) {
+      return;
+    }
+    // Cross-staff beams are positioned separately (OSMD positionCrossStaffBeams).
+    const staves: Set<any> = new Set(notes.map((n) => this.tickableStaves.get(n)));
+    if (staves.size > 1) {
+      return;
+    }
+    const firstStemX: number = first.getStemX?.() ?? first.getAbsoluteX?.() ?? 0;
+    let minX: number = Infinity;
+    let maxX: number = -Infinity;
+    for (const n of notes) {
+      const x: number = n.getStemX?.() ?? n.getAbsoluteX?.() ?? 0;
+      if (x < minX) minX = x;
+      if (x > maxX) maxX = x;
+    }
+    if (!isFinite(minX)) {
+      return;
+    }
+    // Cheap pre-pass: any foreign notehead on the same stave inside the x-range?
+    let candidate: boolean = false;
+    for (const t of allTickables) {
+      if (notes.indexOf(t as StemmableNote) >= 0) {
+        continue;
+      }
+      const v: any = t as any;
+      if (v.isRest?.()) {
+        continue;
+      }
+      if (this.tickableStaves.get(t) !== this.tickableStaves.get(first)) {
+        continue;
+      }
+      const vx: number = v.getAbsoluteX?.() ?? v.getStemX?.() ?? 0;
+      if (vx < minX - 5 || vx > maxX + 5) {
+        continue;
+      }
+      candidate = true;
+      break;
+    }
+    if (!candidate) {
+      return;
+    }
+    // Refresh the beamline from the current note positions, then measure.
+    beam.postFormatted = false;
+    beam.postFormat();
+    if (!beam.postFormatted) {
+      return;
+    }
+    const slope: number = beam.slope ?? 0;
+    const yShift: number = beam.getYShift?.() ?? 0;
+    const firstStemTipY: number = first.getStemExtents?.()?.topY;
+    if (!Number.isFinite(firstStemTipY)) {
+      return;
+    }
+    const beamlineY = (x: number): number => firstStemTipY + slope * (x - firstStemX) + yShift;
+
+    let maxRaise: number = 0;
+    for (const t of allTickables) {
+      if (notes.indexOf(t as StemmableNote) >= 0) {
+        continue;
+      }
+      const v: any = t as any;
+      if (v.isRest?.()) {
+        continue;
+      }
+      if (this.tickableStaves.get(t) !== this.tickableStaves.get(first)) {
+        continue;
+      }
+      const vx: number = v.getAbsoluteX?.() ?? v.getStemX?.() ?? 0;
+      if (vx < minX - 5 || vx > maxX + 5) {
+        continue;
+      }
+      const ys: number[] = v.getYs?.() ?? [];
+      for (const oy of ys) {
+        const by: number = beamlineY(vx);
+        // Beamline must clear the notehead body on the beam's outside side. Only
+        // noteheads on that side of the beamline count: for an up-stem beam the
+        // beamline is above the notes, so only noteheads below it (between the
+        // beamline and the notes) are in its path.
+        let need: number = 0;
+        if (stemDir > 0 && oy >= by) {
+          need = by - (oy - Formatter.BEAM_CLEAR_NOTEHEAD_OFFSET);
+        } else if (stemDir < 0 && oy <= by) {
+          need = oy + Formatter.BEAM_CLEAR_NOTEHEAD_OFFSET - by;
+        }
+        if (need > maxRaise) maxRaise = need;
+      }
+    }
+    if (maxRaise <= 0.5) {
+      return;
+    }
+    // Extend matching-direction stems, then let VexFlow recompute the beamline.
+    for (const n of notes) {
+      const nAny: any = n;
+      if (nAny.isRest?.()) {
+        continue;
+      }
+      if ((nAny.getStemDirection?.() ?? stemDir) !== stemDir) {
+        continue;
+      }
+      nAny.setStemLength?.(nAny.getStemLength?.() + maxRaise);
+    }
+    beam.postFormatted = false;
+    beam.postFormat();
   }
 
   /**
