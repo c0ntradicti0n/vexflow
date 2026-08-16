@@ -91,8 +91,13 @@ export class Element {
   /** Canvas used to measure text. See measureText(): TextMetrics. */
   private static txtCanvas?: HTMLCanvasElement | OffscreenCanvas;
 
-  /** Shared cache for glyph metrics keyed on `${font}|${text}`. */
-  private static glyphMetricsCache: Map<string, { width: number; height: number }> = new Map();
+  /** Shared cache for glyph metrics keyed on `${font}|${text}`. Stores the full
+   *  bounding box so cache hits return real ascent/descent — otherwise a hit after
+   *  the element's text/font changed (e.g. a stem-direction flip rebuilding the
+   *  flag glyph) reuses stale TextMetrics and mispositions the glyph. */
+  private static glyphMetricsCache: Map<string, {
+    width: number; height: number; ascent: number; descent: number;
+  }> = new Map();
 
   // Note: Canvas is node-canvas.
   // https://www.npmjs.com/package/canvas
@@ -625,6 +630,14 @@ export class Element {
     if (cached) {
       this._width = cached.width;
       this._height = cached.height;
+      // Native TextMetrics exposes read-only getters, so rebuild the object
+      // rather than mutating it — the old metrics belong to the previous
+      // text/font (e.g. a flag rebuilt after a stem-direction flip).
+      this._textMetrics = {
+        ...this._textMetrics,
+        actualBoundingBoxAscent: cached.ascent,
+        actualBoundingBoxDescent: cached.descent,
+      };
       this.metricsValid = true;
       return this._textMetrics;
     }
@@ -638,7 +651,12 @@ export class Element {
     this._textMetrics = context.measureText(this.text);
     this._height = this._textMetrics.actualBoundingBoxAscent + this._textMetrics.actualBoundingBoxDescent;
     this._width = this._textMetrics.width;
-    Element.glyphMetricsCache.set(cacheKey, { width: this._width, height: this._height });
+    Element.glyphMetricsCache.set(cacheKey, {
+      width: this._width,
+      height: this._height,
+      ascent: this._textMetrics.actualBoundingBoxAscent,
+      descent: this._textMetrics.actualBoundingBoxDescent,
+    });
     this.metricsValid = true;
     return this._textMetrics;
   }
@@ -663,7 +681,12 @@ export class Element {
     context.font = font;
     const metrics = context.measureText(text);
     const height = metrics.actualBoundingBoxAscent + metrics.actualBoundingBoxDescent;
-    Element.glyphMetricsCache.set(cacheKey, { width: metrics.width, height });
+    Element.glyphMetricsCache.set(cacheKey, {
+      width: metrics.width,
+      height,
+      ascent: metrics.actualBoundingBoxAscent,
+      descent: metrics.actualBoundingBoxDescent,
+    });
     return metrics.width;
   }
 
