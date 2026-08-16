@@ -778,12 +778,21 @@ export class StaveNote extends StemmableNote {
           : yBottom - noteStemHeight + this.flag.getTextMetrics().actualBoundingBoxAscent;
       boundingBox.mergeWith(new BoundingBox(this.getAbsoluteX(), stemY, 0, 0));
     }
-    if (this.hasFlag()) {
+    // Only merge the flag box once it is actually positioned (drawFlag sets its
+    // x/y). Pre-draw, flag.y is 0, so getBoundingBox() would report a phantom
+    // box lifted by the flag's ascent and corrupt any layout-time box read
+    // (e.g. OSMD applyBordersFromVexflow, voice.getBoundingBox).
+    if (this.hasFlag() && this.flag.isRendered()) {
       const bbFlag = this.flag.getBoundingBox();
       boundingBox.mergeWith(bbFlag);
     }
+    // Same pre-draw guard as the flag above: a modifier's y is only set when its
+    // notehead draws it (drawNoteHeads), so a layout-time getBoundingBox() would
+    // otherwise merge a phantom box lifted by the modifier's ascent.
     for (let i = 0; i < this.modifiers.length; i++) {
-      boundingBox.mergeWith(this.modifiers[i].getBoundingBox());
+      if (this.modifiers[i].isRendered()) {
+        boundingBox.mergeWith(this.modifiers[i].getBoundingBox());
+      }
     }
     return boundingBox;
   }
