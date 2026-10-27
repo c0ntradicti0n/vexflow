@@ -1073,6 +1073,11 @@ export class StaveNote extends StemmableNote {
   override preFormat(): void {
     if (this.preFormatted) return;
 
+    // A (re-)format moves the note, so the flag's and modifiers' draw-time positions
+    // are stale until they are drawn again: getBoundingBox() must not merge them.
+    this.flag.setRendered(false);
+    this.modifiers.forEach((modifier) => modifier.setRendered(false));
+
     let noteHeadPadding = 0;
     if (this.modifierContext) {
       this.modifierContext.preFormat();
